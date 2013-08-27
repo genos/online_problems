@@ -1,0 +1,75 @@
+My first answers are in J; it's definitely cheating when your language has a
+"prime factors of" function.
+Problem 1:
+[sourcecode lang='css']
++/@(1=#@q:)(10x^50)+1+i.1e6%2
+[/sourcecode]
+This takes a very long time to get anywhere; the second is much faster:
+[sourcecode lang='css']
++/@(1=#@q:)1e6+1+4*1e6%4
+[/sourcecode]
+I originally had simpler answers, but decided that only working over odd
+numbers (first question) or numbers equivalent to 1 mod 4 (second question) was
+worth the uglification of my code.
+
+My second answers are in Ruby; I can't imagine trying to do these in a language
+like C or C++, even with the help of multiprecision libraries like GMP or NTL.
+I went with the Miller-Rabin primality test.
+[sourcecode lang='ruby']
+require 'mathn'
+
+def decomp n
+  s, d = 0, n
+  while d.even?
+    s, d = s + 1, d >> 1
+  end
+  return s, d
+end
+
+
+def modpow n, e, m
+  r = 1
+  while e > 0
+    if e.odd?
+      r = (r * n) % m
+    end
+    e >>= 1
+    n = (n * n) % m
+  end
+  return r
+end
+
+def miller_rabin n, k=42
+  s, d= decomp(n - 1)
+  k.times do
+    a = 2 + rand(n - 4)
+    x = modpow a, d, n
+    next if [1, n - 1].include? x
+    flag = (s - 1).times do
+      x = (x * x) % n
+      return false if x == 1
+      break n - 1 if x == n - 1
+    end
+    next if flag == n - 1
+    return false
+  end
+  return true
+end
+
+class Integer
+  def prime?
+    return false if self < 2
+    return true if self == 2
+    return false if self.even?
+    return miller_rabin self
+  end
+end
+
+def problem1
+  (10**50 + 1 .. 10**50 + 10**6).step(2).select(&:prime?).length
+end
+
+def problem2
+  (10**6 + 1 .. 2 * 10**6).step(4).select(&:prime?).length
+end
+[/sourcecode]
