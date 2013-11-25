@@ -1,0 +1,133 @@
+#+title: LOGLOG
+#+options: author:nil timestamp:nil toc:nil
+
+In [[http://algo.inria.fr/flajolet/Publications/DuFl03.pdf][this]] paper, Marianne Durand and the late Phillipe Flajolet
+describe an interesting algorithm that estimates the cardinality of
+a large multiset---think the number of unique words in a
+file---while using only a small amount of auxiliary memory to get
+the job done. That is, an exact answer is easy to obtain
+programmatically (use your favorite language's hashtable or set
+making utilities, for instance), but if the multiset is large enough
+the amount of memory required to store all the unique items may be
+prohibitively large. Durand and Flajolet's technique uses much less
+memory but provides an estimate instead of an exact answer, trading
+off memory for precision.
+
+The paper presupposes the existence of two functions:
+- a hash function h that maps elements from the domain of the multiset to
+  bitstrings
+- a function \rho that returns the rank of the first 1-bit from the
+  left in a given bitstring; i.e. \rho(1...) = 0, \rho(001...) = 2,
+  etc.[fn:1]
+
+Here is the basic algorithm from Durand & Flajolet to estimate the
+cardinality of a multiset =MS=.[fn:2] First, set m = 2^k for some
+bitsize k. Then,
+#+begin_example
+init array M[0:m-1] ← 0
+for x = b_0,b_1... in MS:
+    j ← int(b_0,b_1,...,b_{k-1})            // integer from the top k bits
+    M[j] ← max(M[j], ρ(b_k,b_{k + 1},...))
+return E = α_m * m * 2^(1 / m * sum(M))
+#+end_example
+where \alpha_m is given by
+\[ \left( \Gamma(-1/m) \frac{2^{1/m} - 1}{\ln 2} \right)^{-m} \]
+and is used to "precisely correct the systematic bias in the
+asymptotic limit."
+
+This algorithm uses the hash function to map each element of =MS= to
+an integer. From there, it uses the bit patterns of these elements to
+sort each element into a bin in our array =M=. The idea is that the
+top bits determine which bin to insert into, while the bottom bits
+give the value to put into that bin. Rather than keep all of the
+possible values a bin might receive, however, we only keep the
+maximum; this gives a probabilistic measure of the number of items
+inserted into any one bin.
+
+Your task is to write an implementation of the LogLog algorithm
+given above. When you are finished, you are welcome to read or run a
+suggested solution, or to post your own solution or discuss the
+exercise in the comments below.
+
+*Page 2*
+
+We'll write a straightforward Python (3.x series) implementation and
+run it against the typical *nix installation's =/usr/share/dict/words=
+as a benchmark.
+
+We'll first begin with the auxiliary functions =alpha= and =rho=:
+#+begin_src python :tangle yes
+from math import gamma, log
+k = 16
+   
+def alpha(m):
+    return pow(gamma(-1 / m) * (pow(2, 1 / m) - 1) / log(2), -m)
+
+def rho(n):
+    for i in range(k):
+        if (n & (1 << (k - i))) != 0:
+            return i
+    return k
+#+end_src
+The first function is just a straight translation of the math
+version given in the paper, while =rho()= starts at the left-most
+bit of its input and stops when it finds a one.
+
+We also need a hash function; we'll use one built into Python,
+modifying its output to return a 32 bit unsigned integer, but you can
+just as easily use the hash function given in a [[http://programmingpraxis.com/2013/06/07/sets/][previous]] exercise.
+
+#+begin_src python :tangle yes
+  def h(x):
+      return hash(x) % (1 << 32)
+#+end_src
+
+Now that that's taken care of, we can write our =loglog= function:
+
+#+begin_src python :tangle yes
+def loglog(MS):
+    m = 1 << k
+    M = [0] * m
+    for x in MS:
+        i, j = divmod(h(x), m)
+        M[j] = max(M[j], rho(i))
+    return alpha(m) * m * pow(2, sum(M) / m)
+#+end_src
+
+Here is our translation of the algorithm into code. We first set =m=
+to be 2^k and initialize our list =M= of zeros. Next, we walk through
+our multiset. For each element therein, we use the top k bits to index
+into our list =M=, and then set that value to the maximum of the
+bottom k bits and the current value. Finally, we return our adjusted
+estimate based on the sum of the values in =M=.
+
+Here's our Python code to call this with the big text file:
+#+begin_src python :tangle yes
+  if __name__ == '__main__':
+      with open('/usr/share/dict/words') as f:
+          MS = [line.strip() for line in f]
+      print(loglog(MS))
+#+end_src
+Here are the results:
+#+begin_example
+$ python3 loglog.py
+484992.2652755824
+#+end_example
+Compare that to the result of running =wc= on the file (the main
+reason we chose this as a test was that the number of words in the
+file is small enough to count another way):
+#+begin_example
+$ wc -l /usr/share/dict/words
+  479829
+#+end_example
+Our LogLog estimate is just over 10% off of the actual; not bad,
+considering that it will scale to larger datasets much more
+effectively than the naive approach.
+
+* Footnotes
+
+[fn:1] Note that we begin counting from zero instead of 1; this is one
+of the only things we'll do differently than the original paper.
+
+[fn:2] The name of our multiset is the only other place we differ from
+the original paper.
