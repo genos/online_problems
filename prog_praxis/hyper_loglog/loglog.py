@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from math import gamma, log
 k = 16
-   
+
 def alpha(m):
     return pow(gamma(-1 / m) * (pow(2, 1 / m) - 1) / log(2), -m)
 
@@ -24,5 +24,4 @@ def loglog(MS):
 
 if __name__ == '__main__':
     with open('/usr/share/dict/words') as f:
-        MS = [line.strip() for line in f]
-    print(loglog(MS))
+        print(loglog(line.strip() for line in f))

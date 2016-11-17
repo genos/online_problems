@@ -59,7 +59,7 @@ We'll first begin with the auxiliary functions =alpha= and =rho=:
 #+begin_src python :tangle yes
 from math import gamma, log
 k = 16
-   
+
 def alpha(m):
     return pow(gamma(-1 / m) * (pow(2, 1 / m) - 1) / log(2), -m)
 
@@ -105,8 +105,7 @@ Here's our Python code to call this with the big text file:
 #+begin_src python :tangle yes
   if __name__ == '__main__':
       with open('/usr/share/dict/words') as f:
-          MS = [line.strip() for line in f]
-      print(loglog(MS))
+          print(loglog(line.srip() for line in f))
 #+end_src
 Here are the results:
 #+begin_example
