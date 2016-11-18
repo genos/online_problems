@@ -1,20 +1,16 @@
-use std::collections::HashMap;
-
 pub fn score(s: &str) -> u64 {
-    let t = {
-        let mut h = HashMap::new();
-        for (x, i) in vec![("AEIOULNRST", 1),
-                           ("DG", 2),
-                           ("BCMP", 3),
-                           ("FHVMY", 4),
-                           ("K", 5),
-                           ("JX", 8),
-                           ("QZ", 10)] {
-            for c in x.chars() {
-                h.insert(c, i);
-            }
-        }
-        h
-    };
-    s.to_uppercase().chars().map(|c| *t.get(&c).unwrap_or(&0)).sum()
+    s.to_uppercase().chars().map(lookup).sum()
+}
+
+fn lookup(c: char) -> u64 {
+    match c {
+        'A' | 'E' | 'I' | 'O' | 'U' | 'L' | 'N' | 'R' | 'S' | 'T' => 1,
+        'D' | 'G' => 2,
+        'B' | 'C' | 'M' | 'P' => 3,
+        'F' | 'H' | 'V' | 'W' | 'Y' => 4,
+        'K' => 5,
+        'J' | 'X' => 8,
+        'Q' | 'Z' => 10,
+        _ => 0,
+    }
 }
