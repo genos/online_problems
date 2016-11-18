@@ -1,0 +1,19 @@
+name:                ripLeibniz
+version:             0.1.0.0
+synopsis:            Simple project template from stack
+description:         Please see README.md
+homepage:            https://github.com/genos/ripLeibniz#readme
+license:             BSD3
+author:              Graham Enos
+maintainer:          graham@quantifind.com
+copyright:           Quantifind
+category:            Math
+
+dependencies:
+  - base >= 4.7 && < 5
+  - foldl
+
+executables:
+  ripLeibniz:
+    source-dirs:      src
+    main:             Main.hs
