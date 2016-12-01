@@ -1,0 +1,10 @@
+any
+(find-doc any)
+(find-doc 'any)
+(find-doc :some)
+(find-doc "some")
+(doc "some)
+"
+)
+(doc 'some)
+(doc some)
