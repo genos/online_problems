@@ -3,7 +3,6 @@
 
 (defn word-count [s]
   (->> s
-       (map str/lower-case)
-       str/join
-       (re-seq #"[a-z0-9]+")
+       str/lower-case
+       (re-seq #"\w+")
        frequencies))
