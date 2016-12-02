@@ -1,34 +1,32 @@
 (ns beer-song
   (:require [clojure.string :refer [join capitalize]]))
 
-(defn- a [n]
-  (cond
-    (zero? n) "no more"
-    (= -1 n) "99"
-    :else (str n)))
+(defn- amount [n]
+  (condp = n
+    0 "no more"
+    -1 "99"
+    (str n)))
 
-(defn- b [n]
-  (if (= n 1)
-    "bottle"
-    "bottles"))
+(defn- pluralize [n]
+  (if (not= n 1) "s" ""))
 
-(defn- c [n]
+(defn- continue [n]
   (if (zero? n)
     "Go to the store and buy some more"
-    (str "Take " (if (= n 1) "it" "one") " down and pass it around")))
+    (str "Take" (if (= n 1) " it " " one ") "down and pass it around")))
 
 (defn verse [n]
   (format
     (str
-      "%s %s of beer on the wall, %s %s of beer.\n"
-      "%s, %s %s of beer on the wall.\n")
-    (capitalize (a n))
-    (b n)
-    (a n)
-    (b n)
-    (c n)
-    (a (dec n))
-    (b (dec n))))
+      "%s bottle%s of beer on the wall, %s bottle%s of beer.\n"
+      "%s, %s bottle%s of beer on the wall.\n")
+    (capitalize (amount n))
+    (pluralize n)
+    (amount n)
+    (pluralize n)
+    (continue n)
+    (amount (dec n))
+    (pluralize (dec n))))
 
 
 (defn sing
