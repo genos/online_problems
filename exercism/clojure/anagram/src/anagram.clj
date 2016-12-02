@@ -1,10 +1,10 @@
 (ns anagram
-  (:require [clojure.string :as str]))
+  (:require [clojure.string :refer [lower-case]]))
+
+(defn- is-anagram [a b]
+  (let [x (lower-case a)
+        y (lower-case b)]
+    (and (not= x y) (= (frequencies x) (frequencies y)))))
 
 (defn anagrams-for [x xs]
-  (let [y (str/lower-case x)
-        z (frequencies y)
-        zs (->> xs
-                (filter #(not= y (str/lower-case %)))
-                (group-by (comp frequencies str/lower-case)))]
-    (get zs z [])))
+  (filter (partial is-anagram x) xs))
