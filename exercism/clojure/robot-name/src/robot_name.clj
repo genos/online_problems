@@ -1,13 +1,14 @@
-(ns robot-name)
+(ns robot-name
+  (:require [clojure.string :refer [join]]))
 
 (defn- rand-char []
-  (rand-nth "ABCDEFGHIJKLMNOPQRSTUVWXYZ"))
+  (char (+ (rand-int 26) (int \A))))
 
 (defn- rand-digit []
   (str (rand-int 10)))
 
 (defn- new-name []
-  (str (rand-char) (rand-char) (rand-digit) (rand-digit) (rand-digit)))
+  (join (concat (repeatedly 2 rand-char) (repeatedly 3 rand-digit))))
 
 (defn robot []
   (atom (new-name)))
