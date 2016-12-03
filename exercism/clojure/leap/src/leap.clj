@@ -1,8 +1,9 @@
 (ns leap)
 
 (defn leap-year? [y]
-  (and
-    (zero? (mod y 4))
-    (or
-      (pos? (mod y 100))
-      (zero? (mod y 400)))))
+  (letfn [(div? [n d] (zero? (mod n d)))]
+    (cond
+      (div? y 400) true
+      (div? y 100) false
+      (div? y 4) true
+      :else false)))
