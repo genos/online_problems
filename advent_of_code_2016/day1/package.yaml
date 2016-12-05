@@ -1,6 +1,6 @@
 name:                day1
 version:             0.1.0.0
-synopsis:            Solution for Advent of Code, Day 1
+synopsis:            Solution for Advent of Code
 homepage:            http://adventofcode.com/2016
 license:             BSD3
 author:              Graham Enos
