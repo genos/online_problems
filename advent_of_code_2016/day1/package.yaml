@@ -1,0 +1,16 @@
+name:                day1
+version:             0.1.0.0
+synopsis:            Solution for Advent of Code, Day 1
+homepage:            http://adventofcode.com/2016
+license:             BSD3
+author:              Graham Enos
+
+dependencies:
+  - base >= 4.7 && < 5
+  - containers
+  - safe
+
+executables:
+  day1:
+    source-dirs:      src
+    main:             Main.hs
