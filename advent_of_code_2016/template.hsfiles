@@ -6,6 +6,8 @@ homepage:            http://adventofcode.com/2016
 license:             BSD3
 author:              {{author-name}}{{^author-name}}Author name here{{/author-name}}
 
+ghc-options: "-Wall -Werror -O2"
+
 dependencies:
   - base >= 4.7 && < 5
 

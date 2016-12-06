@@ -8,7 +8,7 @@ import Data.ByteString (ByteString)
 import Data.Char (chr, isDigit, isPunctuation, ord)
 import qualified Data.ByteString.Char8 as BC
 import Data.FileEmbed (embedFile)
-import Data.List (sort, sortBy)
+import Data.List (sortBy)
 import Data.Maybe (fromJust)
 
 data Room = Room

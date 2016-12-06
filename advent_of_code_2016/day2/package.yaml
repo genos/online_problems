@@ -5,6 +5,8 @@ homepage:            http://adventofcode.com/2016
 license:             BSD3
 author:              Graham Enos
 
+ghc-options: "-Wall -Werror -O2"
+
 dependencies:
   - base >= 4.7 && < 5
   - array

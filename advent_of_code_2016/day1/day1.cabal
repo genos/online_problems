@@ -4,7 +4,7 @@
 
 name:           day1
 version:        0.1.0.0
-synopsis:       Solution for Advent of Code, Day 1
+synopsis:       Solution for Advent of Code
 homepage:       http://adventofcode.com/2016
 author:         Graham Enos
 license:        BSD3
@@ -16,6 +16,7 @@ executable day1
   main-is: Main.hs
   hs-source-dirs:
       src
+  ghc-options: -Wall -Werror -O2
   build-depends:
       base >= 4.7 && < 5
     , containers
