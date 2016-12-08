@@ -21,6 +21,5 @@ executable day7
       base >= 4.7 && < 5
     , attoparsec
     , bytestring
-    , containers
     , file-embed
   default-language: Haskell2010
