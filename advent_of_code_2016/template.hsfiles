@@ -6,10 +6,13 @@ homepage:            http://adventofcode.com/2016
 license:             BSD3
 author:              {{author-name}}{{^author-name}}Author name here{{/author-name}}
 
-ghc-options: "-Wall -Werror -O2"
+#ghc-options: "-Wall -Werror -O2"
+ghc-options: "-Wall -O2"
 
 dependencies:
   - base >= 4.7 && < 5
+  - bytestring
+  - file-embed
 
 executables:
   {{name}}:
@@ -21,10 +24,22 @@ import Distribution.Simple
 main = defaultMain
 
 {-# START_FILE src/Main.hs #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TemplateHaskell #-}
+
 module Main where
 
+import Data.ByteString (ByteString)
+import qualified Data.ByteString.Char8 as BC
+import Data.FileEmbed (embedFile)
+
+input :: ByteString
+input = $(embedFile "input.txt")
+
 main :: IO ()
-main = putStrLn "TODO"
+main = print . BC.length $ input
+
+{-# START_FILE input.txt #-}
 
 {-# START_FILE LICENSE #-}
 Copyright {{author-name}}{{^author-name}}Author name here{{/author-name}} (c) {{year}}{{^year}}2016{{/year}}
