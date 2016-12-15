@@ -13,6 +13,7 @@ dependencies:
   - dequeue
   - file-embed
   - lens
+  - mtl
   - transformers
   - trifecta
   - unordered-containers

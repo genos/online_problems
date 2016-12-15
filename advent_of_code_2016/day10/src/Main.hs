@@ -6,15 +6,17 @@
 module Main where
 
 import Control.Applicative ((<|>))
+import Control.Arrow ((&&&))
 import Data.FileEmbed (embedStringFile)
 import Control.Lens
-import Control.Monad.Trans.Class
-import Control.Monad.Trans.State
+import Control.Monad
+import Control.Monad.State
 import Data.Dequeue (BankersDequeue)
 import qualified Data.Dequeue as Deq
 import Data.HashMap.Strict (HashMap)
 import qualified Data.HashMap.Strict as HM
 import Data.Maybe (isJust, isNothing)
+import Data.Monoid ((<>), First(..))
 import GHC.Generics (Generic)
 import Text.Trifecta
 
@@ -29,23 +31,13 @@ data Bot = Bot { _lo :: Maybe Value, _hi :: Maybe Value }
   deriving (Eq,Show,Generic)
 makeLenses ''Bot
 
-hasValue :: Value -> Bot -> Bool
-hasValue v b = or . concat $ [b ^.. lo . eq, b ^.. hi . eq]
+inBot :: Value -> Bot -> Bool
+inBot v b = or . concat $ [b ^.. lo . eq, b ^.. hi . eq]
   where eq = _Just . to (== v)
-
-defaultBot :: Bot
-defaultBot = Bot Nothing Nothing
 
 type Output = HashMap Key [Value]
 
-defaultOutput :: Output
-defaultOutput = HM.empty
-
 type Bots = HashMap Key Bot
-defaultBots :: Bots
-defaultBots = HM.empty
-
--- type Factory = (Bots, Output)
 
 data Recipient = ToOutput | ToBot deriving (Eq,Show)
 
@@ -82,39 +74,60 @@ valueA, valueB :: Value
 valueA = 61
 valueB = 17
 
-attemptS :: StateT Factory IO ()
-attemptS = do
-  miIs <- use (instructions . to Deq.popFront)
+runTillDone :: StateT Factory IO ()
+runTillDone = do
+  miIs <- use $ instructions . to Deq.popFront
   if isNothing miIs
-  then lift $ putStrLn "DONE"
+  then liftIO $ putStrLn "DONE"
   else do
     let (i, is) = miIs ^?! _Just
-    lift . putStrLn $ "Attempting " ++ show i
+    liftIO . print =<< compares valueA valueB i <$> get
     mf' <- attempt i <$> get
     if isJust mf'
     then do
-      lift $ putStrLn "success; continuing with shorter instructions"
+      liftIO . putStrLn $ "SUCCESS; ONE SHORTER " ++ (show $ length is)
       instructions .= is
       bots .= mf' ^?! _Just . bots
+      runTillDone
     else do
-      lift $ putStrLn "failure; pushing instruction on back of queue"
+      liftIO . putStrLn $ "FAIL; PUSHBACK " ++ (show $ length is)
       instructions .= Deq.pushBack is i
+      runTillDone
 
-compares :: Value -> Value -> Instruction -> Factory -> Bool
-compares a b (GoesTo v k) f =
-  (a == v && fHasValue b) || (b == v && fHasValue a)
-  where fHasValue x = or $ f ^.. bots . at k . _Just . to (hasValue x)
-compares a b (GivesTo k lR lK hR hK) f = undefined
+botOrNew :: Factory -> Key -> Bot
+botOrNew f k = f ^. bots . at k . non (Bot Nothing Nothing)
 
-updateBot :: Value -> Bot -> Maybe Bot
+whenKey :: Key -> Bool -> Maybe Key
+whenKey k p = if p then Just k else Nothing
+
+compares :: Value -> Value -> Instruction -> Factory -> Maybe Key
+compares x y (GoesTo v k) f = k `whenKey` p
+  where
+    b = f `botOrNew` k
+    p = (x == v && y `inBot` b) || (y == v && x `inBot` b)
+compares x y (GivesTo k lR lK hR hK) f
+  | lR == ToBot && hR == ToBot = getFirst $ First mL <> First mH
+  | lR == ToBot = mL
+  | hR == ToBot = mH
+  | otherwise = Nothing
+  where
+    b = f `botOrNew` k
+    l = f `botOrNew` lK
+    h = f `botOrNew` hK
+    pl = (x `inBot` b && y `inBot` l) || (y `inBot` b && x `inBot` l)
+    ph = (x `inBot` b && y `inBot` h) || (y `inBot` b && x `inBot` h)
+    mL = lK `whenKey` pl
+    mH = hK `whenKey` ph
+
+updateBot :: Value -> Bot -> Bot
 updateBot v b@(Bot l h)
-  | isNothing l && isNothing h   = Just $ b & lo ?~ v
-  | isJust l && isJust h         = Nothing
-  | isJust l && v <= l ^?! _Just = Just $ b & (lo ?~ v) . (hi .~ l)
-  | isJust l && v > l ^?! _Just  = Just $ b & (hi ?~ v)
-  | isJust h && v <= h ^?! _Just = Just $ b & (lo ?~ v)
-  | isJust h && v > h ^?! _Just  = Just $ b & (lo .~ h) . (hi ?~ v)
-  | otherwise                    = Nothing
+  | isNothing l && isNothing h   = b & lo ?~ v
+  | isJust l && isJust h         = b
+  | isJust l && v <= l ^?! _Just = b & (lo ?~ v) . (hi .~ l)
+  | isJust l && v > l ^?! _Just  = b & (hi ?~ v)
+  | isJust h && v <= h ^?! _Just = b & (lo ?~ v)
+  | isJust h && v > h ^?! _Just  = b & (lo .~ h) . (hi ?~ v)
+  | otherwise                    = b
 
 botGivesOut :: Key
             -> Lens' Bot (Maybe Value)
@@ -135,45 +148,41 @@ botGivesBot :: Key
             -> Maybe Bots
 botGivesBot k0 l k1 bs = do
   b <- bs ^. at k0
-  v <- b ^. l
-  c <- bs ^? at k1 . non defaultBot
-  c' <- updateBot v c
-  return $! bs & (at k0 .~ Nothing) . (at k1 ?~ c')
+  c <- bs ^? at k1 . non (Bot Nothing Nothing)
+  let v = b ^. l
+  let c' = if isJust v then (updateBot (v ^?! _Just) c) else c
+  let b' = if isJust v then (b & l .~ Nothing) else b
+  return $! bs & (at k0 ?~ b') . (at k1 ?~ c')
+
+botsAndOutput :: Factory -> (Bots, Output)
+botsAndOutput = (^. to (id &&& id) . alongside bots output)
 
 attempt :: Instruction -> Factory -> Maybe Factory
 attempt (GoesTo v k) f = do
-  let bs = f ^. bots
-  b <- bs ^? at k . non defaultBot
-  b' <- updateBot v b
-  return $! f & bots .~ (bs & at k ?~ b')
+  let b = updateBot v $ f `botOrNew` k
+  return $! f & bots . at k ?~ b
 attempt (GivesTo k lR lK hR hK) f
   | k == lK || k == hK = error "nonsensical instruction: key overlap"
   | lR == ToOutput && hR == ToOutput = do
-    let (bs, os) = (f, f) ^. alongside bots output
+    let (bs, os) = botsAndOutput f
     (bs', os') <- botGivesOut k lo lK bs os
     (bs'', os'') <- botGivesOut k hi hK bs' os'
     return $! f & (bots .~ bs'') . (output .~ os'')
   | lR == ToOutput && hR == ToBot    = do
-    let (bs, os) = (f, f) ^. alongside bots output
+    let (bs, os) = botsAndOutput f
     bs' <- botGivesBot k lo lK bs
     (bs'', os') <- botGivesOut k hi hK bs' os
     return $! f & (bots .~ bs'') . (output .~ os')
   | lR == ToBot && hR == ToOutput    = do
-    let (bs, os) = (f, f) ^. alongside bots output
+    let (bs, os) = botsAndOutput f
     (bs', os') <- botGivesOut k lo lK bs os
-    bs'' <- botGivesBot k hi hK bs
+    bs'' <- botGivesBot k hi hK bs'
     return $! f & (bots .~ bs'') . (output .~ os')
   | otherwise {- both ToBot -}       = do
     let bs = f ^. bots
     bs' <- botGivesBot k lo lK bs
     bs'' <- botGivesBot k hi hK bs'
     return $! f & bots .~ bs''
-
-infixl 4 <$!>
-(<$!>) :: Monad m => (a -> b) -> m a -> m b
-f <$!> ma = do
-  a <- ma
-  return $! f a
 
 parseGoesTo :: Parser Instruction
 parseGoesTo = GoesTo <$!>
@@ -199,12 +208,14 @@ parseInstructions = Deq.fromList <$!> many (parseGoesTo <|> parseGivesTo)
 -- TODO REMOVE
 is :: Instructions
 is = parseString parseInstructions mempty input ^?! _Success
-f :: Factory
+f, g :: Factory
 f = mkFactory is
+g = attempt ii f ^?! _Just
 ii :: Instruction
 ii = is ^. to Deq.first ^?! _Just
 ij :: Instruction
 ij = is ^. to Deq.popFront ^?! _Just . _2 ^. to Deq.first ^?! _Just
+jj = ij{_givesKey = 209}
 bb :: Bot
 bb = Bot (Just 17) Nothing
 

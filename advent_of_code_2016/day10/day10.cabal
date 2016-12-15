@@ -22,6 +22,7 @@ executable day10
     , dequeue
     , file-embed
     , lens
+    , mtl
     , transformers
     , trifecta
     , unordered-containers
