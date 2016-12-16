@@ -211,9 +211,8 @@ is = parseString parseInstructions mempty input ^?! _Success
 f, g :: Factory
 f = mkFactory is
 g = attempt ii f ^?! _Just
-ii :: Instruction
+ii, ij, jj :: Instruction
 ii = is ^. to Deq.first ^?! _Just
-ij :: Instruction
 ij = is ^. to Deq.popFront ^?! _Just . _2 ^. to Deq.first ^?! _Just
 jj = ij{_givesKey = 209}
 bb :: Bot
