@@ -4,5 +4,4 @@ version = "0.1.0"
 authors = ["genos <graham@quantifind.com>"]
 
 [dependencies]
-bit-vec = "0.4.3"
 itertools = "0.5.7"
