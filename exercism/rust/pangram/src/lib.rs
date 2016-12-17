@@ -1,9 +1,10 @@
 use std::collections::HashSet;
+use std::ascii::AsciiExt;
 
 pub fn is_pangram(s: &str) -> bool {
-    let mut h = HashSet::new();
-    for c in s.to_lowercase().chars().filter(|c| *c >= 'a' && *c <= 'z') {
-        h.insert(c);
-    }
-    return 26 == h.len();
+    26 == s.to_lowercase()
+           .chars()
+           .filter(|c| c.is_ascii() && c.is_alphabetic())
+           .collect::<HashSet<_>>()
+           .len()
 }
