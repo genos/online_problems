@@ -1,0 +1,7 @@
+[package]
+name = "rs"
+version = "0.1.0"
+authors = ["genos <graham@quantifind.com>"]
+
+[dependencies]
+regex = "0.1"
