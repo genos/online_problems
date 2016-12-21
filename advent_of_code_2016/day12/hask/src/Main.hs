@@ -4,7 +4,7 @@
 module Main where
 
 import Data.FileEmbed (embedStringFile)
-import Data.Text (Text)
+import Data.Text (Text, pack)
 import qualified Data.Text as T
 import qualified Data.Vector as V
 import qualified Data.Vector.Unboxed as U
@@ -13,11 +13,10 @@ import Text.Megaparsec.Text
 import Text.Megaparsec.Lexer (integer, signed)
 
 input :: Text
-input = T.pack $(embedStringFile "input.txt")
+input = pack $(embedStringFile "input.txt")
 
 testInput :: Text
-testInput =
-    T.unlines ["cpy 41 a", "inc a", "inc a", "dec a", "jnz a 2", "dec a"]
+testInput = "cpy 41 a\ninc a\ninc a\ndec a\njnz a 2\ndec a"
 
 data Register = A | B | C | D deriving (Eq,Ord,Enum)
 
