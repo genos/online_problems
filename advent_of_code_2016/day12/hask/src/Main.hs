@@ -10,7 +10,7 @@ import qualified Data.Vector as V
 import qualified Data.Vector.Unboxed as U
 import Text.Megaparsec
 import Text.Megaparsec.Text
-import qualified Text.Megaparsec.Lexer as L
+import Text.Megaparsec.Lexer (integer, signed)
 
 input :: Text
 input = T.pack $(embedStringFile "input.txt")
@@ -44,7 +44,7 @@ register =
     (char 'd' >> return D)
 
 value :: Parser Value
-value = eitherP (L.signed space $ fromInteger <$> L.integer) register
+value = eitherP (signed space $ fromInteger <$> integer) register
 
 cpy :: Parser Command
 cpy = string "cpy " >> Cpy <$> value <* space <*> register
