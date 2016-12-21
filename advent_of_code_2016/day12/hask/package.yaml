@@ -10,9 +10,10 @@ ghc-options: "-Wall -O2"
 
 dependencies:
   - base >= 4.7 && < 5
-  - bytestring
   - file-embed
-  - trifecta
+  - megaparsec
+  - text
+  - vector
 
 executables:
   day12:

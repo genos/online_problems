@@ -3,79 +3,107 @@
 
 module Main where
 
-import Control.Applicative ((<|>))
-import Data.ByteString (ByteString)
-import qualified Data.ByteString.Char8 as BC
-import Data.FileEmbed (embedFile)
-import Text.Trifecta
+import Data.FileEmbed (embedStringFile)
+import Data.Text (Text)
+import qualified Data.Text as T
+import qualified Data.Vector as V
+import qualified Data.Vector.Unboxed as U
+import Text.Megaparsec
+import Text.Megaparsec.Text
+import qualified Text.Megaparsec.Lexer as L
 
-input :: ByteString
-input = $(embedFile "input.txt")
+input :: Text
+input = T.pack $(embedStringFile "input.txt")
 
-testInput :: ByteString
+testInput :: Text
 testInput =
-    BC.unlines ["cpy 41 a", "inc a", "inc a", "dec a", "jnz a 2", "dec a"]
+    T.unlines ["cpy 41 a", "inc a", "inc a", "dec a", "jnz a 2", "dec a"]
 
-data Register = A | B | C | D deriving Eq
+type Value = Int
 
-instance Show Register where
-    show A = "a"
-    show B = "b"
-    show C = "c"
-    show D = "d"
+data Register = A | B | C | D deriving (Eq,Ord,Enum)
 
-data IorR = I Integer | R Register deriving Eq
-
-instance Show IorR where
-    show (I i) = show i
-    show (R r) = show r
+data IorR = I Value | R Register deriving Eq
 
 data Command = Cpy IorR Register | Inc Register | Dec Register | Jnz IorR IorR
     deriving Eq
 
-instance Show Command where
-    show (Cpy a r) = "cpy " ++ show a ++ " " ++ show r
-    show (Inc r) = "inc " ++ show r
-    show (Dec r) = "dec " ++ show r
-    show (Jnz a b) = "jnz " ++ show a ++ " " ++ show b
+type Registers = U.Vector Int
+
+type Commands = V.Vector Command
+
+type IP = Int
 
 register :: Parser Register
 register =
-    (char 'a' >> return A) <|> (char 'b' >> return B) <|>
-    (char 'c' >> return C) <|>
-    (char 'd' >> return D)
+  (char 'a' >> return A) <|>
+  (char 'b' >> return B) <|>
+  (char 'c' >> return C) <|>
+  (char 'd' >> return D)
+
+signedInt :: Parser Int
+signedInt = do
+  sign <- option '+' $ char '-' <|> char '+'
+  let mul = if sign == '-' then (-1) else 1
+  i <- fromIntegral <$> L.integer
+  return $! mul * i
 
 iOrR :: Parser IorR
-iOrR = (I <$> integer) <|> (R <$> register)
+iOrR = (I <$> signedInt) <|> (R <$> register)
 
 cpy :: Parser Command
-cpy = do
-    _ <- text "cpy" <* spaces
-    a <- iOrR <* spaces
-    b <- register
-    return $! Cpy a b
+cpy = Cpy <$> (string "cpy" *> space *> iOrR <* space) <*> register
 
 inc :: Parser Command
-inc = do
-    _ <- text "inc" <* spaces
-    r <- register
-    return $! Inc r
+inc = Inc <$> (string "inc" *> space *> register)
 
 dec :: Parser Command
-dec = do
-    _ <- text "dec" <* spaces
-    r <- register
-    return $! Dec r
+dec = Dec <$> (string "dec" *> space *> register)
 
 jnz :: Parser Command
-jnz = do
-    _ <- text "jnz" <* spaces
-    a <- iOrR <* spaces
-    b <- iOrR <* spaces
-    return $! Jnz a b
+jnz = Jnz <$> (string "jnz" *> space *> iOrR <* space) <*> iOrR
 
-assembunny :: Parser [Command]
-assembunny = (cpy <|> inc <|> dec <|> jnz) `sepBy` newline
+assembunny :: Parser Commands
+assembunny = V.fromList <$> (cpy <|> inc <|> dec <|> jnz) `sepEndBy` newline
+get :: IorR -> Registers -> Value
+get (I i) _  = i
+get (R r) rs = rs U.! fromEnum r
+
+step :: IP -> Command -> Registers -> IP
+step i (Jnz a b) rs = i + fromIntegral s
+  where
+    g = get a rs
+    s = if g == 0 then 1 else get b rs
+step i _ _ = i + 1
+
+update :: Registers -> Command -> Registers
+update rs (Cpy a r) = rs U.// [(fromEnum r, get a rs)]
+update rs (Inc r)   = rs U.// [(i, 1 + rs U.! i)] where i = fromEnum r
+update rs (Dec r)   = rs U.// [(i, (-1) + rs U.! i)] where i = fromEnum r
+update rs (Jnz _ _) = rs
+
+interpret :: Registers -> IP -> Commands -> Registers
+interpret rs i cs
+  | i < 0 || i >= fromIntegral (length cs) = rs
+  | otherwise                              = interpret rs' i' cs
+  where
+    x = cs V.! i
+    i' = step i x rs
+    rs' = update rs x
+
+run :: Registers -> Text -> Maybe Value
+run rs t = get (R A) . interpret rs 0 <$> parseMaybe assembunny t
+
+test1 :: Bool
+test1 = Just 42 == run (U.replicate 4 0) testInput
+
+part1 :: Maybe Value
+part1 = run (U.replicate 4 0) input
+
+part2 :: Maybe Value
+part2 = run (U.fromList [0, 0, 1, 0]) input
 
 main :: IO ()
-main = print . BC.length $ input
+main = do
+    print test1
+    mapM_ print [part1, part2]
