@@ -11,6 +11,7 @@ ghc-options: "-Wall -O2"
 
 dependencies:
   - base >= 4.7 && < 5
+  - protolude
   - bytestring
   - file-embed
 
@@ -24,11 +25,14 @@ import Distribution.Simple
 main = defaultMain
 
 {-# START_FILE src/Main.hs #-}
+{-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE StrictData #-}
 {-# LANGUAGE TemplateHaskell #-}
 
 module Main where
 
+import Protolude
 import Data.ByteString (ByteString)
 import qualified Data.ByteString.Char8 as BC
 import Data.FileEmbed (embedFile)
