@@ -12,8 +12,8 @@ ghc-options: "-Wall -O2"
 dependencies:
   - base >= 4.7 && < 5
   - protolude
-  - bytestring
   - file-embed
+  - text
 
 executables:
   {{name}}:
@@ -33,15 +33,14 @@ main = defaultMain
 module Main where
 
 import Protolude
-import Data.ByteString (ByteString)
-import qualified Data.ByteString.Char8 as BC
-import Data.FileEmbed (embedFile)
+import Data.FileEmbed (embedStringFile)
+import qualified Data.Text as T
 
-input :: ByteString
-input = $(embedFile "input.txt")
+input :: Text
+input = T.pack $(embedStringFile "input.txt")
 
 main :: IO ()
-main = print . BC.length $ input
+main = putStrLn input
 
 {-# START_FILE input.txt #-}
 
