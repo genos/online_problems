@@ -1,0 +1,19 @@
+name:                day13
+version:             0.1.0.0
+synopsis:            Solution for Advent of Code
+homepage:            http://adventofcode.com/2016
+license:             BSD3
+author:              Graham Enos
+
+#ghc-options: "-Wall -Werror -O2"
+ghc-options: "-Wall -O2"
+
+dependencies:
+  - base >= 4.7 && < 5
+  - protolude
+  - containers
+
+executables:
+  day13:
+    source-dirs:      src
+    main:             Main.hs
