@@ -5,7 +5,6 @@ module Main where
 
 import Data.FileEmbed (embedStringFile)
 import Data.Text (Text, pack)
-import qualified Data.Text as T
 import qualified Data.Vector as V
 import qualified Data.Vector.Unboxed as U
 import Text.Megaparsec
