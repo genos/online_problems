@@ -19,7 +19,7 @@ neighbors k (x, y) =
     ok (a, b) = (a >= 0) && (b >= 0) && open k (a, b)
 
 bfs :: (Semigroup a, Monoid a, Ord b)
-    => (b -> [b])     -- ^ calculates next positions to search
+    => (b -> [b])     -- ^ next positions to search
     -> (b -> Bool)    -- ^ are we done?
     -> (Set b -> a)   -- ^ score our current effort
     -> Int            -- ^ max depth of search allowed
