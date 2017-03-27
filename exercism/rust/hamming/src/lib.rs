@@ -12,6 +12,6 @@ pub fn hamming_distance(a: &str, b: &str) -> Result<u64, HammingError> {
     } else {
         Ok(a.chars()
             .zip(b.chars())
-            .fold(0, |z, (x, y)| acc + (if x == y { 0 } else { 1 })))
+            .fold(0, |z, (x, y)| z + (if x == y { 0 } else { 1 })))
     }
 }
