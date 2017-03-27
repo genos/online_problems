@@ -21,7 +21,7 @@ fn create(row_count: usize) -> Vec<Vec<u32>> {
             let mut r = rs[i - 1].clone();
             r.insert(0, 1);
             for j in 1..r.len() - 1 {
-                r[j] = r[j] + r[j + 1];
+                r[j] += r[j + 1];
             }
             rs.push(r);
         }
