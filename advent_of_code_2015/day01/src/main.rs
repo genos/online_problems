@@ -4,42 +4,37 @@ use std::io::prelude::*;
 use std::path::Path;
 
 fn input() -> String {
-    let path = Path::new("data/input.txt");
-    let display = path.display();
-    let mut file = match File::open(&path) {
-        Err(why) => panic!("Couldn't open {}: {}", display, why.description()),
-        Ok(file) => file,
-    };
+    let p = Path::new("data/input.txt");
     let mut s = String::new();
-    if let Err(why) = file.read_to_string(&mut s) {
-        panic!("Couldn't open {}: {}", display, why.description())
+    if let Err(e) = File::open(&p).map(|mut f| f.read_to_string(&mut s)) {
+        panic!("Couldn't open {}: {}", p.display(), e.description())
     }
     s
 }
 
 fn to_i(c: char) -> i64 {
-    if c == '(' {
-        1
-    } else if c == ')' {
-        -1
-    } else {
-        0
+    match c {
+        '(' => 1,
+        ')' => -1,
+        _ => 0,
     }
 }
 
 fn consume(i: &str) -> i64 {
-    i.chars().map(to_i).fold(0, |acc, x| acc + x)
+    i.chars().map(to_i).sum()
 }
 
 fn first_1(i: &str) -> u64 {
-    let (c, _) = i.chars().map(to_i).fold((0, 0), |(ctr, acc), x| {
-        if acc == -1 {
-            (ctr, acc)
-        } else {
-            (ctr + 1, acc + x)
-        }
-    });
-    c
+    i.chars()
+        .map(to_i)
+        .fold((0, 0), |(ctr, acc), x| {
+            if acc == -1 {
+                (ctr, acc)
+            } else {
+                (ctr + 1, acc + x)
+            }
+        })
+        .0
 }
 
 fn main() {
