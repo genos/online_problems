@@ -1,37 +1,25 @@
 use std::error::Error;
 use std::fs::File;
 use std::io::BufReader;
+use std::io::Lines;
 use std::io::prelude::*;
 use std::path::Path;
 
 macro_rules! min {
-    ($x:expr) => ( $x );
-    ($x:expr, $($xs:expr),+) => {
-        {
-            use std::cmp::min;
-            min($x, min!( $($xs),+ ))
-        }
-    };
+    ($x:expr) => ($x);
+    ($x:expr, $($xs:expr),+) => (std::cmp::min($x, min!($($xs),+)));
 }
 
-fn input() -> Vec<String> {
-    let path = Path::new("data/input.txt");
-    let display = path.display();
-    let file = match File::open(&path) {
-        Err(why) => panic!("Couldn't open {}: {}", display, why.description()),
-        Ok(file) => file,
-    };
-    BufReader::new(file)
-        .lines()
-        .map(|x| match x {
-            Err(why) => panic!("Couldn't open {}: {}", display, why.description()),
-            Ok(s) => s,
-        })
-        .collect()
+fn input() -> Lines<BufReader<File>> {
+    let p = Path::new("data/input.txt");
+    match File::open(&p) {
+        Err(e) => panic!("Couldn't open {}: {}", p.display(), e.description()),
+        Ok(f) => BufReader::new(f).lines(),
+    }
 }
 
 fn to_dims(s: &str) -> (u64, u64, u64) {
-    let v: Vec<u64> = s.split('x').filter_map(|x| x.parse::<u64>().ok()).collect();
+    let v: Vec<_> = s.split('x').filter_map(|x| x.parse().ok()).collect();
     match v.len() {
         3 => (v[0], v[1], v[2]),
         _ => panic!("Invalid input: {}", s),
@@ -56,10 +44,10 @@ fn _t1() {
 }
 
 fn r(lwh: &(u64, u64, u64)) -> u64 {
-    let p0 = 2 * (lwh.0 + lwh.1);
-    let p1 = 2 * (lwh.0 + lwh.2);
-    let p2 = 2 * (lwh.1 + lwh.2);
-    min!(p0, p1, p2) + lwh.0 * lwh.1 * lwh.2
+    let p0 = lwh.0 + lwh.1;
+    let p1 = lwh.0 + lwh.2;
+    let p2 = lwh.1 + lwh.2;
+    2 * min!(p0, p1, p2) + lwh.0 * lwh.1 * lwh.2
 }
 
 #[test]
@@ -73,8 +61,11 @@ fn _t3() {
 }
 
 fn main() {
-    let d: Vec<(u64, u64, u64)> = input().iter().map(|l| to_dims(l)).collect();
-    let (a1, a2) = d.iter().map(|x| (sf(x), r(x))).fold((0, 0), |(a, b), (x, y)| (a + x, b + y));
+    let (a1, a2) = input()
+        .filter_map(|l| l.ok())
+        .map(|x| to_dims(x.as_str()))
+        .map(|x| (sf(&x), r(&x)))
+        .fold((0, 0), |(a, b), (x, y)| (a + x, b + y));
     println!("{}", a1);
     println!("{}", a2);
 }
