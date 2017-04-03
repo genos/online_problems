@@ -2,6 +2,7 @@
 name = "day06"
 version = "0.1.0"
 authors = ["genos <graham@quantifind.com>"]
+include = ["data/input.txt"]
 
 [dependencies]
 lazy_static = "0.2.5"
