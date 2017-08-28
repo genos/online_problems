@@ -1,22 +1,18 @@
 module RunLength (decode, encode) where
 
 import Control.Arrow (first, (&&&))
-import Data.Char     (isNumber)
+import Data.Char     (isDigit)
 import Data.List     (group, partition)
 
 encode :: String -> String
 encode =
-  concatMap (\(a, b) -> (if a /= "1" then a else "") ++ b)
-    . fmap (show . length &&& (:[]) . head)
-    . group
+  concatMap (uncurry (++)) . fmap (show' . length &&& (:[]) . head) . group
+  where show' n = if n == 1 then "" else show n
 
 decode :: String -> String
-decode = concatMap stitch . fmap (first read') . explode
+decode = concatMap (uncurry replicate) . fmap (first read') . explode
   where read' i = if i == "" then 1 else read i
-
-stitch :: (Int, Char) -> String
-stitch (i, c) = replicate i c
 
 explode :: String -> [(String, Char)]
 explode [] = []
-explode s  = let (i, s') = span isNumber s in (i, head s') : explode (tail s')
+explode s  = (i, head s') : explode (tail s') where (i, s') = span isDigit s
