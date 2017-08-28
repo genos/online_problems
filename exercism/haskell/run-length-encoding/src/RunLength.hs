@@ -1,8 +1,8 @@
 module RunLength (decode, encode) where
 
-import Control.Arrow (first, (&&&))
+import Control.Arrow ((&&&))
 import Data.Char     (isDigit)
-import Data.List     (group, partition)
+import Data.List     (group)
 
 encode :: String -> String
 encode =
