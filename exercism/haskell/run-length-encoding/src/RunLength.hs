@@ -10,9 +10,8 @@ encode =
   where show' n = if n == 1 then "" else show n
 
 decode :: String -> String
-decode = concatMap (uncurry replicate) . fmap (first read') . explode
-  where read' i = if i == "" then 1 else read i
-
-explode :: String -> [(String, Char)]
-explode [] = []
-explode s  = (i, head s') : explode (tail s') where (i, s') = span isDigit s
+decode [] = []
+decode s  = replicate (read' i) (head s') ++ decode (tail s')
+ where
+  (i, s') = span isDigit s
+  read' i = if i == "" then 1 else read i
