@@ -5,5 +5,5 @@
       (loop [k n
              i 0]
         (if (= k 1) i
-          (recur (if (even? k) (quot k 2) (inc (* 3 k)))
-                 (inc i))))))
+            (recur (if (even? k) (quot k 2) (inc (* 3 k)))
+                   (inc i))))))
