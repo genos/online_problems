@@ -10,6 +10,6 @@ pub fn nth(n: usize) -> Result<usize, String> {
             }
             q += 2;
         }
-        ps.last().map(|&p| p).ok_or("OH NO".to_string())
+        ps.pop().ok_or("OH NO".to_string())
     }
 }
