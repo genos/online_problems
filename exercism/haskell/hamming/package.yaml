@@ -1,0 +1,19 @@
+name: hamming
+version: 1.0.0.3
+
+dependencies:
+  - base
+
+library:
+  exposed-modules: Hamming
+  source-dirs: src
+  dependencies:
+    - these
+
+tests:
+  test:
+    main: Tests.hs
+    source-dirs: test
+    dependencies:
+      - hamming
+      - hspec
