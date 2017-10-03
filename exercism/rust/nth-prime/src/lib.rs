@@ -1,6 +1,12 @@
-pub fn nth(n: usize) -> Result<usize, String> {
+#[derive(Debug, PartialEq)]
+pub enum NthPrimeError {
+    WhyAreWeIndexingFromOneInsteadOfZero,
+    IveMadeATerribleMistake,
+}
+
+pub fn nth(n: usize) -> Result<usize, NthPrimeError> {
     if n == 0 {
-        Err("For some reason we're 1-indexing…".to_string())
+        Err(NthPrimeError::WhyAreWeIndexingFromOneInsteadOfZero)
     } else {
         let mut ps = vec![2];
         let mut q = 3;
@@ -10,6 +16,6 @@ pub fn nth(n: usize) -> Result<usize, String> {
             }
             q += 2;
         }
-        ps.pop().ok_or("OH NO".to_string())
+        ps.pop().ok_or(NthPrimeError::IveMadeATerribleMistake)
     }
 }
