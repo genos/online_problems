@@ -1,20 +1,19 @@
 module School (School, add, empty, grade, sorted) where
 
-import Data.Foldable (foldl')
 import Data.List (insert)
-import Data.Map.Strict (Map)
-import qualified Data.Map.Strict as M
+import Data.IntMap.Strict (IntMap)
+import qualified Data.IntMap.Strict as IM
 
-type School = Map Int [String]
+type School = IntMap [String]
 
 add :: Int -> String -> School -> School
-add gradeNum student = M.insertWith (foldl' $ flip insert) gradeNum [student]
+add gradeNum student = IM.insertWith (insert . head) gradeNum [student]
 
 empty :: School
-empty = M.empty
+empty = IM.empty
 
 grade :: Int -> School -> [String]
-grade = M.findWithDefault []
+grade = IM.findWithDefault []
 
 sorted :: School -> [(Int, [String])]
-sorted = M.assocs
+sorted = IM.toAscList
