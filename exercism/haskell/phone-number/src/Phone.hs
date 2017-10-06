@@ -6,8 +6,8 @@ number :: String -> Maybe String
 number = validate . filter isDigit
  where
   validate :: String -> Maybe String
-  validate s | n == 10 && h /= '1' && '2' <= c && c <= '9' = Just s
-             | n == 11 && h == '1' = Just $ tail s
+  validate s | n == 10 && h /= '1' && c `elem` ['2' .. '9'] = Just s
+             | n == 11 && h == '1' = validate $ tail s
              | otherwise           = Nothing
    where
     n = length s
