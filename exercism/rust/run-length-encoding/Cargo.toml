@@ -1,0 +1,9 @@
+[package]
+name = "run-length-encoding"
+version = "1.0.0"
+authors = ["zombiefungus <divmermarlav@gmail.com>"]
+
+[dependencies]
+itertools = "0.7.1"
+lazy_static = "0.2.9"
+regex = "0.2.2"
