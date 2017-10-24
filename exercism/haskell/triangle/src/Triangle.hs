@@ -8,7 +8,7 @@ data TriangleType = Equilateral
 
 triangleType :: (Eq a, Ord a, Num a) => a -> a -> a -> TriangleType
 triangleType a b c
-  | 0 `elem` [a, b, c]                         =  Illegal
+  | any (<= 0) [a, b, c]                       =  Illegal
   | (a + b < c) || (a + c < b) || (b + c < a)  =  Illegal
   | (a == b) && (b == c)                       =  Equilateral
   | (a == b) || (a == c) || (b == c)           =  Isosceles
