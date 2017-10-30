@@ -16,17 +16,14 @@ data LinkedList a = Empty | Pair a (LinkedList a) deriving (Eq, Show)
 
 instance F.Foldable LinkedList where
   foldr f z Empty      = z
-  foldr f z (Pair x l) = foldr f (f x z) l
+  foldr f z (Pair x l) = f x $ foldr f z l
 
 datum :: LinkedList a -> a
 datum Empty      = error "`Empty` has no `datum`"
 datum (Pair x l) = x
 
-assemble :: Foldable f => f a -> LinkedList a
-assemble = F.foldr' Pair Empty
-
 fromList :: [a] -> LinkedList a
-fromList = assemble
+fromList = F.foldr' Pair Empty
 
 isNil :: LinkedList a -> Bool
 isNil Empty = True
@@ -43,7 +40,7 @@ nil :: LinkedList a
 nil = Empty
 
 reverseLinkedList :: LinkedList a -> LinkedList a
-reverseLinkedList = assemble
+reverseLinkedList = F.foldl' (flip Pair) Empty -- or `fromList . reverse . toList`
 
 toList :: LinkedList a -> [a]
-toList = F.foldl' (flip (:)) [] -- or `reverse . F.toList`
+toList = F.toList
