@@ -9,8 +9,8 @@ module ListOps
   , concat
   ) where
 
-import Prelude hiding
-  ( length, reverse, map, filter, foldr, (++), concat )
+import Data.Bool (bool)
+import Prelude   hiding (concat, filter, foldr, length, map, reverse, (++))
 
 -- Hutton, "A tutorial on the universality and expressiveness of fold"
 -- http://www.cs.nott.ac.uk/~pszgmh/fold.pdf
@@ -24,19 +24,19 @@ foldr _ z []     = z
 foldr f z (x:xs) = f x $ foldr f z xs
 
 length :: [a] -> Int
-length = foldl' (+) 0 . map (const 1)
+length = foldl' (const . succ) 0
 
 reverse :: [a] -> [a]
 reverse = foldl' (flip (:)) []
 
 map :: (a -> b) -> [a] -> [b]
-map f = foldr (\x xs -> f x : xs) []
+map f = foldr ((:) . f) []
 
 filter :: (a -> Bool) -> [a] -> [a]
-filter p = foldr (\x xs -> if p x then x : xs else xs) []
+filter p = foldr (\x xs -> bool xs (x : xs) (p x)) []
 
 (++) :: [a] -> [a] -> [a]
-xs ++ ys = foldr (:) ys xs
+(++) = flip (foldr (:))
 
 concat :: [[a]] -> [a]
-concat = foldl' (++) []
+concat = foldr (++) [] -- could use `foldl'`, but left-associated (++) is O(n^2)…
