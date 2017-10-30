@@ -4,8 +4,7 @@ import Data.Char (toLower)
 import Data.List (sort)
 
 anagramsFor :: String -> [String] -> [String]
-anagramsFor xs = filter
-  (\ys -> let ys' = fmap toLower ys in ys' /= xs' && sort ys' == xs'')
+anagramsFor xs = filter (\ys -> f ys /= f xs && g ys == g xs)
  where
-  xs'  = fmap toLower xs
-  xs'' = sort xs'
+  f = fmap toLower
+  g = sort . f
