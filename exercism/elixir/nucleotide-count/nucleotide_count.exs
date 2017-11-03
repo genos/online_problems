@@ -1,6 +1,11 @@
 defmodule NucleotideCount do
   @nucleotides MapSet.new([?A, ?C, ?G, ?T])
 
+  @spec valid?(char) :: boolean
+  def valid?(nucleotide) do
+    MapSet.member?(@nucleotides, nucleotide)
+  end
+
   @doc """
   Counts individual nucleotides in a NucleotideCount strand.
 
@@ -14,8 +19,7 @@ defmodule NucleotideCount do
   """
   @spec count([char], char) :: non_neg_integer
   def count(strand, nucleotide) do
-    strand
-    |> Enum.count(&(MapSet.member?(@nucleotides, &1) && &1 == nucleotide))
+    Enum.count strand, fn x -> valid?(x) && x == nucleotide end
   end
 
   @doc """
@@ -29,10 +33,9 @@ defmodule NucleotideCount do
   @spec histogram([char]) :: map
   def histogram(strand) do
     strand
-    |> Enum.filter(&MapSet.member?(@nucleotides, &1))
-    |> List.foldl(
-      Map.new(@nucleotides, &{&1, 0}),
-      fn x, acc -> Map.update!(acc, x, &(&1 + 1)) end
-    )
+    |> Enum.filter(&valid?(&1))
+    |> Enum.group_by(& &1)
+    |> Enum.map(fn {k, v} -> {k, length(v)} end)
+    |> Enum.into(Map.new @nucleotides, &{&1, 0})
   end
 end
