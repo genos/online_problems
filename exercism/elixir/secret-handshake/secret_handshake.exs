@@ -1,12 +1,6 @@
 defmodule SecretHandshake do
+
   use Bitwise, only_operators: true
-
-  @steps %{1 => "wink", 2 => "double blink", 4 => "close your eyes", 8 => "jump"}
-
-  def bits(code) do
-    Enum.map(Map.keys(@steps), fn k -> code &&& k end)
-    |> Enum.reject(&(&1 == 0))
-  end
 
   @doc """
   Determine the actions of a secret handshake based on the binary
@@ -24,8 +18,11 @@ defmodule SecretHandshake do
   """
   @spec commands(code :: integer) :: list(String.t())
   def commands(code) do
-    xs = bits(code) |> Enum.map(&Map.get(@steps, &1))
-    if (code &&& 16) == 16 do Enum.reverse(xs) else xs
-    end
+    ["wink", "double blink", "close your eyes", "jump"]
+    |> Enum.with_index
+    |> Enum.filter(fn {_, i} -> (code &&& (1 <<< i)) == (1 <<< i) end)
+    |> Enum.map(&(elem(&1, 0)))
+    |> (fn ys -> if (code &&& 16) == 16 do Enum.reverse(ys) else ys end end).()
   end
+
 end
