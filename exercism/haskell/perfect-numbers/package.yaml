@@ -1,0 +1,19 @@
+name: perfect-numbers
+version: 1.0.1.1
+
+dependencies:
+  - base
+
+library:
+  exposed-modules: PerfectNumbers
+  source-dirs: src
+  dependencies:
+    - arithmoi
+
+tests:
+  test:
+    main: Tests.hs
+    source-dirs: test
+    dependencies:
+      - perfect-numbers
+      - hspec
