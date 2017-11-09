@@ -1,15 +1,14 @@
 pub fn is_valid<S: Into<String>>(digits: S) -> bool {
-    let s: String = digits.into();
-    if s.chars().all(|c| c.is_digit(10) || c.is_whitespace()) {
-        let cs = s.chars().filter(|c| c.is_digit(10)).collect::<Vec<_>>();
-        cs.len() > 1
-            && cs.into_iter()
-                .rev()
-                .enumerate()
-                .map(|(i, c)| transmogrify(i, c))
-                .sum::<u32>() % 10 == 0
-    } else {
+    let (nums, others): (Vec<_>, Vec<_>) =
+        digits.into().chars().partition(|&c| c.is_digit(10));
+    if others.iter().any(|&c| !c.is_whitespace()) || nums.len() < 2 {
         false
+    } else {
+        nums.iter()
+            .rev()
+            .enumerate()
+            .map(|(i, &c)| transmogrify(i, c))
+            .sum::<u32>() % 10 == 0
     }
 }
 
