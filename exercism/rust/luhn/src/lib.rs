@@ -1,10 +1,10 @@
-pub fn is_valid<S: Into<String>>(digits: S) -> bool {
-    let (nums, others): (Vec<_>, Vec<_>) =
-        digits.into().chars().partition(|&c| c.is_digit(10));
-    if others.iter().any(|&c| !c.is_whitespace()) || nums.len() < 2 {
+pub fn is_valid<S: Into<String>>(s: S) -> bool {
+    let (digits, others): (Vec<_>, Vec<_>) = s.into().chars().partition(|&c| c.is_digit(10));
+    if digits.len() < 2 || others.iter().any(|&c| !c.is_whitespace()) {
         false
     } else {
-        nums.iter()
+        digits
+            .iter()
             .rev()
             .enumerate()
             .map(|(i, &c)| transmogrify(i, c))
