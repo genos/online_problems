@@ -1,0 +1,186 @@
+application.erl:120: Type specification application:ensure_all_started(Application) -> {'ok',Started} | {'error',Reason} when Application :: atom(), Started :: [atom()], Reason :: term() is a supertype of the success typing: application:ensure_all_started(atom()) -> {'error',{atom(),_}} | {'ok',[atom()]}
+
+application.erl:127: Type specification application:ensure_all_started(Application,Type) -> {'ok',Started} | {'error',Reason} when Application :: atom(), Type :: restart_type(), Started :: [atom()], Reason :: term() is a supertype of the success typing: application:ensure_all_started(atom(),'permanent' | 'temporary' | 'transient') -> {'error',{atom(),_}} | {'ok',[atom()]}
+
+array.erl:293: Type specification array:find_max(integer(),integer()) -> integer() is a supertype of the success typing: array:find_max(integer(),non_neg_integer()) -> non_neg_integer()
+
+auth.erl:76: Type specification auth:cookie(TheCookie) -> 'true' when TheCookie :: Cookie | [Cookie], Cookie :: cookie() is a supertype of the success typing: auth:cookie(atom() | [atom(),...]) -> 'true'
+
+calendar.erl:315: Type specification calendar:now_to_universal_time(Now) -> datetime1970() when Now :: erlang:timestamp() is a supertype of the success typing: calendar:now_to_universal_time({integer(),integer(),_}) -> {{1..1114111,1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12,1..255},{byte(),byte(),byte()}}
+
+code.erl:588: Type specification code:do_par_fun(prep_fun_type(),[any()]) -> fun(() -> no_return()) is a supertype of the success typing: code:do_par_fun(fun((atom(),string(),binary()) -> {'error',_} | {'ok',{_,_,_}}),[{_,_,_},...]) -> fun(() -> none())
+
+code.erl:630: The specification for code:start_link/0 states that the function might also return {'error','crash'} but the inferred return is {'ok',pid()}
+
+code.erl:736: Type specification code:where_is_file(Filename) -> 'non_existing' | Absname when Filename :: file:filename(), Absname :: file:filename() is a supertype of the success typing: code:where_is_file(string()) -> 'non_existing' | nonempty_string()
+
+dets.erl:763: Type specification dets:table(Name) -> QueryHandle when Name :: tab_name(), QueryHandle :: qlc:query_handle() is a supertype of the success typing: dets:table(_) -> qlc:query_handle()
+
+digraph.erl:339: Type specification digraph:new_edge_id(graph()) -> edge() is a supertype of the success typing: digraph:new_edge_id(digraph:graph()) -> nonempty_improper_list('$e',number())
+
+digraph.erl:353: Type specification digraph:new_vertex_id(graph()) -> vertex() is a supertype of the success typing: digraph:new_vertex_id(digraph:graph()) -> nonempty_improper_list('$v',number())
+
+disk_log_server.erl:229: Type specification disk_log_server:open_distr_rpc_fun([node()],_,_) -> fun(() -> no_return()) is a supertype of the success typing: disk_log_server:open_distr_rpc_fun([atom()],#arg{file::'none' | string(),repair::'false' | 'true' | 'truncate',size::'infinity' | pos_integer() | {pos_integer(),pos_integer()},type::'halt' | 'wrap',distributed::'false' | {'true',[any()]},format::'external' | 'internal',linkto::'none' | pid(),mode::'read_only' | 'read_write',notify::boolean(),quiet::boolean(),options::[{_,_}]},_) -> fun(() -> none())
+
+epp.erl:185: Type specification epp:format_error(ErrorDescriptor) -> io_lib:chars() when ErrorDescriptor :: term() is a supertype of the success typing: epp:format_error(atom() | {'NYI' | 'arg_error' | 'bad' | 'call' | 'depth' | 'error' | 'illegal_function' | 'illegal_function_usage' | 'mismatch' | 'redefine' | 'redefine_predef' | 'warning',_} | {'circular' | 'illegal' | 'include' | 'undefined' | integer(),_,_}) -> [[any()] | char()]
+
+epp.erl:292: The specification for epp:default_encoding/0 states that the function might also return 'latin1' but the inferred return is 'utf8'
+
+epp.erl:297: Type specification epp:encoding_to_string(Encoding) -> string() when Encoding :: source_encoding() is a supertype of the success typing: epp:encoding_to_string('latin1' | 'utf8') -> [1..255,...]
+
+epp.erl:325: Type specification epp:set_encoding(File) -> source_encoding() | 'none' when File :: io:device() is a supertype of the success typing: epp:set_encoding(pid()) -> 'latin1' | 'none' | 'utf8'
+
+erl_anno.erl:108: The specification for erl_anno:new/1 states that the function might also return [{'file',binary() | string()} | {'generated',boolean()} | {'location',non_neg_integer() | {non_neg_integer(),pos_integer()}} | {'record',boolean()} | {'text',string()},...] but the inferred return is non_neg_integer() | {_,_} | erl_anno:anno()
+
+erl_ddll.erl:196: Type specification erl_ddll:unload_driver(Name) -> 'ok' | {'error',ErrorDesc} when Name :: driver(), ErrorDesc :: term() is a supertype of the success typing: erl_ddll:unload_driver(atom() | maybe_improper_list(binary() | maybe_improper_list(any(),binary() | []) | byte(),binary() | [])) -> 'ok' | {'error','linked_in_driver' | 'not_loaded' | 'not_loaded_by_this_process' | 'permanent'}
+
+erl_ddll.erl:203: Type specification erl_ddll:unload(Name) -> 'ok' | {'error',ErrorDesc} when Name :: driver(), ErrorDesc :: term() is a supertype of the success typing: erl_ddll:unload(atom() | maybe_improper_list(binary() | maybe_improper_list(any(),binary() | []) | byte(),binary() | [])) -> 'ok' | {'error','linked_in_driver' | 'not_loaded' | 'not_loaded_by_this_process' | 'permanent'}
+
+erl_ddll.erl:242: Type specification erl_ddll:info(Name) -> InfoList when Name :: driver(), InfoList :: [InfoItem,...], InfoItem :: {Tag::atom(),Value::term()} is a supertype of the success typing: erl_ddll:info(atom() | maybe_improper_list(binary() | maybe_improper_list(any(),binary() | []) | byte(),binary() | [])) -> [{'awaiting_load' | 'awaiting_unload' | 'driver_options' | 'linked_in_driver' | 'permanent' | 'port_count' | 'processes',_},...]
+
+erl_eval.erl:1237: Type specification erl_eval:add_binding(Name,Value,BindingStruct) -> binding_struct() when Name :: name(), Value :: value(), BindingStruct :: binding_struct() is a supertype of the success typing: erl_eval:add_binding(_,_,[{_,_}]) -> [{_,_},...]
+
+erl_internal.erl:196: Type specification erl_internal:op_type(OpName,Arity) -> Type when OpName :: atom(), Arity :: arity(), Type :: 'arith' | 'bool' | 'comp' | 'list' | 'send' is a supertype of the success typing: erl_internal:op_type(atom(),1 | 2) -> 'arith' | 'bool' | 'comp' | 'list' | 'send'
+
+erl_lint.erl:158: Type specification erl_lint:format_error(ErrorDescriptor) -> io_lib:chars() when ErrorDescriptor :: error_description() is a supertype of the success typing: erl_lint:format_error(atom() | {atom(),_} | {'deprecated' | 'deprecated_type' | 'exported_var' | 'field_name_is_variable' | 'redefine_field' | 'removed' | 'renamed_type' | 'shadowed_var' | 'undefined_behaviour_func' | 'undefined_field' | 'unsafe_var',_,_} | {'bittype_mismatch',_,_,_} | {'deprecated',{atom(),atom(),[any(),...] | integer()},{atom(),atom(),[any(),...] | integer()},_} | {'deprecated_builtin_type',{_,_},{_,_} | {_,_,_},_} | {'removed',{atom(),atom(),[any(),...] | integer()},{atom(),atom(),[any(),...] | integer()},_} | {'removed_type',{_,_,non_neg_integer()},{_,_,non_neg_integer()},_} | {'conflicting_behaviours',{_,_},_,integer() | {integer(),integer()},_}) -> [[any()] | char()]
+
+erl_parse.yrl:1332: The specification for erl_parse:abstract/1 states that the function might also return {'op',erl_anno:anno(),atom(),_,_} | {'receive',erl_anno:anno(),[{'clause',erl_anno:anno(),[{'nil',erl_anno:anno()} | {'atom' | 'bin' | 'char' | 'float' | 'integer' | 'map' | 'string' | 'tuple' | 'var',erl_anno:anno(),atom() | [any()] | number()} | {'cons',erl_anno:anno(),_,_} | {'match',erl_anno:anno(),_,_} | {'op',erl_anno:anno(),'*' | '+' | 'bnot' | 'not',_} | {'record',erl_anno:anno(),atom(),[any()]} | {'record_index',erl_anno:anno(),atom(),{_,_,_}} | {'op',erl_anno:anno(),atom(),_,_}],[[{'nil',erl_anno:anno()} | {'atom' | 'bin' | 'char' | 'float' | 'integer' | 'map' | 'string' | 'tuple' | 'var',erl_anno:anno(),atom() | [any()] | number()} | {'call' | 'cons' | 'map' | 'op' | 'record' | 'record_index',erl_anno:anno(),_,_} | {'op',erl_anno:anno(),atom(),_,_} | {'record_field',erl_anno:anno(),_,atom(),{_,_,_}},...]],[any(),...]},...],_,[any(),...]} | {'record',erl_anno:anno(),_,atom(),[{'record_field',erl_anno:anno(),{'atom',erl_anno:anno(),atom()},_}]} | {'record_field',erl_anno:anno(),_,atom(),{'atom',erl_anno:anno(),atom()}} | {'try',erl_anno:anno(),[any()],[{'clause',erl_anno:anno(),[{'nil',erl_anno:anno()} | {'atom' | 'bin' | 'char' | 'float' | 'integer' | 'map' | 'string' | 'tuple' | 'var',erl_anno:anno(),atom() | [any()] | number()} | {'cons',erl_anno:anno(),_,_} | {'match',erl_anno:anno(),_,_} | {'op',erl_anno:anno(),'*' | '+' | 'bnot' | 'not',_} | {'record',erl_anno:anno(),atom(),[any()]} | {'record_index',erl_anno:anno(),atom(),{_,_,_}} | {'op',erl_anno:anno(),atom(),_,_}],[[{'nil',erl_anno:anno()} | {'atom' | 'bin' | 'char' | 'float' | 'integer' | 'map' | 'string' | 'tuple' | 'var',erl_anno:anno(),atom() | [any()] | number()} | {'call' | 'cons' | 'map' | 'op' | 'record' | 'record_index',erl_anno:anno(),_,_} | {'op',erl_anno:anno(),atom(),_,_} | {'record_field',erl_anno:anno(),_,atom(),{_,_,_}},...]],[any(),...]}],[{'clause',erl_anno:anno(),[{'nil',erl_anno:anno()} | {'atom' | 'bin' | 'char' | 'float' | 'integer' | 'map' | 'string' | 'tuple' | 'var',erl_anno:anno(),atom() | [any()] | number()} | {'cons',erl_anno:anno(),_,_} | {'match',erl_anno:anno(),_,_} | {'op',erl_anno:anno(),'*' | '+' | 'bnot' | 'not',_} | {'record',erl_anno:anno(),atom(),[any()]} | {'record_index',erl_anno:anno(),atom(),{_,_,_}} | {'op',erl_anno:anno(),atom(),_,_}],[[{'nil',erl_anno:anno()} | {'atom' | 'bin' | 'char' | 'float' | 'integer' | 'map' | 'string' | 'tuple' | 'var',erl_anno:anno(),atom() | [any()] | number()} | {'call' | 'cons' | 'map' | 'op' | 'record' | 'record_index',erl_anno:anno(),_,_} | {'op',erl_anno:anno(),atom(),_,_} | {'record_field',erl_anno:anno(),_,atom(),{_,_,_}},...]],[any(),...]}],[any()]} but the inferred return is {'nil',erl_anno:anno()} | {'atom' | 'bin' | 'float' | 'integer' | 'map' | 'string' | 'tuple',erl_anno:anno(),atom() | [any()] | number()} | {'cons',erl_anno:anno(),{'nil',erl_anno:anno()} | {'atom' | 'bin' | 'float' | 'integer' | 'map' | 'string' | 'tuple',erl_anno:anno(),_} | {'cons',erl_anno:anno(),{_,_} | {_,_,_} | {_,_,_,_},{_,_} | {_,_,_} | {_,_,_,_}},{'nil',erl_anno:anno()} | {'atom' | 'bin' | 'float' | 'integer' | 'map' | 'string' | 'tuple',erl_anno:anno(),atom() | [any()] | number()} | {'cons',erl_anno:anno(),{_,_} | {_,_,_} | {_,_,_,_},{_,_} | {_,_,_} | {_,_,_,_}}}
+
+erl_parse.yrl:1342: The specification for erl_parse:abstract/2 states that the function might also return {'op',erl_anno:anno(),atom(),_,_} | {'receive',erl_anno:anno(),[{'clause',erl_anno:anno(),[{'nil',erl_anno:anno()} | {'atom' | 'bin' | 'char' | 'float' | 'integer' | 'map' | 'string' | 'tuple' | 'var',erl_anno:anno(),atom() | [any()] | number()} | {'cons',erl_anno:anno(),_,_} | {'match',erl_anno:anno(),_,_} | {'op',erl_anno:anno(),'*' | '+' | 'bnot' | 'not',_} | {'record',erl_anno:anno(),atom(),[any()]} | {'record_index',erl_anno:anno(),atom(),{_,_,_}} | {'op',erl_anno:anno(),atom(),_,_}],[[{'nil',erl_anno:anno()} | {'atom' | 'bin' | 'char' | 'float' | 'integer' | 'map' | 'string' | 'tuple' | 'var',erl_anno:anno(),atom() | [any()] | number()} | {'call' | 'cons' | 'map' | 'op' | 'record' | 'record_index',erl_anno:anno(),_,_} | {'op',erl_anno:anno(),atom(),_,_} | {'record_field',erl_anno:anno(),_,atom(),{_,_,_}},...]],[any(),...]},...],_,[any(),...]} | {'record',erl_anno:anno(),_,atom(),[{'record_field',erl_anno:anno(),{'atom',erl_anno:anno(),atom()},_}]} | {'record_field',erl_anno:anno(),_,atom(),{'atom',erl_anno:anno(),atom()}} | {'try',erl_anno:anno(),[any()],[{'clause',erl_anno:anno(),[{'nil',erl_anno:anno()} | {'atom' | 'bin' | 'char' | 'float' | 'integer' | 'map' | 'string' | 'tuple' | 'var',erl_anno:anno(),atom() | [any()] | number()} | {'cons',erl_anno:anno(),_,_} | {'match',erl_anno:anno(),_,_} | {'op',erl_anno:anno(),'*' | '+' | 'bnot' | 'not',_} | {'record',erl_anno:anno(),atom(),[any()]} | {'record_index',erl_anno:anno(),atom(),{_,_,_}} | {'op',erl_anno:anno(),atom(),_,_}],[[{'nil',erl_anno:anno()} | {'atom' | 'bin' | 'char' | 'float' | 'integer' | 'map' | 'string' | 'tuple' | 'var',erl_anno:anno(),atom() | [any()] | number()} | {'call' | 'cons' | 'map' | 'op' | 'record' | 'record_index',erl_anno:anno(),_,_} | {'op',erl_anno:anno(),atom(),_,_} | {'record_field',erl_anno:anno(),_,atom(),{_,_,_}},...]],[any(),...]}],[{'clause',erl_anno:anno(),[{'nil',erl_anno:anno()} | {'atom' | 'bin' | 'char' | 'float' | 'integer' | 'map' | 'string' | 'tuple' | 'var',erl_anno:anno(),atom() | [any()] | number()} | {'cons',erl_anno:anno(),_,_} | {'match',erl_anno:anno(),_,_} | {'op',erl_anno:anno(),'*' | '+' | 'bnot' | 'not',_} | {'record',erl_anno:anno(),atom(),[any()]} | {'record_index',erl_anno:anno(),atom(),{_,_,_}} | {'op',erl_anno:anno(),atom(),_,_}],[[{'nil',erl_anno:anno()} | {'atom' | 'bin' | 'char' | 'float' | 'integer' | 'map' | 'string' | 'tuple' | 'var',erl_anno:anno(),atom() | [any()] | number()} | {'call' | 'cons' | 'map' | 'op' | 'record' | 'record_index',erl_anno:anno(),_,_} | {'op',erl_anno:anno(),atom(),_,_} | {'record_field',erl_anno:anno(),_,atom(),{_,_,_}},...]],[any(),...]}],[any()]} but the inferred return is {'nil',erl_anno:anno()} | {'atom' | 'bin' | 'float' | 'integer' | 'map' | 'string' | 'tuple',erl_anno:anno(),atom() | [any()] | number()} | {'cons',erl_anno:anno(),{'nil',erl_anno:anno()} | {'atom' | 'bin' | 'float' | 'integer' | 'map' | 'string' | 'tuple',erl_anno:anno(),_} | {'cons',erl_anno:anno(),{_,_} | {_,_,_} | {_,_,_,_},{_,_} | {_,_,_} | {_,_,_,_}},{'nil',erl_anno:anno()} | {'atom' | 'bin' | 'float' | 'integer' | 'map' | 'string' | 'tuple',erl_anno:anno(),atom() | [any()] | number()} | {'cons',erl_anno:anno(),{_,_} | {_,_,_} | {_,_,_,_},{_,_} | {_,_,_} | {_,_,_,_}}}
+
+erl_parse.yrl:1519: Type specification erl_parse:type_inop_prec(type_inop()) -> {prec(),prec(),prec()} is a supertype of the success typing: erl_parse:type_inop_prec(atom()) -> {150 | 160 | 180 | 300 | 400 | 500 | 800,100 | 150 | 170 | 200 | 400 | 500 | 700,100 | 150 | 170 | 300 | 500 | 600 | 800}
+
+erl_parse.yrl:1538: Type specification erl_parse:type_preop_prec(type_preop()) -> {prec(),prec()} is a supertype of the success typing: erl_parse:type_preop_prec('#' | '+' | '-' | 'bnot') -> {600 | 700,700 | 800}
+
+erl_tar.erl:949: Type specification erl_tar:get_format(binary()) -> {'ok',pos_integer(),header_v7()} | 0 | {'error',term()} is a supertype of the success typing: erl_tar:get_format(binary()) -> 0 | {'error','header_block_too_small'} | {'ok',1 | 2 | 3 | 4,#header_v7{name::binary(),mode::binary(),uid::binary(),gid::binary(),size::binary(),mtime::binary(),checksum::binary(),typeflag::byte(),linkname::binary()}}
+
+erts_debug.erl:132: Type specification erts_debug:ic(F) -> Result when F :: fun(), Result :: term() is a supertype of the success typing: erts_debug:ic(fun(() -> any())) -> any()
+
+ets.erl:1439: Type specification ets:table(Tab) -> QueryHandle when Tab :: tab(), QueryHandle :: qlc:query_handle() is a supertype of the success typing: ets:table(atom() | ets:tid()) -> qlc:query_handle()
+
+file.erl:1020: Type specification file:eval(Filename) -> 'ok' | {'error',Reason} when Filename :: name_all(), Reason :: posix() | 'badarg' | 'terminated' | 'system_limit' | {Line::integer(),Mod::module(),Term::term()} is a supertype of the success typing: file:eval(atom() | binary() | [atom() | [any()] | char()]) -> 'ok' | {'error',atom() | {non_neg_integer(),atom(),_}}
+
+file.erl:1044: Type specification file:path_eval(Path,Filename) -> {'ok',FullName} | {'error',Reason} when Path :: [Dir::name_all()], Filename :: name_all(), FullName :: filename_all(), Reason :: posix() | 'badarg' | 'terminated' | 'system_limit' | {Line::integer(),Mod::module(),Term::term()} is a supertype of the success typing: file:path_eval([atom() | binary() | [atom() | [any()] | char()]],atom() | binary() | [atom() | [any()] | char()]) -> {'error',atom() | {non_neg_integer(),atom(),_}} | {'ok',binary() | string()}
+
+file.erl:1078: Type specification file:script(Filename) -> {'ok',Value} | {'error',Reason} when Filename :: name_all(), Value :: term(), Reason :: posix() | 'badarg' | 'terminated' | 'system_limit' | {Line::integer(),Mod::module(),Term::term()} is a supertype of the success typing: file:script(atom() | binary() | [atom() | [any()] | char()]) -> {'error',atom() | {non_neg_integer(),atom(),_}} | {'ok',_}
+
+file.erl:1104: Type specification file:path_script(Path,Filename) -> {'ok',Value,FullName} | {'error',Reason} when Path :: [Dir::name_all()], Filename :: name_all(), Value :: term(), FullName :: filename_all(), Reason :: posix() | 'badarg' | 'terminated' | 'system_limit' | {Line::integer(),Mod::module(),Term::term()} is a supertype of the success typing: file:path_script([atom() | binary() | [atom() | [any()] | char()]],atom() | binary() | [atom() | [any()] | char()]) -> {'error',atom() | {non_neg_integer(),atom(),_}} | {'ok',_,binary() | string()}
+
+file.erl:1176: Type specification file:change_mode(Filename,Mode) -> 'ok' | {'error',Reason} when Filename :: name_all(), Mode :: integer(), Reason :: posix() | 'badarg' is a supertype of the success typing: file:change_mode(atom() | binary() | [atom() | [any()] | char()],non_neg_integer()) -> 'ok' | {'error',atom()}
+
+file.erl:1185: Type specification file:change_owner(Filename,Uid) -> 'ok' | {'error',Reason} when Filename :: name_all(), Uid :: integer(), Reason :: posix() | 'badarg' is a supertype of the success typing: file:change_owner(atom() | binary() | [atom() | [any()] | char()],non_neg_integer()) -> 'ok' | {'error',atom()}
+
+file.erl:1194: Type specification file:change_owner(Filename,Uid,Gid) -> 'ok' | {'error',Reason} when Filename :: name_all(), Uid :: integer(), Gid :: integer(), Reason :: posix() | 'badarg' is a supertype of the success typing: file:change_owner(atom() | binary() | [atom() | [any()] | char()],non_neg_integer(),non_neg_integer()) -> 'ok' | {'error',atom()}
+
+file.erl:1204: Type specification file:change_group(Filename,Gid) -> 'ok' | {'error',Reason} when Filename :: name_all(), Gid :: integer(), Reason :: posix() | 'badarg' is a supertype of the success typing: file:change_group(atom() | binary() | [atom() | [any()] | char()],non_neg_integer()) -> 'ok' | {'error',atom()}
+
+filename.erl:757: Type specification filename:safe_relative_path(Filename) -> 'unsafe' | SafeFilename when Filename :: file:name_all(), SafeFilename :: file:name_all() is a supertype of the success typing: filename:safe_relative_path(atom() | binary() | [atom() | [any()] | char()]) -> 'unsafe' | binary() | string()
+
+gb_sets.erl:207: Type specification gb_sets:empty() -> Set when Set :: set() is a supertype of the success typing: gb_sets:empty() -> gb_sets:set(_)
+
+gb_sets.erl:213: Type specification gb_sets:new() -> Set when Set :: set() is a supertype of the success typing: gb_sets:new() -> gb_sets:set(_)
+
+gb_sets.erl:232: Type specification gb_sets:singleton(Element) -> set(Element) is a supertype of the success typing: gb_sets:singleton(_) -> gb_sets:set(_)
+
+gb_sets.erl:316: Type specification gb_sets:balance(Set1) -> Set2 when Set1 :: set(Element), Set2 :: set(Element) is a supertype of the success typing: gb_sets:balance(gb_sets:set(_)) -> gb_sets:set(_)
+
+gb_sets.erl:362: Type specification gb_sets:from_list(List) -> Set when List :: [Element], Set :: set(Element) is a supertype of the success typing: gb_sets:from_list([any()]) -> gb_sets:set(_)
+
+gb_sets.erl:369: Type specification gb_sets:from_ordset(List) -> Set when List :: [Element], Set :: set(Element) is a supertype of the success typing: gb_sets:from_ordset([any()]) -> gb_sets:set(_)
+
+gb_sets.erl:760: Type specification gb_sets:subtract(Set1,Set2) -> Set3 when Set1 :: set(Element), Set2 :: set(Element), Set3 :: set(Element) is a supertype of the success typing: gb_sets:subtract(gb_sets:set(_),gb_sets:set(_)) -> gb_sets:set(_)
+
+gb_trees.erl:172: Type specification gb_trees:empty() -> tree() is a supertype of the success typing: gb_trees:empty() -> gb_trees:tree(_,_)
+
+gb_trees.erl:348: Type specification gb_trees:balance(Tree1) -> Tree2 when Tree1 :: tree(Key,Value), Tree2 :: tree(Key,Value) is a supertype of the success typing: gb_trees:balance(gb_trees:tree(_,_)) -> gb_trees:tree(_,_)
+
+gen_sctp.erl:401: Type specification gen_sctp:error_string(ErrorNumber) -> 'ok' | string() | 'unknown_error' when ErrorNumber :: integer() is a supertype of the success typing: gen_sctp:error_string(integer()) -> 'ok' | 'unknown_error' | [1..255,...]
+
+gen_server.erl:763: Type specification gen_server:system_terminate(_,_,_,[_]) -> no_return() is a supertype of the success typing: gen_server:system_terminate(_,_,_,[any(),...]) -> no_return()
+
+gen_server.erl:826: Type specification gen_server:terminate(_,_,_,_,_,_,_,_,_) -> no_return() is a supertype of the success typing: gen_server:terminate('error' | 'exit',_,_,_,_,_,_,_,[sys:dbg_opt()]) -> no_return()
+
+global.erl:1525: Type specification global:init_the_locker_fun(boolean()) -> fun(() -> no_return()) is a supertype of the success typing: global:init_the_locker_fun(boolean()) -> fun(() -> none())
+
+group_history.erl:168: Type specification group_history:ensure_path([{'file',string()} | {atom(),_},...]) -> 'ok' | {'error',term()} is a supertype of the success typing: group_history:ensure_path([{'distributed' | 'file' | 'format' | 'head' | 'mode' | 'name' | 'notify' | 'quiet' | 'repair' | 'size' | 'type','$#group_history' | 'false' | 'internal' | 'read_write' | 'true' | 'wrap' | binary() | [any()] | {_,_}},...]) -> 'ok' | {'error',atom()}
+
+hipe_unified_loader.erl:80: Type specification hipe_unified_loader:chunk_name(hipe_architecture()) -> string() is a supertype of the success typing: hipe_unified_loader:chunk_name('amd64' | 'arm' | 'powerpc' | 'ppc64' | 'ultrasparc' | 'x86') -> [52 | 54 | 56 | 65 | 67 | 72 | 77 | 80 | 82 | 83 | 88,...]
+
+inet.erl:154: Type specification inet:get_rc() -> [{Par::atom(),Val::any()} | {Par::atom(),Val1::any(),Val2::any()}] is a supertype of the success typing: inet:get_rc() -> [{atom(),_} | {'alt_nameservers',_,_} | {'host',_,[any(),...]} | {'nameservers',_,_} | {'socks5_noproxy',_,_}]
+
+inet.erl:560: Type specification inet:getaddr(Host,Family) -> {'ok',Address} | {'error',posix()} when Host :: ip_address() | hostname(), Family :: address_family(), Address :: ip_address() is a supertype of the success typing: inet:getaddr(atom() | string() | {byte(),byte(),byte(),byte()} | {char(),char(),char(),char(),char(),char(),char(),char()},'inet' | 'inet6' | 'local') -> {'error','eafnosupport' | 'einval' | 'nxdomain'} | {'ok',{byte(),byte(),byte(),byte()} | {char(),char(),char(),char(),char(),char(),char(),char()}}
+
+inet.erl:585: Type specification inet:getaddrs(Host,Family) -> {'ok',Addresses} | {'error',posix()} when Host :: ip_address() | hostname(), Family :: address_family(), Addresses :: [ip_address()] is a supertype of the success typing: inet:getaddrs(atom() | string() | {byte(),byte(),byte(),byte()} | {char(),char(),char(),char(),char(),char(),char(),char()},'inet' | 'inet6' | 'local') -> {'error','eafnosupport' | 'einval' | 'nxdomain'} | {'ok',[{byte(),byte(),byte(),byte()} | {char(),char(),char(),char(),char(),char(),char(),char()}]}
+
+inet_res.erl:104: Type specification inet_res:resolve(Name,Class,Type) -> {'ok',dns_msg()} | Error when Name :: dns_name() | inet:ip_address(), Class :: dns_class(), Type :: rr_type(), Error :: {'error',Reason} | {'error',{Reason,dns_msg()}}, Reason :: inet:posix() | res_error() is a supertype of the success typing: inet_res:resolve(string() | {byte(),byte(),byte(),byte()} | {char(),char(),char(),char(),char(),char(),char(),char()},'any' | 'chaos' | 'hs' | 'in',atom()) -> {'error',atom() | {atom(),_}} | {'ok',{_,_,_,_,_,_}}
+
+inet_res.erl:198: Type specification inet_res:nslookup(Name,Class,Type) -> {'ok',dns_msg()} | {'error',Reason} when Name :: dns_name() | inet:ip_address(), Class :: dns_class(), Type :: rr_type(), Reason :: inet:posix() | res_error() is a supertype of the success typing: inet_res:nslookup(string() | {byte(),byte(),byte(),byte()} | {char(),char(),char(),char(),char(),char(),char(),char()},'any' | 'chaos' | 'hs' | 'in',atom()) -> {'error',atom()} | {'ok',{_,_,_,_,_,_}}
+
+inet_res.erl:207: Type specification inet_res:nslookup(Name,Class,Type,Timeout) -> {'ok',dns_msg()} | {'error',Reason} when Name :: dns_name() | inet:ip_address(), Class :: dns_class(), Type :: rr_type(), Timeout :: timeout(), Reason :: inet:posix() | res_error();(Name,Class,Type,Nameservers) -> {'ok',dns_msg()} | {'error',Reason} when Name :: dns_name() | inet:ip_address(), Class :: dns_class(), Type :: rr_type(), Nameservers :: [nameserver()], Reason :: inet:posix() | res_error() is a supertype of the success typing: inet_res:nslookup(string() | {byte(),byte(),byte(),byte()} | {char(),char(),char(),char(),char(),char(),char(),char()},'any' | 'chaos' | 'hs' | 'in',atom(),[{{byte(),byte(),byte(),byte()} | {char(),char(),char(),char(),char(),char(),char(),char()},1..1114111}] | non_neg_integer()) -> {'error',atom()} | {'ok',{_,_,_,_,_,_}}
+
+inet_res.erl:227: Type specification inet_res:nnslookup(Name,Class,Type,Nameservers) -> {'ok',dns_msg()} | {'error',Reason} when Name :: dns_name() | inet:ip_address(), Class :: dns_class(), Type :: rr_type(), Nameservers :: [nameserver()], Reason :: inet:posix() is a supertype of the success typing: inet_res:nnslookup(string() | {byte(),byte(),byte(),byte()} | {char(),char(),char(),char(),char(),char(),char(),char()},'any' | 'chaos' | 'hs' | 'in',atom(),[{{byte(),byte(),byte(),byte()} | {char(),char(),char(),char(),char(),char(),char(),char()},1..1114111}]) -> {'error',atom()} | {'ok',{_,_,_,_,_,_}}
+
+io_lib.erl:186: Type specification io_lib:unscan_format(FormatList) -> {Format,Data} when FormatList :: [char() | format_spec()], Format :: io:format(), Data :: [term()] is a supertype of the success typing: io_lib:unscan_format([char() | #{'adjust':='left' | 'right', 'args':=[any()], 'control_char':=char(), 'encoding':='latin1' | 'unicode', 'pad_char':=char(), 'precision':='none' | integer(), 'strings':=boolean(), 'width':='none' | integer()}]) -> {string(),[any()]}
+
+io_lib.erl:442: Type specification io_lib:write_string(String) -> chars() when String :: string() is a supertype of the success typing: io_lib:write_string(string()) -> [[any()] | char(),...]
+
+io_lib.erl:457: Type specification io_lib:write_latin1_string(Latin1String) -> latin1_string() when Latin1String :: latin1_string() is a supertype of the success typing: io_lib:write_latin1_string([byte()]) -> [byte(),...]
+
+io_lib.erl:468: Type specification io_lib:write_string_as_latin1(String) -> latin1_string() when String :: string() is a supertype of the success typing: io_lib:write_string_as_latin1(string()) -> [byte(),...]
+
+io_lib.erl:671: Type specification io_lib:nl() -> string() is a supertype of the success typing: io_lib:nl() -> [10,...]
+
+kernel_config.erl:76: Type specification kernel_config:handle_call(term(),term(),State) -> {'reply','ok',State} is a supertype of the success typing: kernel_config:handle_call('__not_used',_,_) -> {'reply','ok',_}
+
+kernel_config.erl:81: Type specification kernel_config:handle_cast(term(),State) -> {'noreply',State} is a supertype of the success typing: kernel_config:handle_cast('__not_used',_) -> {'noreply',_}
+
+maps.erl:162: Type specification maps:update_with(Key,Fun,Init,Map1) -> Map2 when Key :: term(), Map1 :: Map1, Map2 :: Map2, Fun :: fun((Value1::term()) -> Value2::term()), Init :: term() is a supertype of the success typing: maps:update_with(_,fun((_) -> any()),_,map()) -> map()
+
+orddict.erl:39: Type specification orddict:new() -> orddict() is a supertype of the success typing: orddict:new() -> []
+
+os.erl:225: Type specification os:extensions() -> [string(),...] is a supertype of the success typing: os:extensions() -> [[46 | 97 | 98 | 99 | 100 | 101 | 109 | 111 | 116 | 120],...]
+
+otp_internal.erl:663: The specification for otp_internal:obsolete_type/3 states that the function might also return {'deprecated',string()} | {'removed',string()} | {'deprecated',{atom(),atom(),[byte()] | byte()},string()} but the inferred return is 'no' | {'removed',{'erl_anno','column' | 'line' | 'location',0},[46 | 48 | 49 | 57,...]}
+
+proc_lib.erl:748: Type specification proc_lib:format(CrashReport) -> string() when CrashReport :: [term()] is a supertype of the success typing: proc_lib:format([any(),...]) -> string()
+
+proc_lib.erl:753: Type specification proc_lib:format(CrashReport,Encoding) -> string() when CrashReport :: [term()], Encoding :: 'latin1' | 'unicode' | 'utf8' is a supertype of the success typing: proc_lib:format([any(),...],'latin1' | 'unicode' | 'utf8') -> string()
+
+qlc.erl:540: Type specification qlc:q(QLC) -> QH when QLC :: query_list_comprehension(), QH :: query_handle() is a supertype of the success typing: qlc:q(#qlc_lc{}) -> qlc:query_handle()
+
+qlc.erl:593: Type specification qlc:string_to_handle(QueryString) -> QH | Error when QueryString :: string(), QH :: query_handle(), Error :: {'error',module(),Reason}, Reason :: erl_parse:error_info() | erl_scan:error_info() is a supertype of the success typing: qlc:string_to_handle(string()) -> {'error','qlc',{non_neg_integer() | {non_neg_integer(),pos_integer()},atom(),_}} | qlc:query_handle()
+
+qlc.erl:601: Type specification qlc:string_to_handle(QueryString,Options) -> QH | Error when QueryString :: string(), Options :: [Option] | Option, Option :: {'max_lookup',MaxLookup} | {'cache',cache()} | 'cache' | {'join',Join} | {'lookup',Lookup} | {'unique',boolean()} | 'unique', MaxLookup :: non_neg_integer() | 'infinity', Join :: 'any' | 'lookup' | 'merge' | 'nested_loop', Lookup :: boolean() | 'any', QH :: query_handle(), Error :: {'error',module(),Reason}, Reason :: erl_parse:error_info() | erl_scan:error_info() is a supertype of the success typing: qlc:string_to_handle(string(),'cache' | 'unique' | ['cache' | 'unique' | {'cache','ets' | 'list' | 'no'} | {'join','any' | 'lookup' | 'merge' | 'nested_loop'} | {'lookup','any' | 'false' | 'true'} | {'max_lookup','infinity' | non_neg_integer()} | {'unique',boolean()}] | {'cache','ets' | 'list' | 'no'} | {'join','any' | 'lookup' | 'merge' | 'nested_loop'} | {'lookup','any' | 'false' | 'true'} | {'max_lookup','infinity' | non_neg_integer()} | {'unique',boolean()}) -> {'error','qlc',{non_neg_integer() | {non_neg_integer(),pos_integer()},atom(),_}} | qlc:query_handle()
+
+queue.erl:61: Type specification queue:new() -> queue() is a supertype of the success typing: queue:new() -> queue:queue(_)
+
+queue.erl:431: Type specification queue:cons(Item,Q1::queue(Item)) -> Q2::queue(Item) is a supertype of the success typing: queue:cons(_,queue:queue(_)) -> queue:queue(_)
+
+queue.erl:458: Type specification queue:snoc(Q1::queue(Item),Item) -> Q2::queue(Item) is a supertype of the success typing: queue:snoc(queue:queue(_),_) -> queue:queue(_)
+
+rand.erl:555: Type specification rand:exs1024_gen1024(uint64()) -> [uint64()] is a supertype of the success typing: rand:exs1024_gen1024(pos_integer() | rand:exs64_state()) -> [non_neg_integer()]
+
+random.erl:42: Type specification random:seed0() -> ran() is a supertype of the success typing: random:seed0() -> {3172,9814,20125}
+
+seq_trace.erl:128: The specification for seq_trace:get_system_tracer/0 states that the function might also return {atom(),_} but the inferred return is 'false' | pid() | port()
+
+sets.erl:414: Type specification sets:mk_seg(16) -> seg() is a supertype of the success typing: sets:mk_seg(16) -> {[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]}
+
+sofs.erl:155: Type specification sofs:from_term(Term,Type) -> AnySet when AnySet :: anyset(), Term :: term(), Type :: type() is a supertype of the success typing: sofs:from_term(_,atom() | [any(),...] | tuple()) -> #'OrdSet'{orddata::atom() | tuple()} | #'Set'{data::[any()]} | sofs:a_set() | sofs:ordset()
+
+sofs.erl:169: Type specification sofs:from_external(ExternalSet,Type) -> AnySet when ExternalSet :: external_set(), AnySet :: anyset(), Type :: type() is a supertype of the success typing: sofs:from_external(atom() | [any()] | tuple(),_) -> #'OrdSet'{orddata::atom() | tuple()} | #'Set'{data::[any()]} | sofs:a_set() | sofs:ordset()
+
+sofs.erl:319: Type specification sofs:to_external(AnySet) -> ExternalSet when ExternalSet :: external_set(), AnySet :: anyset() is a supertype of the success typing: sofs:to_external(#'OrdSet'{orddata::atom() | tuple()} | #'Set'{data::[any()]} | sofs:a_set() | sofs:ordset()) -> atom() | [any()] | tuple()
+
+sofs.erl:1520: Type specification sofs:digraph_to_family(Graph,Type) -> Family when Graph :: digraph:graph(), Family :: family(), Type :: type() is a supertype of the success typing: sofs:digraph_to_family(digraph:graph(),[{_,[any(),...]},...]) -> sofs:a_set()
+
+string.erl:198: Type specification string:pad(String,Length) -> unicode:charlist() when String :: unicode:chardata(), Length :: integer() is a supertype of the success typing: string:pad(binary() | maybe_improper_list(binary() | maybe_improper_list(any(),binary() | []) | char(),binary() | []),integer()) -> [binary() | maybe_improper_list(any(),binary() | []) | char(),...]
+
+string.erl:204: Type specification string:pad(String,Length,Dir) -> unicode:charlist() when String :: unicode:chardata(), Length :: integer(), Dir :: direction() | 'both' is a supertype of the success typing: string:pad(binary() | maybe_improper_list(binary() | maybe_improper_list(any(),binary() | []) | char(),binary() | []),integer(),'both' | 'leading' | 'trailing') -> [binary() | maybe_improper_list(any(),binary() | []) | char(),...]
+
+string.erl:405: Type specification string:split(String,SearchPattern) -> [unicode:chardata()] when String :: unicode:chardata(), SearchPattern :: unicode:chardata() is a supertype of the success typing: string:split(binary() | maybe_improper_list(binary() | maybe_improper_list(any(),binary() | []) | char(),binary() | []),binary() | maybe_improper_list(binary() | maybe_improper_list(any(),binary() | []) | char(),binary() | [])) -> [binary() | maybe_improper_list(binary() | maybe_improper_list(any(),binary() | []) | char(),binary() | []),...]
+
+unicode.erl:207: Type specification unicode:bom_to_encoding(Bin) -> {Encoding,Length} when Bin :: binary(), Encoding :: 'latin1' | 'utf8' | {'utf16',endian()} | {'utf32',endian()}, Length :: non_neg_integer() is a supertype of the success typing: unicode:bom_to_encoding(binary()) -> {'latin1' | 'utf8' | {'utf16','big' | 'little'} | {'utf32','big' | 'little'},0 | 2 | 3 | 4}
+
+unicode_util.erl:270: Type specification unicode_util:whitespace() -> [gc()] is a supertype of the success typing: unicode_util:whitespace() -> [[10 | 13,...] | 9 | 10 | 11 | 12 | 13 | 32 | 133 | 8206 | 8207 | 8232 | 8233,...]
+
