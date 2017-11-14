@@ -10,9 +10,9 @@ _minsPerHr  = 60
 _hrsPerDay  = 24
 
 instance Num Clock where
-  fromInteger n = C $ fromIntegral n
-  negate (C m)  = C $ (-m) `mod` _minsPerDay
-  (C x) + (C y) = C $ x + y `mod` _minsPerDay
+  fromInteger   = fromHourMin 0 . fromInteger
+  negate        = fromHourMin 0 . negate . _minutes
+  (C x) + (C y) = fromHourMin 0 $ x + y
   (*)           = undefined
   abs           = undefined
   signum        = undefined
