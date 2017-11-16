@@ -1,10 +1,7 @@
 module Triplet (isPythagorean, mkTriplet, pythagoreanTriplets) where
 
-import Data.List (sort)
-
 isPythagorean :: (Int, Int, Int) -> Bool
-isPythagorean (a, b, c) = x * x + y * y == z * z
-  where [x, y, z] = sort [a, b, c]
+isPythagorean (a, b, c) = a ^ 2 + b ^ 2 + c ^ 2 == 2 * (maximum [a, b, c]) ^ 2
 
 mkTriplet :: Int -> Int -> Int -> (Int, Int, Int)
 mkTriplet = (,,)
