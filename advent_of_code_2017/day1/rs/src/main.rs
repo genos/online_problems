@@ -1,14 +1,17 @@
 #[derive(PartialEq)]
-enum OneOrHalf {
-    O,
-    H,
+enum Step {
+    One,
+    HalfOfLen,
 }
 
-fn sum_matches(ns: &[u32], oh: &OneOrHalf) -> u32 {
+fn sum_matches(ns: &[u32], step: &Step) -> u32 {
     let len: usize = ns.len();
-    let step: usize = if oh == &OneOrHalf::O { 1 } else { len / 2 };
+    let j: usize = match *step {
+        Step::One => 1,
+        Step::HalfOfLen => len / 2,
+    };
     (0..len)
-        .filter(|&i| ns[i] == ns[(i + step) % len])
+        .filter(|&i| ns[i] == ns[(i + j) % len])
         .map(|i| ns[i])
         .sum()
 }
@@ -18,11 +21,11 @@ fn parse_input(s: &str) -> Vec<u32> {
 }
 
 fn part1(input: &str) -> u32 {
-    sum_matches(&parse_input(input), &OneOrHalf::O)
+    sum_matches(&parse_input(input), &Step::One)
 }
 
 fn part2(input: &str) -> u32 {
-    sum_matches(&parse_input(input), &OneOrHalf::H)
+    sum_matches(&parse_input(input), &Step::HalfOfLen)
 }
 
 fn main() {
@@ -38,10 +41,10 @@ mod tests {
 
     #[test]
     fn test_sum_matches_one() {
-        assert_eq!(sum_matches(&[1, 1, 2, 2], &OneOrHalf::O), 3);
-        assert_eq!(sum_matches(&[1, 1, 1, 1], &OneOrHalf::O), 4);
-        assert_eq!(sum_matches(&[1, 2, 3, 4], &OneOrHalf::O), 0);
-        assert_eq!(sum_matches(&[9, 1, 2, 1, 2, 1, 2, 9], &OneOrHalf::O), 9);
+        assert_eq!(sum_matches(&[1, 1, 2, 2], &Step::One), 3);
+        assert_eq!(sum_matches(&[1, 1, 1, 1], &Step::One), 4);
+        assert_eq!(sum_matches(&[1, 2, 3, 4], &Step::One), 0);
+        assert_eq!(sum_matches(&[9, 1, 2, 1, 2, 1, 2, 9], &Step::One), 9);
     }
 
     #[test]
