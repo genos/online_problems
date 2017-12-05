@@ -16,7 +16,7 @@ fn parse_input(input: &str) -> Vec<i64> {
         .collect()
 }
 
-fn run(input: &[i64], f: &Fn(i64) -> i64) -> usize {
+fn run(input: &[i64], f: fn(i64) -> i64) -> usize {
     let mut instructions = input.to_owned();
     let mut steps = 0;
     let mut pointer = 0i64;
@@ -32,11 +32,11 @@ fn run(input: &[i64], f: &Fn(i64) -> i64) -> usize {
 }
 
 fn part1(input: &[i64]) -> usize {
-    run(input, &(|_| 1))
+    run(input, |_| 1)
 }
 
 fn part2(input: &[i64]) -> usize {
-    run(input, &(|offset| if offset >= 3 { -1} else { 1 }))
+    run(input, |offset| if offset >= 3 { -1 } else { 1 })
 }
 
 fn main() {
