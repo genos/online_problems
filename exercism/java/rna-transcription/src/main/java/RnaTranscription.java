@@ -1,9 +1,8 @@
 class RnaTranscription {
   String transcribe(String dnaStrand) {
-    StringBuilder s = new StringBuilder();
     return dnaStrand
         .chars()
-        .mapToObj((i) -> lookup(i))
+        .mapToObj(this::lookup)
         .collect(StringBuilder::new, (b, c) -> b.append(c), StringBuilder::append)
         .toString();
   }
