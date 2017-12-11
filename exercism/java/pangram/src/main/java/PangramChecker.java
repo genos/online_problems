@@ -5,8 +5,7 @@ public class PangramChecker {
             .map(Character::toLowerCase)
             .filter(c -> 'a' <= c && c <= 'z')
             .distinct()
-            .toArray()
-            .length
+            .count()
         == 26;
   }
 }
