@@ -1,13 +1,8 @@
 # My submission to exercism.io's "RNA Transcription" exercise
 class Complement
-  @table = { ?G => ?C, ?C => ?G, ?T => ?A, ?A => ?U }
+  TABLE = { ?G => ?C, ?C => ?G, ?T => ?A, ?A => ?U }.freeze
   def self.of_dna(dna)
-    dna.each_char.map do |c|
-      raise(ArgumentError, "bad char: #{c}") unless @table.member? c
-      @table[c]
-    end.join
-  rescue ArgumentError
-    ''
+    dna.each_char.map { |c| TABLE[c] || (return '') }.join
   end
 end
 
