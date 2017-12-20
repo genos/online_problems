@@ -35,7 +35,7 @@ fn parse_input(s: &str) -> Vec<Vec<u64>> {
 }
 
 fn read_input() -> String {
-    let mut f = File::open("input.txt").expect("'input.txt' not found");
+    let mut f = File::open("../input.txt").expect("'input.txt' not found");
     let mut contents = String::new();
     f.read_to_string(&mut contents)
         .expect("unable to read 'input.txt'");
