@@ -1,21 +1,13 @@
-import java.util.*;
-import java.util.stream.*;
+import java.util.stream.IntStream;
 
 class LuhnValidator {
 
   boolean isValid(String candidate) {
-    List<Character> s = new ArrayList();
-    for (int i = 0; i < candidate.length(); i++) {
-      char c = candidate.charAt(i);
-      if (!(Character.isDigit(c) || Character.isWhitespace(c))) {
-        return false;
-      } else if (Character.isDigit(c)) {
-        s.add(c);
-      }
-    }
-    int n = s.size();
+    String c = candidate.replace(" ", "");
+    if (!c.chars().allMatch(Character::isDigit)) return false;
+    int n = c.length();
     return n > 1
-        && IntStream.range(0, n).map(i -> transmogrify(i, s.get(n - i - 1))).sum() % 10 == 0;
+        && IntStream.range(0, n).map(i -> transmogrify(i, c.charAt(n - i - 1))).sum() % 10 == 0;
   }
 
   int transmogrify(int i, char c) {
