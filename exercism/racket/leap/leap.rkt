@@ -13,15 +13,6 @@
 ;; version 2
 (: leap-year? (-> Integer Boolean))
 (define (leap-year? year)
-  (foldl
-    (lambda ([d : Integer] [acc : Boolean])
-      (cast (xor acc (divides? year d)) Boolean))
-    #f
-    '(4 100 400)))
-
-;; version 3
-(: leap-year? (-> Integer Boolean))
-(define (leap-year? year)
   (match (map (lambda ([ d : Integer ]) (divides? year d))
               '(4 100 400))
     ['(#t #f #f) #t]
