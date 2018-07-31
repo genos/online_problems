@@ -1,6 +1,7 @@
 #lang typed/racket
 
 (provide perfect-numbers)
+(require math)
 
 (define-type ℕ Natural)
 
@@ -10,8 +11,5 @@
 
 (: perfect? (-> ℕ Boolean))
 (define (perfect? n)
-  (let ([sum-of-factors
-          (for/fold ([sum : ℕ 0])
-                    ([i (in-range 1 n)] #:when (zero? (remainder n i)))
-            (cast (+ sum i) ℕ))])
-    (= sum-of-factors n)))
+  (let ([ds (drop-right (divisors n) 1)])
+    (= (apply + ds) n)))
