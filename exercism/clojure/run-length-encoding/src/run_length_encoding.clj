@@ -22,5 +22,5 @@
                 (let [i (if-not (empty? c)
                           (Integer/parseInt c)
                           1)]
-                  (replicate i x))))
+                  (repeat i x))))
        (apply str)))
