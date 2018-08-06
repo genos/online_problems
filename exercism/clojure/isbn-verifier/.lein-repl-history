@@ -119,3 +119,33 @@ c
 (apply + (map-indexed (fn [i x] (*(+ 1 i) (iv/int-map x))) (reverse c))
 )
 (mod *1 11)
+(zipmap "0123456789X
+
+)
+")
+(zipmap "0123456789X" (range))
+(def int-map (zipmap "0123456789X" (range)))
+int-map
+(map (fn [x i] [(inc i) x]) int-map "1234567y89")
+(map (fn [x i] [(inc i) (int-map x)]) "12345667890" (range 1 10))
+(map (fn [x i] [(inc i) (int-map x)]) "12345667890" (range 1 100))
+(defn polynomial [c]
+(apply + (map (fn [x i] (* (inc i) (int-map x))) (reverse c) (range 1 20))))
+(polynomai)
+(polynomial "359821507X")
+(mod *1 11)
+(defn polynomial [c]
+[ (map (fn [x i] (* (inc i) (int-map x))) (reverse c) (range 1 20)))])
+[ (map (fn [x i] (* (inc i) (int-map x))) (reverse c) (range 1 20))])
+(defn polynomial [c]
+[ (map (fn [x i] (* (inc i) (int-map x))) (reverse c) (range 1 20))])
+(polynomial "359821507X")
+(defn polynomial [c]
+ (map (fn [x i] [(inc i) (int-map x)]) (reverse c) (range 1 20)))
+(polynomial "359821507X")
+(defn polynomial [c]
+ (map (fn [x i] [(inc i) (int-map x)]) (reverse c) (range 20)))
+(polynomial "359821507X")
+(defn polynomial [c]
+ (map (fn [x i] [(inc i) (int-map x)]) (reverse c) (range)))
+(polynomial "359821507X")
