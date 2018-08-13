@@ -8,6 +8,6 @@
     (for/fold ([d : Natural 0])
               ([x (in-string a)]
                [y (in-string b)]
-               #:when (not (char=? x y)))
+               #:unless (char=? x y))
       (add1 d))
     (error 'lengths-differ)))
