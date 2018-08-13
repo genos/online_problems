@@ -29,4 +29,4 @@ Q, Z                               10
     (apply hash-union
       (for/list ([pair t])
         (for/hasheqv ([c (car pair)])
-          (values (char-upcase c) (cdr pair)))))))
+          (values c (cdr pair)))))))
