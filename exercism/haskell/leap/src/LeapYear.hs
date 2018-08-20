@@ -3,4 +3,10 @@ module LeapYear
   where
 
 isLeapYear :: Integer -> Bool
-isLeapYear y = (y `mod` 4 == 0) && (y `mod` 100 /= 0 || y `mod` 400 == 0)
+isLeapYear y
+  | modZero 400 = True
+  | modZero 100 = False
+  | modZero 4   = True
+  | otherwise   = False
+    where
+      modZero n = y `mod` n == 0

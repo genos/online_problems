@@ -6,7 +6,7 @@ dependencies:
 library:
   exposed-modules: LeapYear
   source-dirs: src
-  dependencies:
+  dependencies: []
 
 tests:
   test:
