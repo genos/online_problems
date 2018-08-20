@@ -1,10 +1,10 @@
 # Leap
 
-Write a program that will take a year and report if it is a leap year.
+Given a year, report if it is a leap year.
 
 The tricky thing here is that a leap year in the Gregorian calendar occurs:
 
-```plain
+```text
 on every year that is evenly divisible by 4
   except every year that is evenly divisible by 100
     unless the year is also evenly divisible by 400
@@ -25,6 +25,19 @@ For a delightful, four minute explanation of the whole leap year
 phenomenon, go watch [this youtube video][video].
 
 [video]: http://www.youtube.com/watch?v=xX96xng7sAE
+
+## Hints
+
+To complete this exercise you need to implement the function `isLeapYear`,
+that takes a year and determines whether it is a leap year.
+
+You can use the provided signature if you are unsure about the types, but
+don't let it restrict your creativity:
+
+```haskell
+isLeapYear :: Integer -> Bool
+```
+
 
 
 ## Getting Started
@@ -73,28 +86,15 @@ stack ghci
 
 ## Feedback, Issues, Pull Requests
 
-The [exercism/xhaskell](https://github.com/exercism/xhaskell) repository on
+The [exercism/haskell](https://github.com/exercism/haskell) repository on
 GitHub is the home for all of the Haskell exercises.
 
 If you have feedback about an exercise, or want to help implementing a new
 one, head over there and create an issue.  We'll do our best to help you!
 
-## Hints
-
-To complete this exercise you need to implement the function `isLeapYear`,
-that takes a year and determines whether it is a leap year.
-
-You can use the provided signature if you are unsure about the types, but
-don't let it restrict your creativity:
-
-```haskell
-isLeapYear :: Integer -> Bool
-```
-
 ## Source
 
 JavaRanch Cattle Drive, exercise 3 [http://www.javaranch.com/leap.jsp](http://www.javaranch.com/leap.jsp)
 
-## Submitting Incomplete Problems
+## Submitting Incomplete Solutions
 It's possible to submit an incomplete solution so you can see how others have completed the exercise.
-
