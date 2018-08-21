@@ -3,18 +3,12 @@ pub struct Brackets {
     seen: Vec<char>,
 }
 
-impl Default for Brackets {
-    fn default() -> Self {
-        Brackets {
-            ok: true,
-            seen: Vec::new(),
-        }
-    }
-}
-
 impl<'a> From<&'a str> for Brackets {
     fn from(input: &str) -> Self {
-        let mut b = Brackets::default();
+        let mut b = Brackets {
+            ok: true,
+            seen: Vec::new(),
+        };
         for c in input.chars() {
             match c {
                 '[' | '{' | '(' => b.seen.push(c),
