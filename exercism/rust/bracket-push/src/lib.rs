@@ -17,7 +17,7 @@ impl<'a> From<&'a str> for Brackets {
                         ']' => x == '[',
                         '}' => x == '{',
                         ')' => x == '(',
-                        _ => panic!("Not a bracket pair character"),
+                        _ => false, // impossible but need to exhaust possibilities
                     });
                 }
                 _ => (),
