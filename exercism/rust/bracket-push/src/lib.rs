@@ -12,7 +12,14 @@ impl<'a> From<&'a str> for Brackets {
         for c in input.chars() {
             match c {
                 '[' | '{' | '(' => b.seen.push(c),
-                ']' | '}' | ')' => b.pop_and_pair(c),
+                ']' | '}' | ')' => {
+                    b.ok = b.seen.pop().map_or(false, |x| match c {
+                        ']' => x == '[',
+                        '}' => x == '{',
+                        ')' => x == '(',
+                        _ => panic!("Not a bracket pair character"),
+                    });
+                }
                 _ => (),
             }
             if !b.ok {
@@ -27,13 +34,5 @@ impl<'a> From<&'a str> for Brackets {
 impl Brackets {
     pub fn are_balanced(&self) -> bool {
         self.ok
-    }
-    fn pop_and_pair(&mut self, c: char) {
-        self.ok = self.seen.pop().map_or(false, |x| match c {
-            ']' => x == '[',
-            '}' => x == '{',
-            ')' => x == '(',
-            _ => panic!("Not a bracket pair character"),
-        });
     }
 }
