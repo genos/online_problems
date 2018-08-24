@@ -1,5 +1,3 @@
-#![feature(slice_patterns)]
-
 #[derive(Debug, PartialEq)]
 pub enum Comparison {
     Equal,
