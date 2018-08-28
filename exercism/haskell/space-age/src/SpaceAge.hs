@@ -1,7 +1,11 @@
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+
 module SpaceAge
   (Planet(..)
   ,ageOn)
   where
+
+newtype Seconds = S Double deriving (Eq, Ord, Num, Fractional, Real)
 
 data Planet
     = Mercury
@@ -13,11 +17,11 @@ data Planet
     | Uranus
     | Neptune
 
-ageOn :: Planet -> Double -> Double
-ageOn planet = (/ (adjustment * earthYearInSeconds))
+ageOn :: Planet -> Seconds -> Seconds
+ageOn p = (/ (period * earthYear))
  where
-  earthYearInSeconds = 31557600
-  adjustment         = case planet of
+  earthYear  = 31557600
+  period = case p of
     Earth   -> 1
     Mercury -> 0.2408467
     Venus   -> 0.61519726
