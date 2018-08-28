@@ -12,8 +12,7 @@ main :: IO ()
 main = hspecWith defaultConfig {configFastFail = True} specs
 
 specs :: Spec
-specs = describe "space-age" $
-          describe "ageOn" $ for_ cases test
+specs = describe "ageOn" $ for_ cases test
   where
     -- Here we used `fromIntegral`, `fromRational` and `toRational` to
     -- generalize the test suite, allowing any function that takes a
@@ -27,8 +26,6 @@ specs = describe "space-age" $
                    $ seconds
         shouldBeAround = shouldBe `on` roundTo 2
         roundTo n = (/ 10 ^ n) . fromIntegral . round . (* 10 ^ n)
-
--- Test cases adapted from `exercism/x-common/space-age.json` on 2016-07-27.
 
 data Case = Case { description :: String
                  , planet      :: Planet

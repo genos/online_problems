@@ -13,12 +13,16 @@ data Planet
     | Uranus
     | Neptune
 
-ageOn :: Planet -> Float -> Float
-ageOn Earth   = (/ 31557600)
-ageOn Mercury = (/ 0.2408467)  . ageOn Earth
-ageOn Venus   = (/ 0.61519726) . ageOn Earth
-ageOn Mars    = (/ 1.8808158)  . ageOn Earth
-ageOn Jupiter = (/ 11.862615)  . ageOn Earth
-ageOn Saturn  = (/ 29.447498)  . ageOn Earth
-ageOn Uranus  = (/ 84.016846)  . ageOn Earth
-ageOn Neptune = (/ 164.79132)  . ageOn Earth
+ageOn :: Planet -> Double -> Double
+ageOn planet = (/ (adjustment * earthYearInSeconds))
+ where
+  earthYearInSeconds = 31557600
+  adjustment         = case planet of
+    Earth   -> 1
+    Mercury -> 0.2408467
+    Venus   -> 0.61519726
+    Mars    -> 1.8808158
+    Jupiter -> 11.862615
+    Saturn  -> 29.447498
+    Uranus  -> 84.016846
+    Neptune -> 164.79132
