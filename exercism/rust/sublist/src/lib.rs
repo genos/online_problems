@@ -6,37 +6,19 @@ pub enum Comparison {
     Unequal,
 }
 
-impl Comparison {
-    fn dual(self) -> Comparison {
-        match self {
-            Comparison::Sublist => Comparison::Superlist,
-            Comparison::Superlist => Comparison::Sublist,
-            c => c,
-        }
-    }
-}
-
 pub fn sublist<T: PartialEq>(xs: &[T], ys: &[T]) -> Comparison {
-    if xs.len() >= ys.len() {
-        cmp_larger_shorter(xs, ys)
-    } else {
-        cmp_larger_shorter(ys, xs).dual()
-    }
-}
-
-// This also works but is inefficient; I'd prefer a more intelligent search.
-fn cmp_larger_shorter<T: PartialEq>(larger: &[T], shorter: &[T]) -> Comparison {
-    if larger.is_empty() {
+    if xs == ys {
         Comparison::Equal
-    } else if shorter.is_empty() {
+    } else if xs.len() < ys.len() && is_sublist(xs, ys) {
+        Comparison::Sublist
+    } else if is_sublist(ys, xs) {
         Comparison::Superlist
-    } else if larger.windows(shorter.len()).any(|slice| slice == shorter) {
-        if larger.len() == shorter.len() {
-            Comparison::Equal
-        } else {
-            Comparison::Superlist
-        }
     } else {
         Comparison::Unequal
     }
+}
+
+// This works but is inefficient; I'd prefer a more intelligent search.
+fn is_sublist<T: PartialEq>(short: &[T], long: &[T]) -> bool {
+    short.is_empty() || long.windows(short.len()).any(|slice| slice == short)
 }
