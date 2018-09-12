@@ -8,4 +8,4 @@
   (ash 1 (1- n)))
 
 (defun total ()
-  (loop for n from 1 to 64 summing (square n)))
+  (1- (ash 1 64)))
