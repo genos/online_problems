@@ -1,13 +1,11 @@
 {-# LANGUAGE BangPatterns #-}
 module PrimeFactors (primeFactors) where
 
-import Data.List (sort)
-
 -- When in doubt, trial division
 primeFactors :: Integer -> [Integer]
 primeFactors n | n < 2     = []
                | even n    = 2 : primeFactors (n `div` 2)
-               | otherwise = sort $ go 3 n []
+               | otherwise = reverse $ go 3 n []
  where
   go !k !m !fs | k > m          = fs
                | k == m         = k : fs
