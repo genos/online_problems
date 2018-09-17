@@ -2,10 +2,10 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 1073d1aea6d18fe32cf87c28133e5ba32f10a732fda031fce23eebb8a5d0cf8b
+-- hash: ef6095d20468626d5aa163a0c5cedbeb465cf761d15271944a2f3777b9ee36ea
 
 name:           prime-factors
-version:        1.0.0.3
+version:        1.1.0.4
 build-type:     Simple
 cabal-version:  >= 1.10
 
