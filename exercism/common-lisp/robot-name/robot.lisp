@@ -13,6 +13,11 @@
   (make-hash-table :test #'equal)
   "Efficiently stored collection of all previously seen names")
 
+(defun names-exhausted-p ()
+  "Are all possible robot names used?"
+  (>= (hash-table-size *seen-names*)
+      (* 26 26 10 10 10))) ;; two uppercase characters + three digits
+
 (defun rand-char ()
   "Generate a random uppercase ASCII character"
   (elt "ABCDEFGHIJKLMNOPQRSTUVWXYZ" (random 26)))
@@ -29,12 +34,14 @@
 
 (defun new-name ()
   "Generate a _new_ random name, one not already in *seen-names*"
-  (loop
-    for name = (rand-name) then (rand-name)
-    until (not (gethash name *seen-names*))
-    finally (progn
-              (setf (gethash name *seen-names*) (the bit 0))
-              (return name))))
+  (if (names-exhausted-p)
+    (error "All possible robot names are in use.")
+    (loop
+      for name = (rand-name) then (rand-name)
+      until (not (gethash name *seen-names*))
+      finally (progn
+                (setf (gethash name *seen-names*) (the bit 0))
+                (return name)))))
 
 (defstruct robot
   "An automaton with a name"
