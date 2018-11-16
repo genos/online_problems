@@ -4,7 +4,10 @@ the usual iterative Fibonacci procedure, and a (mutually) recursive one like
 the last solution.
 [sourcecode lang="css"]
 -}
+module Main where
+
 import Control.Arrow ((&&&))
+import Data.Foldable (traverse_)
 
 lucas :: Integer -> Integer -> Integer -> Integer -> [Integer]
 lucas x0 x1 p q = x0 : x1 : zipWith (\x y-> p * x - q * y) as bs
@@ -37,7 +40,7 @@ v2 p q n | n <= 0    = 2
 main :: IO ()
 main = do
     let (p,q) = (1,-1)
-    mapM_ (print . take 17) [u1 p q, v1 p q]
+    traverse_ (print . take 17) [u1 p q, v1 p q]
     print $ map (u2 p q &&& v2 p q) [0..16]
 {-
 [/sourcecode]

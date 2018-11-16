@@ -1,4 +1,7 @@
+module Main where
+
 import Control.Monad.Writer
+import Data.Foldable (traverse_)
 
 -- Simple recursive version
 m :: Integer -> Integer
@@ -20,4 +23,4 @@ m' n c | c <= 0    = do
 
 -- Example
 main :: IO ()
-main = mapM_ putStrLn $ snd $ runWriter (m' 87 1)
+main = traverse_ putStrLn $ snd $ runWriter (m' 87 1)

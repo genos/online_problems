@@ -1,14 +1,15 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TemplateHaskell   #-}
 
 module Main where
 
-import Data.ByteString (ByteString)
+import           Data.ByteString       (ByteString)
 import qualified Data.ByteString.Char8 as BC
-import Data.FileEmbed (embedFile)
-import Data.List (transpose)
-import Data.List.Split (chunksOf)
-import Data.Maybe (fromJust)
+import           Data.FileEmbed        (embedFile)
+import           Data.Foldable         (traverse_)
+import           Data.List             (transpose)
+import           Data.List.Split       (chunksOf)
+import           Data.Maybe            (fromJust)
 
 triple :: ByteString -> [Int]
 triple =
@@ -20,7 +21,7 @@ input = $(embedFile "input.txt")
 triples :: [[Int]]
 triples = map triple . BC.lines $ input
 
-validTriangle :: [Int]  -> Bool
+validTriangle :: [Int] -> Bool
 validTriangle xs = (a + b) > c && (a + c) > b && (b + c) > a
   where [a, b, c] = take 3 xs
 
@@ -34,4 +35,4 @@ part2 :: Int
 part2 = countValid . concatMap (chunksOf 3) . transpose $ triples
 
 main :: IO ()
-main = mapM_ print [part1, part2]
+main = traverse_ print [part1, part2]

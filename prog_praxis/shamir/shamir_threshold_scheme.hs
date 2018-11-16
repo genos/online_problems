@@ -4,8 +4,11 @@
  - GRE, 6/23/11
  -}
 
+module Main where
+
 import Data.Bits (shiftR, testBit)
-import Data.List (foldl', nub)
+import Data.List (nub)
+import Data.Foldable (foldl', traverse_)
 import Random (mkStdGen, randomRs)
 
 -- Modular Exponentiation, from Remco Niemeijer's blog
@@ -49,7 +52,7 @@ interpConst xyPairs k p = sum [y i * c i `mod` p| i <- [0..k-1]] `mod` p
 -- Driver Code
 main :: IO ()
 main = do   print s
-            mapM_ print xyPairs
+            traverse_ print xyPairs
             print $ interpConst xyPairs k p where
                 s = 1557514036
                 n = 20

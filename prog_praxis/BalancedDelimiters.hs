@@ -1,4 +1,7 @@
+module Main where
+
 import Control.Arrow ((&&&))
+import Data.Foldable (traverse_)
 import Data.Maybe (fromJust)
 import qualified Data.Map as M
 import qualified Data.Set as S
@@ -22,5 +25,5 @@ ok = f []
         g s c      = not (null s) && (head s == fromJust (M.lookup c pairs))
 
 main :: IO ()
-main = mapM_ (print . (id &&& ok)) . words $
+main = traverse_ (print . (id &&& ok)) . words $
     "{} [] () a(b)c abc[d] a(b)c{d[e]} {] (] a(b]c abc[d} a(b)c{d[e}]"

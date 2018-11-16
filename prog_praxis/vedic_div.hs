@@ -1,3 +1,6 @@
+module Main where
+
+import Data.Foldable (traverse_)
 import Data.Map
 
 osculator :: (Integral a) => a -> a
@@ -14,5 +17,5 @@ isDivisible n d = aux old new where
                     | otherwise         = aux y (a + b * osc) where (a,b) = divMod y 10
 
 main :: IO ()
-main = mapM_ (\(n,d) -> print $ "Is " ++ show n ++ " divisible by " ++ show d ++
+main = traverse_ (\(n,d) -> print $ "Is " ++ show n ++ " divisible by " ++ show d ++
      "? " ++ show (isDivisible n d)) [(13174584, 23), (175121, 37), (134567, 29)]
