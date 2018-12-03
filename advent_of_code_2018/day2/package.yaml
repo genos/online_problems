@@ -1,0 +1,14 @@
+name:                day2
+license:             MIT
+
+ghc-options: -Wall -Werror -O2
+
+dependencies:
+  - base >= 4.7 && < 5
+  - containers
+  - text
+
+executables:
+  day2:
+    source-dirs: src
+    main:        Main.hs
