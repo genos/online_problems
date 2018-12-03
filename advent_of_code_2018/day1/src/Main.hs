@@ -1,12 +1,16 @@
 module Main where
 
-import Data.Foldable (find)
-import Data.IntSet   (empty, insert, member)
-import Data.List     (scanl')
+import           Data.Either    (fromRight)
+import           Data.Foldable  (find)
+import           Data.IntSet    (empty, insert, member)
+import           Data.List      (scanl')
+import           Data.Text      (Text)
+import qualified Data.Text      as T
+import qualified Data.Text.IO   as T
+import qualified Data.Text.Read as T
 
-readInt :: String -> Int
-readInt ('+' : s) = read s
-readInt s         = read s
+readInt :: Text -> Int
+readInt = fromRight 0 . (fmap fst . T.signed T.decimal)
 
 part1 :: [Int] -> Int
 part1 = sum
@@ -19,6 +23,6 @@ part2 xs = fmap fst . find (uncurry member) $ zip list sets
 
 main :: IO ()
 main = do
-  xs <- fmap readInt . lines <$> readFile "input"
+  xs <- fmap readInt . T.lines <$> T.readFile "input"
   print $ part1 xs
   print $ part2 xs
