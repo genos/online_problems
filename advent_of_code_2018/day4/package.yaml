@@ -1,0 +1,17 @@
+name:                day4
+license:             MIT
+
+ghc-options: -Wall -Werror -O2
+
+dependencies:
+  - base >= 4.7 && < 5
+  - attoparsec
+  - containers
+  - finite-typelits
+  - split
+  - text
+
+executables:
+  day4:
+    source-dirs: src
+    main:        Main.hs
