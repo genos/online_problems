@@ -1,0 +1,28 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.31.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 8a527e46347327bea68bfd9f9dee951aa88f7239d95745351a3385333212ed89
+
+name:           day3
+version:        0.0.0
+license:        MIT
+license-file:   LICENSE
+build-type:     Simple
+
+executable day3
+  main-is: Main.hs
+  other-modules:
+      Paths_day3
+  hs-source-dirs:
+      src
+  ghc-options: -Wall -Werror -O2
+  build-depends:
+      attoparsec
+    , base >=4.7 && <5
+    , containers
+    , protolude
+    , text
+  default-language: Haskell2010

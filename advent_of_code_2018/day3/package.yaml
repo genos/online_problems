@@ -1,0 +1,16 @@
+name:                day3
+license:             MIT
+
+ghc-options: -Wall -Werror -O2
+
+dependencies:
+  - base >= 4.7 && < 5
+  - protolude
+  - containers
+  - attoparsec
+  - text
+
+executables:
+  day3:
+    source-dirs: src
+    main:        Main.hs
