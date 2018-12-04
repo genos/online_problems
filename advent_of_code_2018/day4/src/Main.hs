@@ -48,9 +48,7 @@ dateTime = do
   pure DT {_year , _month , _day , _hour , _minute }
 
 guard :: Parser Guard
-guard = do
-  _id <- string "Guard #" *> decimal <* space
-  pure G {_id }
+guard = G <$> (string "Guard #" *> decimal <* space)
 
 action :: Parser Action
 action = choice $ zipWith (\a b -> string a >> pure b)
@@ -78,17 +76,21 @@ compile =
     M.fromListWith (+) . fmap (, 1) $ enumFromTo (_minute df) (_minute dw)
   napped _ = M.empty
 
-sleepiest :: Map Guard (Map Minute Word) -> Guard
-sleepiest = fst . maximumBy (comparing snd) . M.toList . M.map sum
+maxByVal :: Ord b => Map a b -> a
+maxByVal = fst . maximumBy (comparing snd) . M.toList
 
 part1 :: [Entry] -> Word
 part1 es = i * k
  where
   c = compile es
-  g = sleepiest c
-  k = fromIntegral $ fst $ maximumBy (comparing snd) $ M.toList (c M.! g)
+  g = maxByVal . M.map sum $ c
+  k = fromIntegral $ maxByVal (c M.! g)
   i = _id g
 
+-- part2 :: [Entry] -> Word
+-- part2 es = _todo
+--   where
+--     c = compile es
 
 main :: IO ()
 main = do
