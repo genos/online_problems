@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 8a527e46347327bea68bfd9f9dee951aa88f7239d95745351a3385333212ed89
+-- hash: 53a929a74008230f1158f3a3ac6104f49e60b336cd41ec4cb931cdce62baa8b3
 
 name:           day3
 version:        0.0.0
@@ -23,6 +23,5 @@ executable day3
       attoparsec
     , base >=4.7 && <5
     , containers
-    , protolude
     , text
   default-language: Haskell2010

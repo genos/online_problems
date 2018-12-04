@@ -5,9 +5,8 @@ ghc-options: -Wall -Werror -O2
 
 dependencies:
   - base >= 4.7 && < 5
-  - protolude
-  - containers
   - attoparsec
+  - containers
   - text
 
 executables:
