@@ -7,23 +7,23 @@ module Main where
 import           Control.Arrow        ((&&&))
 import           Data.Attoparsec.Text
 import           Data.Either          (fromRight)
-import           Data.Finite
 import           Data.Foldable        (foldl', maximumBy)
 import           Data.List            (sort)
 import           Data.List.Split      hiding (sepBy)
 import           Data.Map.Strict      (Map)
 import qualified Data.Map.Strict      as M
-import           Data.Maybe           (fromJust)
+import           Data.Maybe           (fromJust, fromMaybe, isJust)
 import           Data.Ord             (comparing)
 import qualified Data.Text.IO         as T
 
-type Minute = Finite 60
+type Minute = Word
+type Count = Word
 
 data DateTime = DT { _year   :: {-# UNPACK #-}!Word
-                   , _month  :: !(Finite 12)
+                   , _month  :: {-# UNPACK #-}!Word
                    , _day    :: {-# UNPACK #-}!Word
-                   , _hour   :: !(Finite 24)
-                   , _minute :: Minute
+                   , _hour   :: {-# UNPACK #-}!Word
+                   , _minute :: {-# UNPACK #-}!Minute
                    } deriving (Eq, Ord, Show)
 
 newtype Guard = G { _id :: Word } deriving (Eq, Ord, Show)
@@ -62,7 +62,7 @@ entry = do
   _action   <- action
   pure E {_dateTime , _guard , _action }
 
-compile :: [Entry] -> Map Guard (Map Minute Word)
+compile :: [Entry] -> Map Guard (Map Minute Count)
 compile =
   M.fromListWith (M.unionWith (+))
     . fmap tally
@@ -76,24 +76,29 @@ compile =
     M.fromListWith (+) . fmap (, 1) $ enumFromTo (_minute df) (_minute dw)
   napped _ = M.empty
 
-maxByVal :: Ord b => Map a b -> a
-maxByVal = fst . maximumBy (comparing snd) . M.toList
+maxByVal :: Ord b => Map a b -> Maybe a
+maxByVal = fmap fst . maxByValKey
 
-part1 :: [Entry] -> Word
-part1 es = i * k
- where
-  c = compile es
-  g = maxByVal . M.map sum $ c
-  k = fromIntegral $ maxByVal (c M.! g)
-  i = _id g
+maxByValKey :: Ord b => Map a b -> Maybe (a, b)
+maxByValKey m = if M.null m
+  then Nothing
+  else Just . maximumBy (comparing snd) . M.toList $ m
 
--- part2 :: [Entry] -> Word
--- part2 es = _todo
---   where
---     c = compile es
+part1 :: Map Guard (Map Minute Count) -> Maybe Word
+part1 c = do
+  g <- maxByVal . fmap sum $ c
+  k <- maxByVal (c M.! g)
+  pure $ _id g * fromIntegral k
+
+part2 :: Map Guard (Map Minute Count) -> (Guard, Minute)
+part2 c = _todo
+  where
+    maxes = fmap fromJust $ M.filter isJust $ fmap maxByValKey c
 
 main :: IO ()
 main = do
   entries <- (fromRight [] . parseOnly (entry `sepBy` char '\n'))
     <$> T.readFile "input"
-  print . part1 $ entries
+  let compiled = compile entries
+  print . part1 $ compiled
+  --print . part2 $ compiled
