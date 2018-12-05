@@ -6,7 +6,8 @@ ghc-options: -Wall -O2
 dependencies:
   - base >= 4.7 && < 5
   - attoparsec
-  - containers
+  - unordered-containers
+  - hashable
   - split
   - text
 
