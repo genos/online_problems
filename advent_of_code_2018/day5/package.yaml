@@ -1,0 +1,12 @@
+name:                day5
+license:             MIT
+
+ghc-options: -Wall -O2
+
+dependencies:
+  - base >= 4.7 && < 5
+
+executables:
+  day5:
+    source-dirs: src
+    main:        Main.hs
