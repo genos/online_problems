@@ -2,18 +2,18 @@
 {-# LANGUAGE NamedFieldPuns    #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TupleSections     #-}
+
 module Main where
 
-import           Control.Arrow        ((&&&), second)
+import           Control.Arrow        ((&&&))
 import           Data.Attoparsec.Text
 import           Data.Either          (fromRight)
 import           Data.Foldable        (foldl', maximumBy)
 import           Data.Function        (on)
-import           Data.List            (group, groupBy, sort, sortBy)
+import           Data.List            (sort)
 import           Data.List.Split      hiding (sepBy)
-import           Data.Monoid          (Sum(..))
-import           Data.HashMap.Strict  (HashMap)
-import qualified Data.HashMap.Strict  as H
+import           Data.Map.Strict      (Map)
+import qualified Data.Map.Strict      as M
 import           Data.Maybe           (fromJust)
 import           Data.Ord             (comparing)
 import qualified Data.Text.IO         as T
@@ -27,14 +27,14 @@ data DateTime = DT { _year   :: {-# UNPACK #-}!Word
                    , _day    :: {-# UNPACK #-}!Word
                    , _hour   :: {-# UNPACK #-}!Word
                    , _minute :: {-# UNPACK #-}!Minute
-                   } deriving (Eq, Ord, Show)
+                   } deriving (Eq, Ord)
 
-data Action = BeginsShift | FallsAsleep | WakesUp deriving (Eq, Show)
+data Action = BeginsShift | FallsAsleep | WakesUp deriving Eq
 
 data Entry = E { _dateTime :: !DateTime
                , _guard    :: Maybe Guard
                , _action   :: !Action
-               } deriving (Eq, Show)
+               } deriving Eq
 
 instance Ord Entry where
   (E dt1 _ _) <= (E dt2 _ _) = dt1 <= dt2
@@ -63,72 +63,27 @@ entry = do
   _action   <- action
   pure E {_dateTime , _guard , _action }
 
-type Nap = (Guard, Minute)
-
-collect :: [Entry] -> [Nap]
-collect =
-  sort
-  . concatMap toNap
-  . fmap tally
-  . tail
-  . split (keepDelimsL . whenElt $ (== BeginsShift) . _action)
-  . sort
-    where
-      toNap (g, ms) = fmap (g,) ms
-      tally = (fromJust . _guard . head) &&& (concatMap napped . chunksOf 2 . tail)
-      napped [E df _ FallsAsleep, E dw _ WakesUp] = [_minute df .. _minute dw]
-      napped _ = []
-
-maxByLen :: [[a]] -> [a]
-maxByLen = maximumBy (comparing length)
-
-sleptMostMinutes :: [Nap] -> (Guard, Minute)
-sleptMostMinutes naps = head mostNapped
-  where
-    groupedNaps = groupBy ((==) `on` fst) naps
-    mostNaps    = maxByLen groupedNaps
-    mostNapped  = maxByLen $ groupBy ((==) `on` snd) mostNaps
-
-part1 :: [Nap] -> Word
-part1 = uncurry (*) . sleptMostMinutes
-
-sleptMostFrequentlyOnMin :: [Nap] -> (Guard, (Minute, Int))
-sleptMostFrequentlyOnMin naps = last mostFreqMinned
-  where
-    groupedNaps = groupBy ((==) `on` fst) naps
-    guardNapMins = fmap ((fst . head) &&& (fmap snd)) groupedNaps
-    mostFreqMin (g, ms) = (g, head &&& length . maxByLen . group $ ms)
-    mostFreqMinned = sortBy (comparing $ snd . snd) $ fmap mostFreqMin guardNapMins
-
--- part2 :: [Nap] -> Word
--- part2 = uncurry (*) . sleptMostFrequentlyOnMin
-
-compile :: [Entry] -> HashMap Guard (HashMap Minute Count)
-compile =
-  H.fromListWith (H.unionWith (+))
-    . fmap tally
-    . tail
-    . split (keepDelimsL . whenElt $ (== BeginsShift) . _action)
-    . sort
+compile :: [Entry] -> Map Guard (Map Minute Count)
+compile = M.fromListWith (M.unionWith (+)) . fmap analyze . split shifts . sort
  where
-  tally = (fromJust . _guard . head) &&& (naps . tail)
-  naps  = foldl' (H.unionWith (+)) H.empty . fmap napped . chunksOf 2
-  napped [E df _ FallsAsleep, E dw _ WakesUp] =
-    H.fromListWith (+) . fmap (, 1) $ enumFromTo (_minute df) (_minute dw)
-  napped _ = H.empty
+  shifts = keepDelimsL . dropInitBlank . whenElt $ (== BeginsShift) . _action
+  analyze = (fromJust . _guard . head) &&& (naps . tail)
+  naps = foldl' (M.unionWith (+)) M.empty . fmap (tally . napped) . chunksOf 2
+  tally = M.fromListWith (+) . fmap (, 1)
+  napped [E f _ FallsAsleep, E w _ WakesUp] = (enumFromTo `on` _minute) f w
+  napped _ = []
 
-maxByVal :: Ord b => HashMap a b -> Maybe a
-maxByVal = fmap fst . maxByValKey
-
-maxByValKey :: Ord b => HashMap a b -> Maybe (a, b)
-maxByValKey m = if H.null m
-  then Nothing
-  else Just . maximumBy (comparing snd) . H.toList $ m
+solve :: (Map Minute Count -> Word) -> Map Guard (Map Minute Count) -> Word
+solve f chart = g * m
+  where
+  g = fst . maxByValKey . M.map f . M.filter (not . M.null) $ chart
+  m = fst . maxByValKey $ chart M.! g
+  maxByValKey = maximumBy (comparing snd) . M.toList
 
 main :: IO ()
 main = do
-  entries <- (fromRight [] . parseOnly (entry `sepBy` char '\n'))
-    <$> T.readFile "input"
-  let naps = collect entries
-  print . part1 $ naps
-  --print . part2 $ compiled
+  input <- T.readFile "input"
+  let entries = fromRight [] . parseOnly (entry `sepBy` char '\n') $ input
+      chart = compile entries
+  print . solve sum $ chart
+  print . solve maximum $ chart

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 2216f259768b4c1a415b78a829c58726be1a9fc3d962e417d5942fb53f7e6e7a
+-- hash: 99a95ff58cd5d5426090b1e96bba5348dc3a6a36647da68311ec9f70e1b38421
 
 name:           day4
 version:        0.0.0
@@ -22,8 +22,7 @@ executable day4
   build-depends:
       attoparsec
     , base >=4.7 && <5
-    , hashable
+    , containers
     , split
     , text
-    , unordered-containers
   default-language: Haskell2010
