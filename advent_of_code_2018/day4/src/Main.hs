@@ -1,4 +1,3 @@
-{-# LANGUAGE DataKinds         #-}
 {-# LANGUAGE NamedFieldPuns    #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TupleSections     #-}
@@ -70,7 +69,7 @@ compile = M.fromListWith (M.unionWith (+)) . fmap analyze . split shifts . sort
   analyze = (fromJust . _guard . head) &&& (naps . tail)
   naps = foldl' (M.unionWith (+)) M.empty . fmap (tally . napped) . chunksOf 2
   tally = M.fromListWith (+) . fmap (, 1)
-  napped [E f _ FallsAsleep, E w _ WakesUp] = (enumFromTo `on` _minute) f w
+  napped [E f _ FallsAsleep, E w _ WakesUp] = [_minute f .. _minute w - 1]
   napped _ = []
 
 solve :: (Map Minute Count -> Word) -> Map Guard (Map Minute Count) -> Word
