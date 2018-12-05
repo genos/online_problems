@@ -1,6 +1,6 @@
 module Main where
 
-import Data.Char     (isLetter, toLower)
+import Data.Char (isLetter, toLower)
 
 react :: String -> Int
 react = length . foldr step ""
@@ -13,8 +13,7 @@ part1 = react
 
 part2 :: String -> Int
 part2 s = minimum $ fmap (react . remove) ['a' .. 'z']
-  where
-    remove c = filter ((/= c) . toLower) s
+  where remove c = filter ((/= c) . toLower) s
 
 main :: IO ()
 main = do
