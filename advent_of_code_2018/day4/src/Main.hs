@@ -6,9 +6,7 @@ module Main where
 
 import           Control.Arrow        ((&&&))
 import           Data.Attoparsec.Text
-import           Data.Either          (fromRight)
 import           Data.Foldable        (foldl', maximumBy)
-import           Data.Function        (on)
 import           Data.List            (sort)
 import           Data.List.Split      hiding (sepBy)
 import           Data.Map.Strict      (Map)
@@ -45,7 +43,7 @@ dateTime = do
   _day    <- char '-' *> decimal
   _hour   <- space *> decimal
   _minute <- char ':' *> decimal <* char ']' <* space
-  pure DT {_year , _month , _day , _hour , _minute }
+  pure DT { _year , _month , _day , _hour , _minute }
 
 guard :: Parser Guard
 guard = string "Guard #" *> decimal <* space
@@ -56,33 +54,31 @@ action = choice $ zipWith (\a b -> string a >> pure b)
                           [BeginsShift, FallsAsleep, WakesUp]
 
 entry :: Parser Entry
-entry = do
-  _dateTime <- dateTime
-  _guard    <- option Nothing (Just <$> guard)
-  _action   <- action
-  pure E {_dateTime , _guard , _action }
+entry = E <$> dateTime <*> option Nothing (Just <$> guard) <*> action
 
 compile :: [Entry] -> Map Guard (Map Minute Count)
 compile = M.fromListWith (M.unionWith (+)) . fmap analyze . split shifts . sort
  where
-  shifts = keepDelimsL . dropInitBlank . whenElt $ (== BeginsShift) . _action
-  analyze = (fromJust . _guard . head) &&& (naps . tail)
-  naps = foldl' (M.unionWith (+)) M.empty . fmap (tally . napped) . chunksOf 2
-  tally = M.fromListWith (+) . fmap (, 1)
-  napped [E f _ FallsAsleep, E w _ WakesUp] = [_minute f .. _minute w - 1]
-  napped _ = []
+  shifts  = keepDelimsL . dropInitBlank . whenElt $ (== BeginsShift) . _action
+  analyze = (fromJust . _guard . head) &&& (toNaps . tail)
+  toNaps  = foldl' (M.unionWith (+)) M.empty . fmap (tally . naps) . chunksOf 2
+  tally   = M.fromListWith (+) . fmap (, 1)
+  naps [E f _ FallsAsleep, E w _ WakesUp] = [_minute f .. _minute w - 1]
+  naps _                                  = []
 
 solve :: (Map Minute Count -> Word) -> Map Guard (Map Minute Count) -> Word
 solve f chart = g * m
-  where
-  g = fst . maxByValKey . M.map f . M.filter (not . M.null) $ chart
-  m = fst . maxByValKey $ chart M.! g
-  maxByValKey = maximumBy (comparing snd) . M.toList
+ where
+  g    = best . M.map f . M.filter (not . M.null) $ chart
+  m    = best $ chart M.! g
+  best = fst . maximumBy (comparing snd) . M.toList
 
 main :: IO ()
 main = do
   input <- T.readFile "input"
-  let entries = fromRight [] . parseOnly (entry `sepBy` char '\n') $ input
+  let entries = case parseOnly (entry `sepBy` char '\n') input of
+        Left  err -> error err
+        Right es  -> es
       chart = compile entries
   print . solve sum $ chart
   print . solve maximum $ chart
