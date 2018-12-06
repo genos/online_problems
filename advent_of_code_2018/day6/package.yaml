@@ -1,0 +1,17 @@
+name:                day6
+license:             MIT
+
+ghc-options: -Wall -O2
+
+dependencies:
+  - base >= 4.7 && < 5
+  - attoparsec
+  - containers
+  - lens
+  - linear
+  - text
+
+executables:
+  day6:
+    source-dirs: src
+    main:        Main.hs
