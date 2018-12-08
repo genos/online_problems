@@ -2,7 +2,6 @@
 
 module Main where
 
-import           Control.Arrow        ((&&&))
 import qualified Data.Attoparsec.Text as P
 import           Data.Char            (ord)
 import qualified Data.Map             as M
@@ -37,23 +36,23 @@ part1 = go ""
     deps' = M.map (S.delete v) $ M.delete v deps
 
 part2 :: Dependencies -> Int
-part2 = go 0 . (assign 0)
+part2 = go 0 . assign 0
  where
   assign :: Int -> Dependencies -> (Map Char Int, Dependencies)
-  assign n ds = (working, rest)
+  assign n deps = (working, rest)
     where
-      working = M.mapWithKey cost . M.take (5 - n) . M.filter S.null $ ds
-      rest = _todo
+      working = M.mapWithKey cost . M.take (5 - n) . M.filter S.null $ deps
+      w       = M.keysSet working
+      rest    = M.withoutKeys (M.map (S.\\ w) deps) w
   cost :: Char -> Set Char -> Int
-  cost key _ = ord key - 4
+  cost key = const $ ord key - 4
   go :: Int -> (Map Char Int, Dependencies) -> Int
-  go time (workers, deps) | M.null deps = time + (maximum workers)
+  go time (workers, deps) | M.null deps = time + maximum workers
                           | otherwise   = go time' (workers', deps')
    where
      elapsed           = if null workers then 0 else minimum workers
      time'             = time + elapsed
-     (done, working)   = M.partition (<= 0) $ M.map (subtract elapsed) workers
-     clear             = M.keysSet done
+     working           = M.filter (> 0) $ M.map (subtract elapsed) workers
      (starting, deps') = assign (length working) deps
      workers'          = M.union working starting
 
