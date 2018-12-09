@@ -5,7 +5,7 @@ import qualified Data.Attoparsec.Text as P
 import           Data.Maybe           (mapMaybe)
 import qualified Data.Text.IO         as T
 
-part1 :: P.Parser Word
+part1 :: P.Parser Int
 part1 = do
   numKids <- P.decimal <* P.skipSpace
   numMeta <- P.decimal <* P.skipSpace
