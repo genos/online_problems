@@ -1,0 +1,17 @@
+name:                day10
+license:             MIT
+
+ghc-options: -Wall -O2
+
+dependencies:
+  - base >= 4.7 && < 5
+  - attoparsec
+  - containers
+  - linear
+  - text
+
+
+executables:
+  day10:
+    source-dirs: src
+    main:        Main.hs
