@@ -1,0 +1,30 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.31.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 971ffbb9229330dcac0851892d0dd895939dbe965e35b79a5ed3ef152a7fd2af
+
+name:           day9
+version:        0.0.0
+license:        MIT
+license-file:   LICENSE
+build-type:     Simple
+
+executable day9
+  main-is: Main.hs
+  other-modules:
+      Circle
+      Paths_day9
+  hs-source-dirs:
+      src
+  ghc-options: -Wall -O2
+  build-depends:
+      attoparsec
+    , base >=4.7 && <5
+    , containers
+    , lens
+    , text
+    , vector
+  default-language: Haskell2010
