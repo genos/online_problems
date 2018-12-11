@@ -6,9 +6,9 @@ import           Data.Ix         (range)
 import           Data.Map.Strict (Map)
 import qualified Data.Map.Strict as M
 import           Data.Ord        (comparing)
-import           Linear.V2       (V2 (..))
 import           Data.Vector     (Vector)
 import qualified Data.Vector     as V
+import           Linear.V2       (V2 (..))
 
 type Cell  = V2 Int
 type Table = Map Cell Int
@@ -47,40 +47,38 @@ powerTable serial = M.fromList $ fmap (id &&& power serial) grid
 
 neighbors :: Int -> Cell -> Vector Cell
 neighbors size c@(V2 x y) = V.fromList $ range (c, V2 x' y')
-  where
-    x' = min maxSize (x + size)
-    y' = min maxSize (y + size)
+ where
+  x' = min maxSize (x + size)
+  y' = min maxSize (y + size)
 
 largest :: Int -> Int -> Cell
 largest serial size = maximumBy (comparing totalPower) (trimmedGrid size)
  where
-  table        = powerTable serial
+  table = powerTable serial
   totalPower c = sum $ fmap (table M.!) (neighbors size c)
 
 part1 :: String
-part1 = show x <> "," <> show y
-  where (V2 x y) = largest 6878 2
+part1 = show x <> "," <> show y where (V2 x y) = largest 6878 2
 
 bestInTable :: Table -> (Cell, Int)
 bestInTable = maximumBy (comparing snd) . M.assocs
 
 powerTables :: Int -> Vector Table
-powerTables serial = V.unfoldrN maxSize f (1, p)
-  where
-    p = powerTable serial
-    f :: (Int, Table) -> Maybe (Table, (Int, Table))
-    f (size, table) = Just (table, (size + 1, M.fromList $ fmap (id &&& g) t))
-      where
-        t = trimmedGrid size
-        g = sum . fmap (p M.!) . (neighbors $ size - 1)
+powerTables serial = V.unfoldrN maxSize (Just . f) (1, p)
+ where
+  p               = powerTable serial
+  f (size, table) = (table, (size + 1, M.fromList $ fmap (id &&& g) t))
+   where
+    t = trimmedGrid size
+    g = sum . fmap (p M.!) . (neighbors $ size - 1)
 
 largest' :: Int -> (Cell, Int)
 largest' serial = (cell, size)
-  where
-    cell   = fst $ bests V.! size
-    size   = V.maxIndex bests
-    bests  = fmap bestInTable tables
-    tables = powerTables serial
+ where
+  cell   = fst $ bests V.! size
+  size   = V.maxIndex bests
+  bests  = fmap bestInTable tables
+  tables = powerTables serial
 
 testLargest' :: Bool
 testLargest' = and $ zipWith3
