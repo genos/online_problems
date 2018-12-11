@@ -25,6 +25,9 @@ maxCell = V2 maxSize maxSize
 grid :: [Cell]
 grid = range (minCell, maxCell)
 
+trimmedGrid :: Int -> [Cell]
+trimmedGrid size = range (minCell, maxCell - V2 size size)
+
 power :: Int -> Cell -> Int
 power serial (V2 x y) = hundreds - 5
  where
@@ -49,7 +52,7 @@ neighbors size c@(V2 x y) = V.fromList $ range (c, V2 x' y')
     y' = min maxSize (y + size)
 
 largest :: Int -> Int -> Cell
-largest serial size = maximumBy (comparing totalPower) grid
+largest serial size = maximumBy (comparing totalPower) (trimmedGrid size)
  where
   table        = powerTable serial
   totalPower c = sum $ fmap (table M.!) (neighbors size c)
@@ -58,25 +61,24 @@ part1 :: String
 part1 = show x <> "," <> show y
   where (V2 x y) = largest 6878 2
 
-bestInTable :: Table -> Cell
-bestInTable table = maximumBy (comparing (table M.!)) grid
+bestInTable :: Table -> (Cell, Int)
+bestInTable = maximumBy (comparing snd) . M.assocs
 
 powerTables :: Int -> Vector Table
 powerTables serial = V.unfoldrN maxSize f (1, p)
   where
     p = powerTable serial
     f :: (Int, Table) -> Maybe (Table, (Int, Table))
-    f (size, table) = Just (table, (size + 1, M.fromList $ fmap g grid))
+    f (size, table) = Just (table, (size + 1, M.fromList $ fmap (id &&& g) t))
       where
-        g :: Cell -> (Cell, Int)
-        g cell = (cell, sum $ fmap (p M.!) (neighbors (size - 1) cell))
+        t = trimmedGrid size
+        g = sum . fmap (p M.!) . (neighbors $ size - 1)
 
 largest' :: Int -> (Cell, Int)
 largest' serial = (cell, size)
   where
-    cell   = fst $ pairs V.! size
-    size   = V.maxIndex pairs
-    pairs  = V.zipWith (\t b -> (b, t M.! b)) tables bests
+    cell   = fst $ bests V.! size
+    size   = V.maxIndex bests
     bests  = fmap bestInTable tables
     tables = powerTables serial
 
