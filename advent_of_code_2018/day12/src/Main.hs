@@ -5,6 +5,7 @@ module Main where
 import qualified Data.Attoparsec.Text as P
 import           Data.IntSet          (IntSet)
 import qualified Data.IntSet          as I
+import           Data.Ix              (range)
 import           Data.Maybe           (catMaybes)
 import           Data.Set             (Set)
 import qualified Data.Set             as S
@@ -19,7 +20,7 @@ isPot :: Char -> Bool
 isPot = (||) <$> (== '#') <*> (== '.')
 
 readAlive :: Text -> IntSet
-readAlive = I.fromDistinctAscList . fmap fst . filter ((== '#') . snd) . zip [0 ..] . T.unpack
+readAlive = I.fromList . fmap fst . filter ((== '#') . snd) . zip [0 ..] . T.unpack
 
 ruleP :: P.Parser (Maybe Rule)
 ruleP = do
@@ -43,6 +44,13 @@ parseInput :: IO (State, Set Rule)
 parseInput = do
   input <- T.readFile "input"
   either error pure $! P.parseOnly inputP input
+
+step :: Set Rule -> State -> State
+step rules state =
+  I.fromList . filter alive $ range (I.findMin state - 5, I.findMax state + 5)
+    where
+      alive i     = (neighbors i) `S.member` rules
+      neighbors i = _todo -- bad: I.fromList $ range (i - 2, i + 2)
 
 main :: IO ()
 main = parseInput >>= print
