@@ -1,12 +1,14 @@
-name:                day5
+name:                day01
 license:             MIT
 
 ghc-options: -Wall -O2
 
 dependencies:
   - base >= 4.7 && < 5
+  - containers
+  - text
 
 executables:
-  day5:
+  day01:
     source-dirs: src
     main:        Main.hs

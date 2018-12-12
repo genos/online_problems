@@ -1,4 +1,4 @@
-name:                day8
+name:                day08
 license:             MIT
 
 ghc-options: -Wall -O2
@@ -10,6 +10,6 @@ dependencies:
   - text
 
 executables:
-  day8:
+  day08:
     source-dirs: src
     main:        Main.hs

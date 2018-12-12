@@ -1,15 +1,14 @@
-name:                day3
+name:                day02
 license:             MIT
 
 ghc-options: -Wall -Werror -O2
 
 dependencies:
   - base >= 4.7 && < 5
-  - attoparsec
   - containers
   - text
 
 executables:
-  day3:
+  day02:
     source-dirs: src
     main:        Main.hs

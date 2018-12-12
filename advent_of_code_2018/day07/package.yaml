@@ -1,4 +1,4 @@
-name:                day9
+name:                day07
 license:             MIT
 
 ghc-options: -Wall -O2
@@ -6,12 +6,10 @@ ghc-options: -Wall -O2
 dependencies:
   - base >= 4.7 && < 5
   - attoparsec
-  - lens
-  - pointedlist
-  - vector
+  - containers
   - text
 
 executables:
-  day9:
+  day07:
     source-dirs: src
     main:        Main.hs

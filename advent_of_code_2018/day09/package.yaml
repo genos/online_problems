@@ -1,14 +1,17 @@
-name:                day2
+name:                day09
 license:             MIT
 
-ghc-options: -Wall -Werror -O2
+ghc-options: -Wall -O2
 
 dependencies:
   - base >= 4.7 && < 5
-  - containers
+  - attoparsec
+  - lens
+  - pointedlist
+  - vector
   - text
 
 executables:
-  day2:
+  day09:
     source-dirs: src
     main:        Main.hs

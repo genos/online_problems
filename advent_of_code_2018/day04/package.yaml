@@ -1,4 +1,4 @@
-name:                day6
+name:                day04
 license:             MIT
 
 ghc-options: -Wall -O2
@@ -7,11 +7,10 @@ dependencies:
   - base >= 4.7 && < 5
   - attoparsec
   - containers
-  - lens
-  - linear
+  - split
   - text
 
 executables:
-  day6:
+  day04:
     source-dirs: src
     main:        Main.hs
