@@ -30,9 +30,7 @@ lineP = do
 parseInput :: IO ([Point], [Velocity])
 parseInput = do
   input <- T.readFile "input"
-  case P.parseOnly (lineP `P.sepBy` P.char '\n') input of
-    Left  l  -> error l
-    Right ps -> pure $ unzip ps
+  either error (pure . unzip) $! P.parseOnly (lineP `P.sepBy` P.char '\n') input
 
 step :: [Velocity] -> [Point] -> [Point]
 step = zipWith (+)

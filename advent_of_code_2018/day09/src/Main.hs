@@ -63,8 +63,6 @@ main :: IO ()
 main = do
   print $ V.and part1Tests
   input <- T.readFile "input"
-  let game = case P.parseOnly gameP input of
-        Left  l -> error l
-        Right r -> r
+  let game = either error id (P.parseOnly gameP input)
   print $ part1 game
   print $ part2 game

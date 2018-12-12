@@ -4,26 +4,23 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: c2b5ceab5ca5fc03a25576a54a3afdd8bdda280f3608384da7b0cb48a834a6e7
+-- hash: 0b7e774c99f58b421af310b984ddf32a40359b0faeb0beae23e19b583f3173d7
 
-name:           day9
+name:           day02
 version:        0.0.0
 license:        MIT
 license-file:   LICENSE
 build-type:     Simple
 
-executable day9
+executable day02
   main-is: Main.hs
   other-modules:
-      Paths_day9
+      Paths_day02
   hs-source-dirs:
       src
-  ghc-options: -Wall -O2
+  ghc-options: -Wall -Werror -O2
   build-depends:
-      attoparsec
-    , base >=4.7 && <5
-    , lens
-    , pointedlist
+      base >=4.7 && <5
+    , containers
     , text
-    , vector
   default-language: Haskell2010

@@ -27,9 +27,8 @@ lineP = do
 parseInput :: IO Dependencies
 parseInput = do
   input <- T.readFile "input"
-  case P.parseOnly (lineP `P.sepBy` P.char '\n') input of
-    Left  l -> error l
-    Right r -> pure . M.fromListWith S.union $ concat r
+  either error (pure . M.fromListWith S.union . concat)
+    $! P.parseOnly (lineP `P.sepBy` P.char '\n') input
 
 clear :: Dependencies -> Char -> Dependencies
 clear deps v = M.map (S.delete v) $ M.delete v deps
@@ -47,11 +46,12 @@ part1 = go ""
 part2 :: Dependencies -> Int
 part2 deps = go deps (replicate 5 worker) 0
  where
-  worker  = (' ', -1)
+  worker = (' ', -1)
   go !ds !workers !time
-    | M.null ds = time + maximum (fmap snd workers)
-    | otherwise =
-      let elapsed            = min0 $ filter (> 0) (fmap snd workers)
+    | M.null ds
+    = time + maximum (fmap snd workers)
+    | otherwise
+    = let elapsed            = min0 $ filter (> 0) (fmap snd workers)
           workers'           = fmap (second $ subtract elapsed) workers
           (done, working)    = partition ((<= 0) . snd) workers'
           cleared            = foldl' clear ds $ fmap fst done
@@ -59,13 +59,13 @@ part2 deps = go deps (replicate 5 worker) 0
       in  go deps' workers'' (time + elapsed)
    where
     min0 ts = if null ts then 0 else minimum ts
-    assign (w, d) n
-      | n <= 0                     = (w, d)
-      | M.null $ M.filter S.null d = assign (worker : w, d) n'
-      | otherwise                  = assign ((v, c) : w, M.delete v d) n'
-      where v = nextReady d
-            c = ord v - 4
-            n' = n - 1
+    assign (w, d) n | n <= 0 = (w, d)
+                    | M.null $ M.filter S.null d = assign (worker : w, d) n'
+                    | otherwise = assign ((v, c) : w, M.delete v d) n'
+     where
+      v  = nextReady d
+      c  = ord v - 4
+      n' = n - 1
 
 main :: IO ()
 main = do

@@ -4,24 +4,21 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 801ab3c1e310aa159cd81a7fc357964b73f3f6903ffc8438f693965e4ba7c05d
+-- hash: 099549a30ead886453b81b20be4d70bd2a95f22c670d49bee41819a48a8d25e6
 
-name:           day8
+name:           day05
 version:        0.0.0
 license:        MIT
 license-file:   LICENSE
 build-type:     Simple
 
-executable day8
+executable day05
   main-is: Main.hs
   other-modules:
-      Paths_day8
+      Paths_day05
   hs-source-dirs:
       src
   ghc-options: -Wall -O2
   build-depends:
-      attoparsec
-    , base >=4.7 && <5
-    , lens
-    , text
+      base >=4.7 && <5
   default-language: Haskell2010

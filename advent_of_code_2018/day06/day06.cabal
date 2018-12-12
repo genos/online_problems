@@ -4,18 +4,18 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 9e8c8d1ce5c1ece71dfd546ebf61cd01ccb5eba0eb69a85677eadd7a9a91c6eb
+-- hash: c648fd2263c6a752c02fc4c835af3abba27c9bf6f9212277546544beba651fa1
 
-name:           day6
+name:           day06
 version:        0.0.0
 license:        MIT
 license-file:   LICENSE
 build-type:     Simple
 
-executable day6
+executable day06
   main-is: Main.hs
   other-modules:
-      Paths_day6
+      Paths_day06
   hs-source-dirs:
       src
   ghc-options: -Wall -O2

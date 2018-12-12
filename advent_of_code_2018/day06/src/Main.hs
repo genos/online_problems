@@ -51,7 +51,5 @@ part2 vs = length . filter ((< n) . cabsTotal) . range $ bounds n' vs
 main :: IO ()
 main = do
   input <- T.readFile "input"
-  let vecs = case P.parseOnly (vec `P.sepBy` P.char '\n') input of
-        Left  err -> error err
-        Right vs  -> vs
+  let vecs = either error id (P.parseOnly (vec `P.sepBy` P.char '\n') input)
   traverse_ (print . ($ vecs)) [part1, part2]

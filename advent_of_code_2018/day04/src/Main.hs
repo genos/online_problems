@@ -76,9 +76,7 @@ solve f chart = g * m
 main :: IO ()
 main = do
   input <- T.readFile "input"
-  let entries = case parseOnly (entry `sepBy` char '\n') input of
-        Left  err -> error err
-        Right es  -> es
+  let entries = either error id $! parseOnly (entry `sepBy` char '\n') input
       chart = compile entries
   print . solve sum $ chart
   print . solve maximum $ chart
