@@ -1,67 +1,77 @@
+{-# LANGUAGE BangPatterns #-}
 module Main where
 
-import           Data.Foldable   (foldl', maximumBy)
+import           Control.Arrow   ((&&&))
+import           Data.Bifunctor  (bimap)
+import           Data.Bool       (bool)
+import           Data.Foldable   (foldl', maximumBy, traverse_)
 import           Data.Ix         (range)
 import           Data.Map.Strict (Map)
 import qualified Data.Map.Strict as M
 import           Data.Ord        (comparing)
 import           Linear.V2       (V2 (..))
 
-type Cell  = V2 Int
+type Cell = V2 Int
+
 type Table = Map Cell Int
+
+rangeC :: (Int, Int) -> [Cell]
+rangeC = range . bimap pure pure
+{-# INLINE rangeC #-}
 
 main :: IO ()
 main = do
-  let g = makeTable 6878
-  print $ part1 g
-  print $ part2 g
+  let t = makeTable 6878
+  traverse_ (putStrLn . ($ t)) [part1, part2]
 
-part1 :: Table -> Cell
-part1 table = fst . keyAndMaxValue $ allSubCellPower 3 table
+part1 :: Table -> String
+part1 table = show x <> "," <> show y
+  where (V2 x y) = fst . argMax $ summedAreaTable 3 table
 
-part2 :: Table -> (Cell, Int)
-part2 table =
-  fst . maximumBy (comparing snd) . fmap (bestIn table) $ range (1, 300)
+part2 :: Table -> String
+part2 table = show x <> "," <> show y <> "," <> show size
+ where
+  (V2 x y, size) =
+    fst . maximumBy (comparing snd) . fmap best $ range (1, 300)
+  best s =
+    let (c, p) = argMax $ summedAreaTable s table in ((c, s), p)
 
 makeTable :: Int -> Table
-makeTable serial = foldl'
-  add
-  M.empty
-  [ (c, power serial c) | c <- range (pure 1, pure 300) ]
-
-add :: Table -> (Cell, Int) -> Table
-add table (c@(V2 x y), p) = M.insert c (p + upper + left - upperLeft) table
+makeTable serial =
+  foldl' add M.empty . fmap (id &&& power serial) $ rangeC (1, 300)
  where
-  upper     = M.findWithDefault 0 (V2 (x - 1) y) table
-  left      = M.findWithDefault 0 (V2 x (y - 1)) table
-  upperLeft = M.findWithDefault 0 (V2 (x - 1) (y - 1)) table
+  add table (c, p) = M.insert c (p + q) table
+   where
+    !q = sum [f a, f b, -f d]
+    !a = c - V2 1 0
+    !b = c - V2 0 1
+    !d = c - V2 1 1
+    f  = flip (M.findWithDefault 0) table
+    {-# INLINE f #-}
 
 power :: Int -> Cell -> Int
-power _      (V2 0 _) = 0
-power _      (V2 _ 0) = 0
-power serial (V2 x y) = ((interim `div` 100) `mod` 10) - 5
+power serial (V2 x y) = h - 5
  where
-  rackID  = x + 10
-  interim = (rackID * y + serial) * rackID
+  !rackID = x + 10
+  !h      = (((rackID * y + serial) * rackID) `div` 100) `mod` 10
+{-# INLINE power #-}
 
-subCellPower :: Int -> Cell -> Table -> Int
-subCellPower size (V2 x0 y0) t = f x y + f x' y' - f x y' - f x' y
+summedAreaTable :: Int -> Table -> Table
+summedAreaTable size table =
+  M.fromList . fmap (id &&& subCellPower) $ rangeC (1, 301 - size)
+    where
+      subCellPower :: Cell -> Int
+      subCellPower cell = sum [f c, f a, -f b, -f d]
+        where
+          !c = cell - pure 1
+          !a = c + pure size
+          !b = c + V2 0 size
+          !d = c + V2 size 0
+          f  = flip (M.findWithDefault 0) table
+          {-# INLINE f #-}
+
+argMax :: Ord b => M.Map a b -> (a, b)
+argMax m = M.foldrWithKey' f (M.findMin m) m
  where
-  f a b = M.findWithDefault 0 (V2 a b) t
-  x  = x0 - 1
-  x' = x + size
-  y  = y0 - 1
-  y' = y + size
-
-allSubCellPower :: Int -> Table -> Table
-allSubCellPower size table = M.fromList
-  [ (c, subCellPower size c table) | c <- range (pure 1, pure (301 - size)) ]
-
-keyAndMaxValue :: Ord b => M.Map a b -> (a, b)
-keyAndMaxValue m = M.foldrWithKey mergeKV (M.findMin m) m
- where
-  mergeKV k v (bestK, bestV) = if v > bestV then (k, v) else (bestK, bestV)
-
-bestIn :: Table -> Int -> ((Cell, Int), Int)
-bestIn table size = ((V2 x y, size), p)
-  where (V2 x y, p) = keyAndMaxValue $ allSubCellPower size table
+  f k v (k', v') = bool (k', v') (k, v) (v > v')
+  {-# INLINE f #-}
