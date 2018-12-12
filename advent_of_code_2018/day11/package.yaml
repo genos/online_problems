@@ -7,7 +7,6 @@ dependencies:
   - base >= 4.7 && < 5
   - containers
   - linear
-  - vector
 
 executables:
   day11:
