@@ -1,10 +1,10 @@
-{-# LANGUAGE DataKinds         #-}
+{-# LANGUAGE BangPatterns      #-}
 {-# LANGUAGE OverloadedStrings #-}
 module Main where
 
 import           Control.Arrow        ((&&&))
 import qualified Data.Attoparsec.Text as P
-import           Data.Foldable        (traverse_)
+import           Data.Function        (on)
 import           Data.IntSet          (IntSet)
 import qualified Data.IntSet          as I
 import           Data.Maybe           (catMaybes)
@@ -49,24 +49,43 @@ spread lo hi = [lo - 2 .. hi + 2]
 
 step :: Set Rule -> Pots -> Pots
 step rules pots =
-  I.fromList . filter alive . uncurry spread $ (I.findMin &&& I.findMax) pots
+  I.fromList . filter alive . uncurry spread $! (I.findMin &&& I.findMax) pots
  where
   alive i = neighbors i `S.member` rules
   neighbors i =
-    I.fromList . fmap ((+ 2) . subtract i) . filter (`I.member` pots) $ spread
-      i
-      i
+    I.fromList . fmap (+ (2 - i)) . filter (`I.member` pots) $! spread i i
 
-run :: Int -> Pots -> Set Rule -> Int
-run n pots rules = I.foldl' (+) 0 . (!! n) $ iterate (step rules) pots
+sum' :: IntSet -> Int
+sum' = I.foldl' (+) 0
 
 part1 :: Pots -> Set Rule -> Int
-part1 = run 20
+part1 pots rules = sum' $ go 20 pots
+ where
+  go :: Int -> Pots -> Pots
+  go !n !ps | n <= 0    = ps
+            | otherwise = go (n - 1) (step rules ps)
 
-part2 :: Pots -> Set Rule -> Int
-part2 = run 50000000000
+findStability :: Pots -> Set Rule -> (Integer, Integer, Integer)
+findStability pots rules = go 0 pots (s pots) (s $! s pots)
+ where
+  s = step rules
+  go :: Int -> Pots -> Pots -> Pots -> (Integer, Integer, Integer)
+  go !n !ps !qs !rs | d == d'   = (f $! n, f $! d, f $! sum' ps)
+                    | otherwise = go (n + 1) qs rs (s rs)
+   where
+    !d  = diff qs ps
+    !d' = diff rs qs
+    diff = (-) `on` sum'
+    f    = fromIntegral
+
+part2 :: Pots -> Set Rule -> Integer
+part2 pots rules = (full - steps) * diff + current
+ where
+  full                   = 50000000000
+  (steps, diff, current) = findStability pots rules
 
 main :: IO ()
 main = do
   (pots, rules) <- parseInput
-  traverse_ (print . (\p -> p pots rules)) [part1, part2]
+  print $ part1 pots rules
+  print $ part2 pots rules
