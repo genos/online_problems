@@ -28,7 +28,9 @@ ruleP :: P.Parser (Maybe Rule)
 ruleP = do
   left  <- P.take 5
   right <- P.string " => " *> P.satisfy isPot
-  pure $! if right == '.' then Nothing else Just $! readAlive left
+  pure $! if right == '.'
+    then Nothing
+    else Just . I.map (subtract 2) $! readAlive left
 
 potsP :: P.Parser Pots
 potsP = readAlive <$> (P.string "initial state: " *> P.takeWhile isPot)
@@ -53,7 +55,7 @@ step rules pots =
  where
   alive i = neighbors i `S.member` rules
   neighbors i =
-    I.fromList . fmap (+ (2 - i)) . filter (`I.member` pots) $! spread i i
+    I.fromList . fmap (subtract i) . filter (`I.member` pots) $! spread i i
 
 sum' :: IntSet -> Int
 sum' = I.foldl' (+) 0
@@ -73,8 +75,8 @@ findStability pots rules = go 0 pots (s pots) (s $! s pots)
   go !n !ps !qs !rs | d == d'   = (f $! n, f $! d, f $! sum' ps)
                     | otherwise = go (n + 1) qs rs (s rs)
    where
-    !d  = diff qs ps
-    !d' = diff rs qs
+    !d   = diff qs ps
+    !d'  = diff rs qs
     diff = (-) `on` sum'
     f    = fromIntegral
 
