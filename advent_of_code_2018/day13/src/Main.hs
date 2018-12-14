@@ -51,7 +51,7 @@ parseWorld t = mconcat *** mconcat $! partitionEithers ps
   ls       = T.lines t
   (xs, ys) = (length &&& (maximum . fmap T.length)) ls
   ixs      = [ (x, y) | x <- [0 .. xs], y <- [0 .. ys] ]
-  ps       = catMaybes . fmap readPoint . zip ixs $! T.unpack t
+  ps       = catMaybes . fmap readPoint . zip ixs . T.unpack $! T.filter (/= '\n') t
 
 readPoint :: ((Int, Int), Char) -> Maybe (Either Turns Carts)
 readPoint ((x, y), c) =
