@@ -3,7 +3,8 @@
 module Main where
 
 import qualified Data.Attoparsec.Text as P
-import           Data.Bits
+import           Data.Bits            ((.&.), (.|.))
+import           Data.Bool            (bool)
 import           Data.IntMap.Strict   (IntMap)
 import qualified Data.IntMap.Strict   as I
 import qualified Data.Text            as T
@@ -37,24 +38,14 @@ set r 2 v = r { _r2 = v }
 set r 3 v = r { _r3 = v }
 set _ _ _ = error "out of bounds"
 
-setB :: Registers -> Word -> Bool -> Registers
-setB r 0 b = r { _r0 = if b then 1 else 0 }
-setB r 1 b = r { _r1 = if b then 1 else 0 }
-setB r 2 b = r { _r2 = if b then 1 else 0 }
-setB r 3 b = r { _r3 = if b then 1 else 0 }
-setB _ _ _ = error "out of bounds"
-
-data Opcode = Addr | Addi
-            | Mulr | Muli
-            | Banr | Bani
-            | Borr | Bori
-            | Setr | Seti
-            | Gtir | Gtri | Gtrr
-            | Eqir | Eqri | Eqrr
+data Opcode = ADDR | ADDI
+            | MULR | MULI
+            | BANR | BANI
+            | BORR | BORI
+            | SETR | SETI
+            | GTIR | GTRI | GTRR
+            | EQIR | EQRI | EQRR
             deriving (Eq, Ord, Bounded, Enum, Show)
-
-allOpcodes :: [Opcode]
-allOpcodes = enumFromTo minBound maxBound
 
 data Instruction o = I { _opcode :: !o
                        , _a      :: {-# UNPACK #-}!Word
@@ -63,22 +54,22 @@ data Instruction o = I { _opcode :: !o
                        } deriving (Eq, Show)
 
 eval :: Instruction Opcode -> Registers -> Registers
-eval (I Addr a b c) r = set r c $ r @. a + r @. b
-eval (I Addi a b c) r = set r c $ r @. a + b
-eval (I Mulr a b c) r = set r c $ r @. a * r @. b
-eval (I Muli a b c) r = set r c $ r @. a * b
-eval (I Banr a b c) r = set r c $ r @. a .&. r @. b
-eval (I Bani a b c) r = set r c $ r @. a .&. b
-eval (I Borr a b c) r = set r c $ r @. a .|. r @. b
-eval (I Bori a b c) r = set r c $ r @. a .|. b
-eval (I Setr a _ c) r = set r c $ r @. a
-eval (I Seti a _ c) r = set r c a
-eval (I Gtir a b c) r = setB r c $ a > r @. b
-eval (I Gtri a b c) r = setB r c $ r @. a > b
-eval (I Gtrr a b c) r = setB r c $ r @. a > r @. b
-eval (I Eqir a b c) r = setB r c $ a == r @. b
-eval (I Eqri a b c) r = setB r c $ r @. a == b
-eval (I Eqrr a b c) r = setB r c $ r @. a == r @. b
+eval (I ADDR a b c) r = set r c $ r @. a + r @. b
+eval (I ADDI a b c) r = set r c $ r @. a + b
+eval (I MULR a b c) r = set r c $ r @. a * r @. b
+eval (I MULI a b c) r = set r c $ r @. a * b
+eval (I BANR a b c) r = set r c $ r @. a .&. r @. b
+eval (I BANI a b c) r = set r c $ r @. a .&. b
+eval (I BORR a b c) r = set r c $ r @. a .|. r @. b
+eval (I BORI a b c) r = set r c $ r @. a .|. b
+eval (I SETR a _ c) r = set r c $ r @. a
+eval (I SETI a _ c) r = set r c a
+eval (I GTIR a b c) r = set r c $ bool 0 1 (a > r @. b)
+eval (I GTRI a b c) r = set r c $ bool 0 1 (r @. a > b)
+eval (I GTRR a b c) r = set r c $ bool 0 1 (r @. a > r @. b)
+eval (I EQIR a b c) r = set r c $ bool 0 1 (a == r @. b)
+eval (I EQRI a b c) r = set r c $ bool 0 1 (r @. a == b)
+eval (I EQRR a b c) r = set r c $ bool 0 1 (r @. a == r @. b)
 
 data Sample = S { _input  :: !Registers
                 , _instr  :: !(Instruction Word)
@@ -100,15 +91,15 @@ experimentP = do
 part1P :: P.Parser [Sample]
 part1P = experimentP `P.sepBy1'` P.string "\n\n"
 
-numMatches :: Sample -> Int
-numMatches (S input instr output) = length $ filter matches allOpcodes
+validOps :: Sample -> [Opcode]
+validOps (S input instr output) = filter matches [minBound .. maxBound]
   where matches opcode = eval (instr { _opcode = opcode }) input == output
 
 part1 :: [Sample] -> Int
-part1 = length . filter ((>= 3) . numMatches)
+part1 = length . filter ((>= 3) . length . validOps)
 
 data Program = P { _instructions :: !(Instruction Word)
-                 , _opcodes :: !(IntMap Opcode)
+                 , _opcodes      :: !(IntMap Opcode)
                  }
 
 main :: IO ()
