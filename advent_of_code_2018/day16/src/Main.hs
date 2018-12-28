@@ -1,17 +1,18 @@
-{-# LANGUAGE BangPatterns      #-}
 {-# LANGUAGE NamedFieldPuns    #-}
 {-# LANGUAGE OverloadedStrings #-}
 module Main where
 
 import           Control.Arrow        ((&&&))
+import           Control.Monad.State  (StateT, evalStateT, gets, lift, modify)
 import qualified Data.Attoparsec.Text as P
 import           Data.Bits            ((.&.), (.|.))
 import           Data.Bool            (bool)
+import           Data.Foldable        (foldl')
 import           Data.IntMap.Strict   (IntMap)
 import qualified Data.IntMap.Strict   as I
+import           Data.Maybe           (fromMaybe, listToMaybe)
 import           Data.Set             (Set)
 import qualified Data.Set             as S
-import qualified Data.Text            as T
 import qualified Data.Text.IO         as T
 
 data Registers = R { _r0 :: {-# UNPACK #-}!Int
@@ -19,14 +20,6 @@ data Registers = R { _r0 :: {-# UNPACK #-}!Int
                    , _r2 :: {-# UNPACK #-}!Int
                    , _r3 :: {-# UNPACK #-}!Int
                    } deriving (Eq, Show)
-
-registersP :: P.Parser Registers
-registersP = do
-  _r0 <- P.char '[' *> P.decimal <* P.char ',' <* P.skipSpace
-  _r1 <- P.decimal <* P.char ',' <* P.skipSpace
-  _r2 <- P.decimal <* P.char ',' <* P.skipSpace
-  _r3 <- P.decimal <* P.char ']'
-  pure R {_r0 , _r1 , _r2 , _r3 }
 
 (@.) :: Registers -> Int -> Int
 r @. 0 = _r0 r
@@ -57,8 +50,8 @@ data Instruction o = I { _opcode :: !o
                        , _c      :: {-# UNPACK #-}!Int
                        } deriving (Eq, Show)
 
-eval :: Instruction Opcode -> Registers -> Registers
-eval (I o a b c) r = set r c $ case o of
+eval :: Registers -> Instruction Opcode -> Registers
+eval r (I o a b c) = set r c $ case o of
   ADDR -> r @. a + r @. b
   ADDI -> r @. a + b
   MULR -> r @. a * r @. b
@@ -69,17 +62,52 @@ eval (I o a b c) r = set r c $ case o of
   BORI -> r @. a .|. b
   SETR -> r @. a
   SETI -> a
-  GTIR -> bool 0 1 (a > r @. b)
-  GTRI -> bool 0 1 (r @. a > b)
-  GTRR -> bool 0 1 (r @. a > r @. b)
-  EQIR -> bool 0 1 (a == r @. b)
-  EQRI -> bool 0 1 (r @. a == b)
-  EQRR -> bool 0 1 (r @. a == r @. b)
+  GTIR -> bool 0 1 $ a > r @. b
+  GTRI -> bool 0 1 $ r @. a > b
+  GTRR -> bool 0 1 $ r @. a > r @. b
+  EQIR -> bool 0 1 $ a == r @. b
+  EQRI -> bool 0 1 $ r @. a == b
+  EQRR -> bool 0 1 $ r @. a == r @. b
 
 data Sample = S { _input  :: !Registers
                 , _instr  :: !(Instruction Int)
                 , _output :: !Registers
                 } deriving (Eq, Show)
+
+validOps :: Sample -> [Opcode]
+validOps (S input instr output) = filter matches [minBound .. maxBound]
+  where matches opcode = eval input (instr { _opcode = opcode }) == output
+
+part1 :: [Sample] -> Int
+part1 = length . filter ((>= 3) . length . validOps)
+
+determineOpcodes :: [Sample] -> Maybe (IntMap Opcode)
+determineOpcodes =
+  listToMaybe . (flip evalStateT S.empty . traverse fillIn) . initialize
+ where
+  initialize :: [Sample] -> IntMap (Set Opcode)
+  initialize =
+    I.fromList . fmap (_opcode . _instr &&& S.fromDistinctAscList . validOps)
+  fillIn :: Set Opcode -> StateT (Set Opcode) [] Opcode
+  fillIn candidates = do
+    unseen <- gets (candidates S.\\)
+    pick   <- lift $ S.toList unseen
+    modify $ S.insert pick
+    pure pick
+
+part2 :: [Sample] -> [Instruction Int] -> Int
+part2 samples instructions = _r0 $ foldl' eval (R 0 0 0 0) steps
+ where
+  opcodes = fromMaybe (error "search failed") $ determineOpcodes samples
+  steps   = fmap (\i -> i { _opcode = opcodes I.! _opcode i }) instructions
+
+registersP :: P.Parser Registers
+registersP = do
+  _r0 <- P.char '[' *> P.decimal <* P.char ',' <* P.skipSpace
+  _r1 <- P.decimal <* P.char ',' <* P.skipSpace
+  _r2 <- P.decimal <* P.char ',' <* P.skipSpace
+  _r3 <- P.decimal <* P.char ']'
+  pure R {_r0 , _r1 , _r2 , _r3 }
 
 instructionP :: P.Parser (Instruction Int)
 instructionP = do
@@ -96,31 +124,15 @@ experimentP = do
 part1P :: P.Parser [Sample]
 part1P = experimentP `P.sepBy1'` P.string "\n\n"
 
-validOps :: Sample -> [Opcode]
-validOps (S input instr output) = filter matches [minBound .. maxBound]
-  where matches opcode = eval (instr { _opcode = opcode }) input == output
-
-part1 :: [Sample] -> Int
-part1 = length . filter ((>= 3) . length . validOps)
-
-determineOpcodes :: [Sample] -> IntMap Opcode
-determineOpcodes = go I.empty . I.fromList . fmap
-  (_opcode . _instr &&& S.fromDistinctAscList . validOps)
- where
-  go :: IntMap Opcode -> IntMap (Set Opcode) -> IntMap Opcode
-  go !done !evidence | I.null evidence = done
-                     | otherwise       = _todo -- fill in singletons…
-
-data Program = P { _instructions :: !(Instruction Int)
-                 , _opcodes      :: !(IntMap Opcode)
-                 }
 part2P :: P.Parser [Instruction Int]
 part2P = instructionP `P.sepBy1'` P.string "\n"
 
+parser :: P.Parser ([Sample], [Instruction Int])
+parser = (,) <$> part1P <*> (P.string "\n\n\n" *> part2P)
+
 main :: IO ()
 main = do
-  [p1, p2] <- T.splitOn "\n\n\n" <$> T.readFile "input"
-  let samples      = either error id (P.parseOnly part1P p1)
-      instructions = either error id (P.parseOnly part2P p2)
+  input <- T.readFile "input"
+  let (samples, instructions) = either error id (P.parseOnly parser input)
   print $ part1 samples
-  print $ length instructions
+  print $ part2 samples instructions

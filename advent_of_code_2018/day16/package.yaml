@@ -7,6 +7,7 @@ dependencies:
   - base >= 4.7 && < 5
   - attoparsec
   - containers
+  - mtl
   - text
 
 executables:

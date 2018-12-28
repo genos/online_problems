@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 1f4ae03a538a03f8605f84d19b61debd07d25b1c3d62c012032be5b71f236dca
+-- hash: 8e68642c66957b9087cb0137555a5fddce6bdbef30abbd9c8bfd085e3e37bce4
 
 name:           day16
 version:        0.0.0
@@ -23,5 +23,6 @@ executable day16
       attoparsec
     , base >=4.7 && <5
     , containers
+    , mtl
     , text
   default-language: Haskell2010
