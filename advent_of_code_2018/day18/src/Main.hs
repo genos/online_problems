@@ -57,22 +57,14 @@ score = g . foldMap f
 part1 :: Forest -> Int
 part1 = score . (!! 10) . iterate' step
 
-data Loop = L { _timeToLoop :: {-# UNPACK #-}!Int, _size :: {-# UNPACK #-}!Int }
-
-findLoop :: Ord a => (a -> a) -> a -> Loop
-findLoop f x0 = go 1 (M.singleton x0 0) x0
+part2 :: Int -> Forest -> Int
+part2 n m = score . (!! go 1 (M.singleton m 0) m) $ iterate' step m
  where
   go !i !seen !x =
-    let x' = f x
+    let x' = step x
     in  case seen M.!? x' of
-          Nothing -> go (i + 1) (M.insert x' i seen) x'
-          Just t  -> L t (i - t)
-
-part2 :: Int -> Forest -> Int
-part2 n m = score . (!! (extra + ttl)) $ iterate' step m
- where
-  (L ttl size) = findLoop step m
-  extra        = (n - ttl) `mod` size
+          Nothing   -> go (i + 1) (M.insert x' i seen) x'
+          Just time -> let extra = (n - time) `mod` (i - time) in extra + time
 
 main :: IO ()
 main = do
