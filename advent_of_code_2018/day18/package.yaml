@@ -1,0 +1,14 @@
+name:                day18
+license:             MIT
+
+ghc-options: -Wall -O2
+
+dependencies:
+  - base >= 4.7 && < 5
+  - containers
+  - linear
+
+executables:
+  day18:
+    source-dirs: src
+    main:        Main.hs
