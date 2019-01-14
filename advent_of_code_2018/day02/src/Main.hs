@@ -18,7 +18,7 @@ part1 = getSum . uncurry (*) . foldMap ((has 2 &&& has 3) . counts)
   counts = T.foldl' (\m c -> insertWith (+) c (1 :: Word) m) empty
 
 part2 :: [Text] -> Maybe Text
-part2 ts = search $ zip ts $ inits ts
+part2 ts = search . zip ts $ inits ts
  where
   search = find isProperLen <=< (find (any isProperLen) . fmap commons)
   commons (x, xs) = fmap (commonChars x) xs
