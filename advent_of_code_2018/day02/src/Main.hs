@@ -23,7 +23,7 @@ part2 ts = search $ zip ts $ inits ts
   search = find isProperLen <=< (find (any isProperLen) . fmap commons)
   commons (x, xs) = fmap (commonChars x) xs
   commonChars a b =
-    T.filter (/= ' ') $ T.zipWith (\x y -> if x == y then x else ' ') a b
+    T.filter (/= ' ') $ T.zipWith (\x y -> bool ' ' x (x == y)) a b
   isProperLen = (== (T.length (head ts) - 1)) . T.length
 
 main :: IO ()
