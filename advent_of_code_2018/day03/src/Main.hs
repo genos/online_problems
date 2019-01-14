@@ -16,7 +16,7 @@ data Rect = R { _left   :: {-# UNPACK #-}!Word
               , _height :: {-# UNPACK #-}!Word
               }
 
-data Claim = C { _id :: {-# UNPACK #-}!Word , _rect :: !Rect }
+data Claim = C { _id :: {-# UNPACK #-}!Word, _rect :: !Rect }
 
 rect :: Parser Rect
 rect = do
@@ -24,13 +24,13 @@ rect = do
   _top    <- char ',' >> decimal
   _width  <- char ':' >> space >> decimal
   _height <- char 'x' >> decimal
-  pure R {_left , _top , _width , _height }
+  pure R { _left, _top, _width, _height }
 
 claim :: Parser Claim
 claim = do
   _id   <- char '#' >> decimal
   _rect <- space >> char '@' >> space >> rect
-  pure C {_id , _rect }
+  pure C { _id, _rect }
 
 covers :: Claim -> [(Word, Word)]
 covers (C _ (R l t w h)) =
@@ -38,8 +38,7 @@ covers (C _ (R l t w h)) =
 
 coverage :: [Claim] -> Map (Word, Word) Word
 coverage = foldl' f Map.empty . fmap covers
- where
-  f = foldl' (\m xy -> Map.insertWith (+) xy 1 m)
+  where f = foldl' (\m xy -> Map.insertWith (+) xy 1 m)
 
 part1 :: [Claim] -> Word
 part1 = sum . Map.map (bool 0 1 . (> 1)) . coverage
@@ -52,7 +51,7 @@ part2 cs = _id <$> find p cs
 
 main :: IO ()
 main = do
-  cs <- (fromRight [] . parseOnly (claim `sepBy` char '\n'))
-    <$> T.readFile "input"
+  cs <- fromRight [] . parseOnly (claim `sepBy` char '\n') <$> T.readFile
+    "input"
   print $ part1 cs
   print $ part2 cs
