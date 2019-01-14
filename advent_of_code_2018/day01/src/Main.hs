@@ -18,7 +18,7 @@ part1 = sum
 part2 :: [Int] -> Maybe Int
 part2 xs = fmap fst . find (uncurry member) $ zip list sets
  where
-  list = scanl' (+) 0 . cycle $ xs
+  list = scanl' (+) 0 $ cycle xs
   sets = scanl' (flip insert) empty list
 
 main :: IO ()
