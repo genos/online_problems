@@ -1,0 +1,25 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.31.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 05e9c96aec5caabc4fe05ad30781a830ead2201f243a666c1dade6fd05982078
+
+name:           find-the-difference
+version:        0.0.0
+license:        MIT
+license-file:   LICENSE
+build-type:     Simple
+
+executable find-the-difference
+  main-is: Main.hs
+  other-modules:
+      Paths_find_the_difference
+  hs-source-dirs:
+      src
+  ghc-options: -Wall -O2
+  build-depends:
+      base >=4.7 && <5
+    , containers
+  default-language: Haskell2010
