@@ -1,5 +1,5 @@
 [package]
 name = "day03"
 version = "0.1.0"
-authors = ["genos <graham@quantifind.com>"]
+authors = ["genos <graham.enos@gmail.com>"]
 include = ["data/input.txt"]

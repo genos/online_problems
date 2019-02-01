@@ -9,8 +9,8 @@ description:    TODO
 category:       Math
 homepage:       https://github.com/genos/ppa#readme
 author:         Graham Enos
-maintainer:     graham@quantifind.com
-copyright:      Quantifind
+maintainer:     graham.enos@gmail.com
+copyright:      Graham Enos
 license:        MIT
 license-file:   LICENSE
 build-type:     Simple

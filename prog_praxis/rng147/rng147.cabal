@@ -9,8 +9,8 @@ description:    Please see README.md
 category:       Math
 homepage:       https://github.com/genos/rng147#readme
 author:         Graham Enos
-maintainer:     graham@quantifind.com
-copyright:      Quantifind
+maintainer:     graham.enos@gmail.com
+copyright:      Graham Enos
 license:        BSD3
 license-file:   LICENSE
 build-type:     Simple
