@@ -1,0 +1,27 @@
+name:                day23
+version:             0.1.0.0
+synopsis:            TODO
+description:         TODO
+homepage:            https://github.com/genos/day23#readme
+license:             MIT
+author:              Graham Enos
+maintainer:          graham.enos@gmail.com
+copyright:           2019 Graham Enos
+category:            Math
+
+ghc-options: -Wall -O2
+
+default-extensions:
+  - OverloadedStrings
+
+dependencies:
+  - base >= 4.11 && < 5
+  - attoparsec
+  - sbv
+  - text
+  - vector
+
+executables:
+  day23:
+    source-dirs: src
+    main:        Main.hs
