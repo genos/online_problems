@@ -1,0 +1,14 @@
+name:                day02
+license:             MIT
+
+ghc-options: -Wall -O2
+
+dependencies:
+  - base >= 4.7 && < 5
+  - text
+  - vector
+
+executables:
+  day01:
+    source-dirs: src
+    main:        Main.hs
