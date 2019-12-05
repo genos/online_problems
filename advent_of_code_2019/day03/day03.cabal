@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 53e9c611ac36c49bf29dd119879103cd96fa083fae7f786f922490fa10472da8
+-- hash: 95a1fa26564e0d865fe2d9e4225b0f43e95420ddf22436a15bc79dc199d81384
 
 name:           day03
 version:        0.0.0
@@ -12,7 +12,7 @@ license:        MIT
 license-file:   LICENSE
 build-type:     Simple
 
-executable day01
+executable day03
   main-is: Main.hs
   other-modules:
       Paths_day03

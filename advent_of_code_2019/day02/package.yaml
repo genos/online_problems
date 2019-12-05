@@ -9,6 +9,6 @@ dependencies:
   - vector
 
 executables:
-  day01:
+  day02:
     source-dirs: src
     main:        Main.hs

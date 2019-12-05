@@ -10,6 +10,6 @@ dependencies:
   - text
 
 executables:
-  day01:
+  day03:
     source-dirs: src
     main:        Main.hs
