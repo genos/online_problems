@@ -8,6 +8,6 @@ dependencies:
   - text
 
 executables:
-  day01:
+  exe:
     source-dirs: src
     main:        Main.hs

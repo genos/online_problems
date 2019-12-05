@@ -7,6 +7,6 @@ dependencies:
   - base >= 4.7 && < 5
 
 executables:
-  day04:
+  exe:
     source-dirs: src
     main:        Main.hs
