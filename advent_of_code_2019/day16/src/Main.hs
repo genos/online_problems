@@ -2,33 +2,37 @@ module Main where
 
 import Data.Char (digitToInt)
 import Data.Foldable (foldl', traverse_)
+import Data.List (scanl')
 
 input :: IO [Int]
 input = fmap digitToInt <$> readFile "input"
 
-expand :: Int -> [Int]
-expand n = tail . cycle $ concatMap (replicate n) [0, 1, 0, -1]
+horner :: [Int] -> Int
+horner = foldl' ((+) . (10 *)) 0
 
-dot :: [Int] -> [Int] -> Int
-dot list pattern = (`rem` 10) . abs . sum $ zipWith (*) list pattern
+fin :: [[Int]] -> Int
+fin = horner . take 8 . (!! 100)
 
-step :: [Int] -> [Int]
-step list = take (length list) $ fmap (dot list . expand) [1 ..]
-
-toInt :: Foldable f => f Int -> Int
-toInt = foldl' ((+) . (10 *)) 0
-
-fft :: ([Int] -> [Int]) -> [Int] -> Int
-fft f = toInt . take 8 . f . (!! 100) . iterate step
-
-part1 :: IO Int
-part1 = fft id <$> input
-
-part2 :: IO Int
-part2 = fft from7th <$> signal
+part1 :: [Int] -> Int
+part1 signal = fin $ iterate step signal
   where
-    signal = concat . replicate 1000 <$> input
-    from7th xs = drop (toInt $ take 7 xs) xs
+    step xs = take (length signal) $ fmap (dot xs . expand) [1 ..]
+    dot xs = (`rem` 10) . abs . sum . zipWith (*) xs
+    expand n = tail . cycle $ concatMap (replicate n) [0, 1, 0, -1]
+
+-- https://git.sr.ht/~quf/advent-of-code-2019/tree/master/16/16-2.hs (see also rust version)
+part2 :: [Int] -> Int
+part2 signal =
+  if offset <= length signal `div` 2
+    then error "offset too small"
+    else fin . iterate step $ signal'
+  where
+    offset = horner $ take 7 signal
+    signal' = drop offset . concat $ replicate 10000 signal
+    step = fmap ((`mod` 10) . abs) . reverse . cumSum . reverse
+    cumSum = tail . scanl' (+) 0
 
 main :: IO ()
-main = traverse_ (print =<<) [part1, part2]
+main = do
+  signal <- input
+  traverse_ print [part1 signal, part2 signal]
