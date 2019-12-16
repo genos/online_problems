@@ -1,0 +1,12 @@
+name:                day16
+license:             MIT
+
+ghc-options: -Wall -O2
+
+dependencies:
+  - base ^>= 4.12
+
+executables:
+  exe:
+    source-dirs: src
+    main:        Main.hs
