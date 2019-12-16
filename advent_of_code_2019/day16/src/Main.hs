@@ -1,7 +1,7 @@
 module Main where
 
 import Data.Char (digitToInt)
-import Data.Foldable (foldl')
+import Data.Foldable (foldl', traverse_)
 
 input :: IO [Int]
 input = fmap digitToInt <$> readFile "input"
@@ -18,16 +18,17 @@ step list = take (length list) $ fmap (dot list . expand) [1 ..]
 toInt :: Foldable f => f Int -> Int
 toInt = foldl' ((+) . (10 *)) 0
 
+fft :: ([Int] -> [Int]) -> [Int] -> Int
+fft f = toInt . take 8 . f . (!! 100) . iterate step
+
 part1 :: IO Int
-part1 = toInt . take 8 . (!! 100) . iterate step <$> input
+part1 = fft id <$> input
 
 part2 :: IO Int
-part2 = toInt . take 8 . from7th . (!! 100) . iterate step <$> signal
+part2 = fft from7th <$> signal
   where
     signal = concat . replicate 1000 <$> input
     from7th xs = drop (toInt $ take 7 xs) xs
 
 main :: IO ()
-main = do
-  print =<< part1
-  print =<< part2
+main = traverse_ (print =<<) [part1, part2]
