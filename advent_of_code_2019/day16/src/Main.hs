@@ -25,7 +25,7 @@ part2 :: [Int] -> Int
 part2 signal =
   if offset <= length signal `div` 2
     then error "offset too small"
-    else fin . iterate step $ signal'
+    else fin $ iterate step signal'
   where
     offset = horner $ take 7 signal
     signal' = drop offset . concat $ replicate 10000 signal
