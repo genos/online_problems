@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 6b28cac232e73cfb83dc43cf690e7a46cba5f4538440059d4ffbbe8ad4c7ec65
+-- hash: d679a8ff269bec42f8173fed40cec26a557b162a7b3d4276eeeca31425970044
 
 name:           day04
 version:        0.0.0
@@ -20,5 +20,5 @@ executable exe
       src
   ghc-options: -Wall -O2
   build-depends:
-      base >=4.7 && <5
+      base >=4.12 && <4.13
   default-language: Haskell2010
