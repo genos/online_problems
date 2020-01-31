@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b40cd991c31eae454aad0e0bd5160fde8dac32b43b603f340178725ef94fd509
+-- hash: 1f694a98f5189953c3b91601789a68eeea647f9061400a7f7d77d5d4be0380a9
 
 name:           day03
 version:        0.0.0
@@ -22,6 +22,8 @@ executable exe
   build-depends:
       base >=4.7 && <5
     , containers
+    , lens
+    , linear
     , megaparsec
     , text
   default-language: Haskell2010

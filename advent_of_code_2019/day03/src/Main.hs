@@ -1,34 +1,34 @@
 {-# LANGUAGE BangPatterns #-}
+
 module Main where
 
-import           Data.Foldable              (foldl', traverse_)
-import           Data.Functor               (($>))
-import           Data.Map.Strict            (Map)
-import qualified Data.Map.Strict            as M
-import           Data.Set                   (Set)
-import qualified Data.Set                   as S
-import           Data.Text                  (Text)
-import qualified Data.Text.IO               as T
-import           Data.Void
-import           Text.Megaparsec
-import           Text.Megaparsec.Char
+import Control.Lens ((&), (+~), (-~))
+import Data.Foldable (foldl', traverse_)
+import Data.Functor (($>))
+import Data.Map.Strict (Map)
+import qualified Data.Map.Strict as M
+import Data.Set (Set)
+import qualified Data.Set as S
+import Data.Text (Text)
+import qualified Data.Text.IO as T
+import Data.Void (Void)
+import Linear.V2 (V2 (..), _x, _y)
+import Linear.Vector (zero)
+import Text.Megaparsec
+import Text.Megaparsec.Char
 import qualified Text.Megaparsec.Char.Lexer as L
 
 type Parser = Parsec Void Text
 
-data Direction = U | D | L | R deriving Eq
+data Direction = U | D | L | R
 
 pDirection :: Parser Direction
-pDirection =
-  (char 'U' $> U) <|> (char 'D' $> D) <|> (char 'L' $> L) <|> (char 'R' $> R)
+pDirection = foldl1 (<|>) $ zipWith ($>) (fmap char "UDLR") [U, D, L, R]
 
-data Step = Step { _direction :: !Direction, _distance :: {-# UNPACK #-}!Int }
-
-pStep :: Parser Step
-pStep = Step <$> pDirection <*> L.decimal
+data Step = Step {_direction :: !Direction, _distance :: {-# UNPACK #-} !Int}
 
 pCircuit :: Parser [Step]
-pCircuit = pStep `sepBy` char ','
+pCircuit = (Step <$> pDirection <*> L.decimal) `sepBy` char ','
 
 pCircuits :: Parser ([Step], [Step])
 pCircuits = (,) <$> pCircuit <*> (char '\n' *> pCircuit)
@@ -38,48 +38,45 @@ readSteps = do
   raw <- T.readFile "input"
   pure $ either (error . errorBundlePretty) id $ runParser pCircuits "input" raw
 
-type XY = (Int, Int)
+step :: Direction -> V2 Int -> V2 Int
+step U = (& _y +~ 1)
+step D = (& _y -~ 1)
+step L = (& _x -~ 1)
+step R = (& _x +~ 1)
 
-step :: Direction -> XY -> XY
-step U (x, y) = (x, y + 1)
-step D (x, y) = (x, y - 1)
-step L (x, y) = (x - 1, y)
-step R (x, y) = (x + 1, y)
+walk :: Step -> V2 Int -> [V2 Int]
+walk (Step dir dist) = take (dist + 1) . iterate (step dir)
 
-walk :: XY -> Step -> [XY]
-walk xy (Step dir dist) = take (dist + 1) $ iterate (step dir) xy
+wires :: [Step] -> Set (V2 Int)
+wires = snd . foldl' go (zero, mempty)
+  where
+    go (!xy, !xys) !s =
+      let ss = walk s xy in (last ss, S.fromList (init ss) <> xys)
 
-wires :: [Step] -> Set XY
-wires = snd . foldl' go ((0, 0), mempty)
- where
-  go (!xy, !xys) !s =
-    let ss = walk xy s in (last ss, S.fromList (init ss) <> xys)
-
-crossings :: ([Step], [Step]) -> Set XY
-crossings (a, b) = S.filter (/= (0, 0)) $ S.intersection (wires a) (wires b)
+crossings :: ([Step], [Step]) -> Set (V2 Int)
+crossings (a, b) = S.filter (/= zero) $ S.intersection (wires a) (wires b)
 
 part1 :: ([Step], [Step]) -> Int
-part1 = minimum . S.map taxi . crossings where taxi (x, y) = abs x + abs y
+part1 = minimum . S.map (sum . fmap abs) . crossings
 
-build :: [Step] -> Map XY Int
-build = fin . foldl' go (0, (0, 0), mempty)
- where
-  fin (_, _, !m) = m
-  go (!i, !xy, !m) !s = (i', xy', m')
-   where
-    ps        = zip (walk xy s) [i ..]
-    (xy', i') = last ps
-    m'        = m <> M.fromList ps
+build :: [Step] -> Map (V2 Int) Int
+build = fin . foldl' go (0, zero, mempty)
+  where
+    fin (_, _, !m) = m
+    go (!i, !xy, !m) !s = (i', xy', m')
+      where
+        ps = zip (walk s xy) [i ..]
+        (xy', i') = last ps
+        m' = m <> M.fromList ps
 
 part2 :: ([Step], [Step]) -> Int
-part2 (a, b) = minimum . S.map add . S.filter (/= (0, 0)) $ S.intersection sa
-                                                                           sb
- where
-  add xy = ma M.! xy + mb M.! xy
-  ma = build a
-  mb = build b
-  sa = M.keysSet ma
-  sb = M.keysSet mb
+part2 (a, b) = minimum . S.map add . S.filter (/= zero) $ S.intersection sa sb
+  where
+    add xy = ma M.! xy + mb M.! xy
+    ma = build a
+    mb = build b
+    sa = M.keysSet ma
+    sb = M.keysSet mb
 
 main :: IO ()
 main = do
