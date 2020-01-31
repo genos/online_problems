@@ -1,0 +1,14 @@
+name:                day06
+license:             MIT
+
+ghc-options: -Wall -O2
+
+dependencies:
+  - base ^>= 4.12
+  - text ^>= 1.2.3.1
+  - algebraic-graphs ^>= 0.4
+
+executables:
+  exe:
+    source-dirs: src
+    main:        Main.hs

@@ -1,0 +1,26 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.31.2.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 269927e0c4b9487762e47b46dd91c1471ee043fffc007206953fb9968752b8da
+
+name:           day06
+version:        0.0.0
+license:        MIT
+license-file:   LICENSE
+build-type:     Simple
+
+executable exe
+  main-is: Main.hs
+  other-modules:
+      Paths_day06
+  hs-source-dirs:
+      src
+  ghc-options: -Wall -O2
+  build-depends:
+      algebraic-graphs >=0.4 && <0.5
+    , base >=4.12 && <4.13
+    , text >=1.2.3.1 && <1.3
+  default-language: Haskell2010
