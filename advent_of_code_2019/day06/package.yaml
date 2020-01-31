@@ -5,9 +5,9 @@ ghc-options: -Wall -O2
 
 dependencies:
   - base ^>= 4.12
-  - text ^>= 1.2.3.1
   - algebraic-graphs ^>= 0.4
   - containers ^>= 0.6.0.1
+  - text ^>= 1.2.3.1
 
 executables:
   exe:
