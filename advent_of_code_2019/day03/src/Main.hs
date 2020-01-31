@@ -1,7 +1,7 @@
 {-# LANGUAGE BangPatterns #-}
 module Main where
 
-import           Data.Foldable              (foldl')
+import           Data.Foldable              (foldl', traverse_)
 import           Data.Functor               (($>))
 import           Data.Map.Strict            (Map)
 import qualified Data.Map.Strict            as M
@@ -84,5 +84,4 @@ part2 (a, b) = minimum . S.map add . S.filter (/= (0, 0)) $ S.intersection sa
 main :: IO ()
 main = do
   ab <- readSteps
-  print $ part1 ab
-  print $ part2 ab
+  traverse_ (print . ($ ab)) [part1, part2]
