@@ -11,18 +11,16 @@ import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import Linear.V2 (V2 (..))
-import Linear.Vector (zero)
 
-width, height, dim :: Int
+width, dim :: Int
 width = 25
-height = 6
-dim = width * height
+dim = width * 6
 
 part1 :: Text -> Int
 part1 =
   product
     . sum
-    . fmap (\case '1' -> V2 1 0; '2' -> V2 0 1; _ -> zero)
+    . fmap (\case '1' -> V2 1 0; '2' -> V2 0 1; _ -> V2 0 0)
     . T.unpack
     . minimumBy (comparing $ T.count "0")
     . T.chunksOf dim
