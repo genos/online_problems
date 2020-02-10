@@ -4,4 +4,4 @@ packages:
 - '.'
 extra-deps:
 - astar-0.3.0.0
-resolver: lts-7.16
+resolver: lts-14.25
