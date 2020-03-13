@@ -1,0 +1,14 @@
+name:                day24
+license:             MIT
+
+ghc-options: -Wall -O2
+
+dependencies:
+  - base ^>= 4.13
+  - containers ^>= 0.6.0.1
+  - linear ^>= 1.20.9
+
+executables:
+  exe:
+    source-dirs: src
+    main:        Main.hs
