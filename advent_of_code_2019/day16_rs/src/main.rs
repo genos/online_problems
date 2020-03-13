@@ -36,7 +36,12 @@ fn part1(list: &[i64]) -> i64 {
 fn part2(list: &[i64]) -> i64 {
     let repeat = 10000;
     let offset = horner(&list[..7]) as usize;
-    let mut scratch = list.iter().cycle().take(list.len() * repeat).map(|&x| x).collect::<Vec<_>>();
+    let mut scratch = list
+        .iter()
+        .cycle()
+        .take(list.len() * repeat)
+        .copied()
+        .collect::<Vec<_>>();
     if offset < list.len() * repeat / 2 {
         println!("going slow…");
         for _ in 0..100 {
@@ -50,14 +55,16 @@ fn part2(list: &[i64]) -> i64 {
         // diagonal of the transformation matrix is a one. So, for indices past halfway their next
         // FFT is just the last digit of the sum of all digits after them. We can construct each
         // one of these in O(n) time by maintaining a partial sum over time.
-        scratch = (offset..(list.len() * repeat)).map(|i| list[i % list.len()]).collect::<Vec<_>>();
-	for _ in 0..100 {
-	    let mut partial = 0;
-	    for i in (0..scratch.len()).rev() {
-		partial += scratch[i];
+        scratch = (offset..(list.len() * repeat))
+            .map(|i| list[i % list.len()])
+            .collect::<Vec<_>>();
+        for _ in 0..100 {
+            let mut partial = 0;
+            for i in (0..scratch.len()).rev() {
+                partial += scratch[i];
                 scratch[i] = partial.abs() % 10;
-	    }
-	}
+            }
+        }
         horner(&scratch[..8])
     }
 }
