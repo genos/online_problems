@@ -4,9 +4,9 @@ license:             MIT
 ghc-options: -Wall -O2
 
 dependencies:
-  - base ^>= 4.12
+  - base ^>= 4.13
   - linear ^>= 1.20.9
-  - text ^>= 1.2.3.1
+  - text ^>= 1.2.4.0
 
 executables:
   exe:

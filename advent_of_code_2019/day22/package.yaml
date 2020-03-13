@@ -4,10 +4,10 @@ license:             MIT
 ghc-options: -Wall -O2
 
 dependencies:
-  - base ^>= 4.12
+  - base ^>= 4.13
   - groups ^>= 0.4.1.0
   - finite-typelits ^>= 0.1.4.2
-  - text ^>= 1.2.3.1
+  - text ^>= 1.2.4.0
 
 executables:
   exe:
