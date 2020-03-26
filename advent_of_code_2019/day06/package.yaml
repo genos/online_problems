@@ -4,8 +4,8 @@ license:             MIT
 ghc-options: -Wall -O2
 
 dependencies:
-  - base ^>= 4.12
-  - algebraic-graphs ^>= 0.4
+  - base ^>= 4.13
+  - algebraic-graphs ^>= 0.5
   - containers ^>= 0.6.0.1
   - text ^>= 1.2.3.1
 

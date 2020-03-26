@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 94d5ea347a5a28e0f3e57dd7a37e51440fd5f0503f55918f289ea17bbf22f8ef
+-- hash: 3884d525367b1c002ffc5861f6a6db4374b6713c3a1c5248420f0bda4b821362
 
 name:           day22
 version:        0.0.0
@@ -20,7 +20,7 @@ executable exe
       src
   ghc-options: -Wall -O2
   build-depends:
-      base >=4.12 && <4.13
+      base >=4.13 && <4.14
     , finite-typelits >=0.1.4.2 && <0.2
     , groups >=0.4.1.0 && <0.5
     , text >=1.2.3.1 && <1.3
