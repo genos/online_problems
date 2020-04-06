@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 2a8914f915363be954e38508cae1a910b95a5c79da55f96e20a087458747aeb9
+-- hash: 0e2cf5a782a8e93446122c75808ac4636136728c28d1105788cee1dbdebc3fd6
 
 name:           day06
 version:        0.0.0
@@ -22,6 +22,6 @@ executable exe
   build-depends:
       algebraic-graphs >=0.5 && <0.6
     , base >=4.13 && <4.14
-    , containers >=0.6.2.1 && <0.7
-    , text >=1.2.4.0 && <1.3
+    , containers >=0.6.0.1 && <0.7
+    , text >=1.2.3.1 && <1.3
   default-language: Haskell2010
