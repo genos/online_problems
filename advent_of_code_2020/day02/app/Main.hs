@@ -38,9 +38,5 @@ part2 = length . filter policy where
     x = p `index` (l - 1)
     y = p `index` (u - 1)
 
-
 main :: IO ()
-main = do
-  rules <- input
-  print $ part1 rules
-  print $ part2 rules
+main = (bitraverse_ print print . (part1 &&& part2)) =<< input

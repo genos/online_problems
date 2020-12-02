@@ -28,7 +28,4 @@ part2 xs =
     <*> xs
 
 main :: IO ()
-main = do
-  xs <- input
-  print $ part1 xs
-  print $ part2 xs
+main = (bitraverse_ print print . (part1 &&& part2)) =<< input
