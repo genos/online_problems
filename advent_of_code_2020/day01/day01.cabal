@@ -5,7 +5,7 @@ synopsis:            Day 1, Advent of Code 2020
 license:             MIT
 author:              Graham Enos <graham.enos@gmail.com>
 copyright:           2020 Graham Enos
-tested-with:         GHC == 8.8.3
+tested-with:         GHC == 8.8.4
 
 common common-options
   build-depends:       base ^>= 4.13.0.0
