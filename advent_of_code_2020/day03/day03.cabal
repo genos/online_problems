@@ -2,7 +2,6 @@ cabal-version:       3.0
 name:                day03
 version:             0.0.0.0
 synopsis:            Day 3, Advent of Code 2020
-description:         Day 3, Advent of Code 2020
 license:             MIT
 author:              Graham Enos <graham.enos@gmail.com>
 copyright:           2020 Graham Enos
@@ -20,6 +19,15 @@ common common-options
                        -Widentities
                        -Wincomplete-uni-patterns
                        -Wincomplete-record-updates
+  if impl(ghc >= 8.0)
+    ghc-options:       -Wredundant-constraints
+  if impl(ghc >= 8.2)
+    ghc-options:       -fhide-source-paths
+  if impl(ghc >= 8.4)
+    ghc-options:       -Wmissing-export-lists
+                       -Wpartial-fields
+  if impl(ghc >= 8.8)
+    ghc-options:       -Wmissing-deriving-strategies
 
   default-language:    Haskell2010
   default-extensions:  DerivingVia
