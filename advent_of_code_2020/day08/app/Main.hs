@@ -42,22 +42,20 @@ step (Computer a s p) =
   let s' = insert p s
   in  \case
         Instruction ACC n -> Computer (a + n) s' (p + 1)
-        Instruction JMP n -> Computer a s' (p + n)
-        Instruction NOP _ -> Computer a s' (p + 1)
+        Instruction JMP n -> Computer a       s' (p + n)
+        Instruction NOP _ -> Computer a       s' (p + 1)
 
-data Finish = Loop | End
+run :: Computer -> Vector Instruction -> Either Int Int
+run c@(Computer accumulator seen pointer) program
+  | member pointer seen       = Left accumulator   -- loop
+  | pointer >= length program = Right accumulator  -- end
+  | otherwise                 = run (step c (program V.! pointer)) program
 
-run :: Computer -> (Int -> Finish -> Maybe Int) -> Vector Instruction -> Maybe Int
-run c@(Computer accumulator seen pointer) finish program
-  | pointer >= length program = finish accumulator End
-  | member pointer seen       = finish accumulator Loop
-  | otherwise                 = run (step c (program V.! pointer)) finish program
+part1 :: Vector Instruction -> Int
+part1 = either id (error "NO LOOP") . run new
 
-part1 :: Vector Instruction -> Maybe Int
-part1 = run new (const . Just)
-
-part2 :: Vector Instruction -> Maybe Int
-part2 v = V.head . V.filter isJust . V.map (run new fin) $ V.generate len alter
+part2 :: Vector Instruction -> Int
+part2 v = V.head . V.mapMaybe (rightToMaybe . run new) $ V.generate len alter
  where
   len = V.length v
   alter k =
@@ -67,9 +65,6 @@ part2 v = V.head . V.filter isJust . V.map (run new fin) $ V.generate len alter
                                JMP -> NOP
                                NOP -> JMP
     in  v V.// [(k, Instruction op' n)]
-  fin a = \case
-    Loop -> Nothing
-    End  -> Just a
 
 main :: IO ()
 main = (bitraverse_ print print . (part1 &&& part2)) =<< input
