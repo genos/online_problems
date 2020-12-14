@@ -2,8 +2,8 @@ module Main
   ( main
   ) where
 
-import           Data.Set                       ( intersection )
-import           Data.Text                      ( splitOn )
+import Data.Set  (intersection)
+import Data.Text (splitOn)
 
 input :: IO [[Text]]
 input = fmap lines . splitOn "\n\n" <$> readFileText "input.txt"

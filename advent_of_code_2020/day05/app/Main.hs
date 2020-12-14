@@ -1,4 +1,4 @@
-{-# LANGUAGE DataKinds  #-}
+{-# LANGUAGE DataKinds #-}
 module Main
   ( main
   ) where
@@ -8,7 +8,7 @@ import           Data.Foldable        (maximum)
 import           Data.Vector.Sized    (Vector)
 import qualified Data.Vector.Sized    as V
 
-data FrontBack = F | B deriving stock (Eq, Ord, Enum, Bounded, Show)
+data FrontBack = F | B deriving stock (Enum, Bounded)
 
 parseFB :: Char -> Maybe FrontBack
 parseFB = \case
@@ -16,7 +16,7 @@ parseFB = \case
   'B' -> Just B
   _   -> Nothing
 
-data LeftRight = L | R deriving stock (Eq, Ord, Enum, Bounded, Show)
+data LeftRight = L | R deriving stock (Enum, Bounded)
 
 parseLR :: Char -> Maybe LeftRight
 parseLR = \case
@@ -28,7 +28,6 @@ data BoardingPass = BoardingPass
   { _row :: Vector 7 FrontBack
   , _col :: Vector 3 LeftRight
   }
-  deriving stock (Eq, Show)
 
 parser :: Parser (Maybe BoardingPass)
 parser = do
