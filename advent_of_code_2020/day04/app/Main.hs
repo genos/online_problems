@@ -43,9 +43,7 @@ part2 :: [[Text]] -> Int
 part2 = length . filter ((&&) <$> allRequired <*> all clears)
  where
   clears =
-    uncurry ($)
-      . bimap (fromMaybe (const False) . (rules !?)) T.tail
-      . T.breakOn ":"
+    uncurry ($) . bimap (fromMaybe (const False) . (rules !?)) T.tail . T.breakOn ":"
 
 main :: IO ()
 main = (bitraverse_ print print . (part1 &&& part2)) =<< input

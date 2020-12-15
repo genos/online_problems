@@ -5,10 +5,10 @@ synopsis:            Day 7, Advent of Code 2020
 license:             MIT
 author:              Graham Enos <graham.enos@gmail.com>
 copyright:           2020 Graham Enos
-tested-with:         GHC == 8.8.4
+tested-with:         GHC == 8.10.2
 
 common common-options
-  build-depends:       base ^>= 4.13.0.0
+  build-depends:       base ^>= 4.14.0.0
                      , relude ^>= 0.7.0.0
                      , attoparsec ^>= 0.13.2.4
                      , graphite ^>= 0.10.0.1

@@ -1,4 +1,4 @@
-{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DataKinds  #-}
 module Main
   ( main
   ) where
@@ -52,8 +52,7 @@ part1 :: [BoardingPass] -> Int
 part1 = maximum . fmap seatID
 
 part2 :: [BoardingPass] -> Maybe Int
-part2 bs = viaNonEmpty (succ . fst . head)
-  $ filter (\(a, b) -> b - a == 2) pairs
+part2 bs = viaNonEmpty (succ . fst . head) $ filter (\(a, b) -> b - a == 2) pairs
  where
   pairs = zip (init ids) (tail ids)
   ids   = fromList . sort $ seatID <$> bs
