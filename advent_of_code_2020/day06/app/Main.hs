@@ -13,9 +13,7 @@ part1 = sum . fmap (length . ordNub . toString . fold)
 
 part2 :: [[Text]] -> Int
 part2 = sum . fmap
-  (length . foldl' intersection (fromList ['a' .. 'z']) . fmap
-    (fromList . toString)
-  )
+  (length . foldl' intersection (fromList ['a' .. 'z']) . fmap (fromList . toString))
 
 main :: IO ()
 main = (bitraverse_ print print . (part1 &&& part2)) =<< input

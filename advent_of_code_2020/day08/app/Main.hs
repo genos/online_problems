@@ -42,13 +42,13 @@ step (Computer a s p) =
   let s' = insert p s
   in  \case
         Instruction ACC n -> Computer (a + n) s' (p + 1)
-        Instruction JMP n -> Computer a       s' (p + n)
-        Instruction NOP _ -> Computer a       s' (p + 1)
+        Instruction JMP n -> Computer a s' (p + n)
+        Instruction NOP _ -> Computer a s' (p + 1)
 
 run :: Computer -> Vector Instruction -> Either Int Int
 run c@(Computer accumulator seen pointer) program
-  | member pointer seen       = Left accumulator   -- loop
-  | pointer >= length program = Right accumulator  -- end
+  | member pointer seen       = Left accumulator
+  | pointer >= length program = Right accumulator
   | otherwise                 = run (step c (program V.! pointer)) program
 
 part1 :: Vector Instruction -> Int
@@ -61,9 +61,9 @@ part2 v = V.head . V.mapMaybe (rightToMaybe . run new) $ V.generate len alter
   alter k =
     let (Instruction op n) = v V.! k
         op'                = case op of
-                               ACC -> ACC
-                               JMP -> NOP
-                               NOP -> JMP
+          ACC -> ACC
+          JMP -> NOP
+          NOP -> JMP
     in  v V.// [(k, Instruction op' n)]
 
 main :: IO ()

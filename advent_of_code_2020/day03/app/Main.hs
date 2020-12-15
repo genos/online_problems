@@ -15,9 +15,9 @@ input = do
   raw <- readFileText "input.txt"
   let rows   = toString <$> lines raw
       zipped = zip [0 ..] $ fmap (zip [0 ..]) rows
-      trees = fromList [ (v, h) | (v, row) <- zipped, (h, c) <- row, c == '#' ]
-      maxR  = fromMaybe 0 $ viaNonEmpty (length . head) rows
-      maxD  = length rows
+      trees  = fromList [ (v, h) | (v, row) <- zipped, (h, c) <- row, c == '#' ]
+      maxR   = fromMaybe 0 $ viaNonEmpty (length . head) rows
+      maxD   = length rows
   pure $! Grid trees maxR maxD
 
 run :: Grid -> (Int, Int) -> Int
