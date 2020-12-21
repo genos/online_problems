@@ -8,7 +8,7 @@ import           Data.Foldable        (maximum)
 import           Data.Vector.Sized    (Vector)
 import qualified Data.Vector.Sized    as V
 
-data FrontBack = F | B deriving stock (Enum, Bounded)
+data FrontBack = F | B deriving stock Enum
 
 parseFB :: Char -> Maybe FrontBack
 parseFB = \case
@@ -16,7 +16,7 @@ parseFB = \case
   'B' -> Just B
   _   -> Nothing
 
-data LeftRight = L | R deriving stock (Enum, Bounded)
+data LeftRight = L | R deriving stock Enum
 
 parseLR :: Char -> Maybe LeftRight
 parseLR = \case
@@ -29,8 +29,8 @@ data BoardingPass = BoardingPass
   , _col :: Vector 3 LeftRight
   }
 
-parser :: Parser (Maybe BoardingPass)
-parser = do
+boardingPassP :: Parser (Maybe BoardingPass)
+boardingPassP = do
   fb <- mapMaybe parseFB <$> count 7 (char 'F' <|> char 'B')
   lr <- mapMaybe parseLR <$> count 3 (char 'L' <|> char 'R')
   pure $ BoardingPass <$> V.fromList fb <*> V.fromList lr
@@ -39,7 +39,7 @@ input :: IO [BoardingPass]
 input =
   catMaybes
     .   fromRight []
-    .   parseOnly ((parser `sepBy1'` char '\n') <* skipSpace <* endOfInput)
+    .   parseOnly ((boardingPassP `sepBy1'` char '\n') <* skipSpace <* endOfInput)
     <$> readFileText "input.txt"
 
 reducer :: Enum a => Vector n a -> Int

@@ -1,6 +1,7 @@
 module Main
   ( main
   ) where
+
 import Data.Attoparsec.Text hiding (count)
 import Data.Char            (isAlpha)
 import Data.Text            (count, index)
@@ -12,8 +13,8 @@ data Rule = Rule
   , _password :: !Text
   }
 
-rule :: Parser Rule
-rule =
+ruleP :: Parser Rule
+ruleP =
   Rule
     <$> decimal
     <*> (char '-' *> decimal)
@@ -23,7 +24,7 @@ rule =
 input :: IO [Rule]
 input =
   fromRight []
-    .   parseOnly ((rule `sepBy1'` char '\n') <* skipSpace <* endOfInput)
+    .   parseOnly ((ruleP `sepBy1'` char '\n') <* skipSpace <* endOfInput)
     <$> readFileText "input.txt"
 
 part1 :: [Rule] -> Int

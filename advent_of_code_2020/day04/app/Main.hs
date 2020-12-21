@@ -27,7 +27,7 @@ rules = fromList
   [ ("byr", maybe False (between 1920 2002) . readMaybe . toString)
   , ("iyr", maybe False (between 2010 2020) . readMaybe . toString)
   , ("eyr", maybe False (between 2020 2030) . readMaybe . toString)
-  , ("hgt", parses (cm <|> inch))
+  , ("hgt", parses (cmP <|> inP))
   , ("hcl", parses (char '#' *> count 6 (satisfy isHexDigit)))
   , ("ecl", (`member` (fromList $ words "amb blu brn gry grn hzl oth")))
   , ("pid", parses (count 9 digit))
@@ -35,8 +35,8 @@ rules = fromList
   ]
  where
   parses p = isRight . parseOnly (p <* endOfInput)
-  cm   = (guard . between 150 193) =<< decimal <* string "cm"
-  inch = (guard . between 59 76) =<< decimal <* string "in"
+  cmP   = (guard . between 150 193) =<< decimal <* string "cm"
+  inP = (guard . between 59 76) =<< decimal <* string "in"
 
 
 part2 :: [[Text]] -> Int
