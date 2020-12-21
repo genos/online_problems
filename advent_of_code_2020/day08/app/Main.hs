@@ -9,8 +9,8 @@ import qualified Data.Vector          as V
 
 data Operation = ACC | JMP | NOP
 
-operation :: Parser Operation
-operation = (string "acc" $> ACC) <|> (string "jmp" $> JMP) <|> (string "nop" $> NOP)
+operationP :: Parser Operation
+operationP = (string "acc" $> ACC) <|> (string "jmp" $> JMP) <|> (string "nop" $> NOP)
 
 data Instruction = Instruction
   { _op  :: !Operation
@@ -18,7 +18,7 @@ data Instruction = Instruction
   }
 
 instruction :: Parser Instruction
-instruction = Instruction <$> operation <* skipSpace <*> signed decimal
+instruction = Instruction <$> operationP <* skipSpace <*> signed decimal
 
 input :: IO (Vector Instruction)
 input =
