@@ -29,9 +29,9 @@ input =
 
 
 data Computer = Computer
-  { _accumulator :: {-# UNPACK #-} !Int
-  , _seen        :: !IntSet
-  , _pointer     :: {-# UNPACK #-} !Int
+  { _accumulator :: Int
+  , _seen        :: IntSet
+  , _pointer     :: Int
   }
 
 new :: Computer

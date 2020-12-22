@@ -7,10 +7,10 @@ import Data.Char            (isAlpha)
 import Data.Text            (count, index)
 
 data Rule = Rule
-  { _lower    :: {-# UNPACK #-}!Int
-  , _upper    :: {-# UNPACK #-}!Int
-  , _char     :: {-# UNPACK #-}!Char
-  , _password :: !Text
+  { _lower    :: Int
+  , _upper    :: Int
+  , _char     :: Char
+  , _password :: Text
   }
 
 ruleP :: Parser Rule
