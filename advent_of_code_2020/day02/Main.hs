@@ -28,15 +28,16 @@ input =
     <$> readFileText "input.txt"
 
 part1 :: [Rule] -> Int
-part1 = length . filter policy
-  where policy (Rule l u c p) = let n = count (one c) p in l <= n && n <= u
+part1 =
+  length . filter (\(Rule l u c p) -> let n = count (one c) p in l <= n && n <= u)
 
 part2 :: [Rule] -> Int
-part2 = length . filter policy where
-  policy (Rule l u c p) = (x == c && y /= c) || (x /= c && y == c)
-   where
-    x = p `index` (l - 1)
-    y = p `index` (u - 1)
+part2 = length . filter
+  (\(Rule l u c p) ->
+    let x = p `index` (l - 1)
+        y = p `index` (u - 1)
+    in  (x == c && y /= c) || (x /= c && y == c)
+  )
 
 main :: IO ()
 main = (bitraverse_ print print . (part1 &&& part2)) =<< input
