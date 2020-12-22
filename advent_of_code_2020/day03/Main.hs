@@ -18,7 +18,7 @@ input = do
       trees  = fromList [ (v, h) | (v, row) <- zipped, (h, c) <- row, c == '#' ]
       maxR   = fromMaybe 0 $ viaNonEmpty (length . head) rows
       maxD   = length rows
-  pure $! Grid trees maxR maxD
+  pure $ Grid trees maxR maxD
 
 run :: Grid -> (Int, Int) -> Int
 run (Grid trees maxR maxD) (r, d) = go (0, 0) 0
