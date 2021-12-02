@@ -3,15 +3,14 @@ module Main where
 import Data.Bool     (bool)
 import Data.Foldable (traverse_)
 
-countDiff :: [Int] -> Int
-countDiff = sum . fmap (bool 1 0 . (>= 0)) . (zipWith (-) <*> tail)
+countGT :: [Int] -> [Int] -> Int
+countGT xs = sum . fmap (bool 0 1) . zipWith (<) xs
 
 part1 :: [Int] -> Int
-part1 = countDiff
+part1 = countGT <*> tail
 
 part2 :: [Int] -> Int
-part2 depths =
-  countDiff $ zipWith3 (\a b c -> a + b + c) depths (tail depths) (drop 2 depths)
+part2 = countGT <*> drop 3
 
 main :: IO ()
 main = do
