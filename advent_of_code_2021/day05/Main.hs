@@ -46,16 +46,14 @@ part1 = gt1 . foldl' (\(v, d) -> largest v &&& lines1 d) (zero, M.empty)
 lines2 :: Diagram -> Pair -> Diagram
 lines2 d (V2 x1 y1, V2 x2 y2) = foldl' addOr1 d vs
  where
-  (xs, ys) = ([min x1 x2 .. max x1 x2], [min y1 y2 .. max y1 y2])
-  vs | x1 == x2                       = V2 x1 <$> ys
-     | y1 == y2                       = (`V2` y1) <$> xs
-     | abs (x1 - x2) == abs (y1 - y2) = diag
-     | otherwise                      = []
-   where
-    diag =
-      [ V2 x1 y1 + i *^ V2 (signum $ x2 - x1) (signum $ y2 - y1)
-      | i <- [0 .. abs $ x1 - x2]
-      ]
+  (xs  , ys  ) = ([min x1 x2 .. max x1 x2], [min y1 y2 .. max y1 y2])
+  (xSig, ySig) = (signum $ x2 - x1, signum $ y2 - y1)
+  xD           = abs $ x1 - x2
+  vs
+    | x1 == x2                       = V2 x1 <$> ys
+    | y1 == y2                       = (`V2` y1) <$> xs
+    | abs (x1 - x2) == abs (y1 - y2) = [ V2 x1 y1 + i *^ V2 xSig ySig | i <- [0 .. xD] ]
+    | otherwise                      = []
 
 part2 :: [Pair] -> Int
 part2 = gt1 . foldl' (\(v, d) -> largest v &&& lines2 d) (zero, M.empty)
