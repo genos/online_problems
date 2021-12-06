@@ -13,8 +13,8 @@ import           Linear.V2
 import           Linear.Vector
 
 type Coordinate = V2 Int
+type Pair = (Coordinate, Coordinate)
 type Diagram = Map Coordinate Int
-type Pair = (V2 Int, V2 Int)
 
 pairsFrom :: Text -> [Pair]
 pairsFrom = fromRight [] . parseOnly (pair `sepBy1'` "\n")
@@ -29,25 +29,38 @@ addOr1 :: Diagram -> Coordinate -> Diagram
 addOr1 d k = M.insertWith (+) k 1 d
 
 lines1 :: Diagram -> Pair -> Diagram
-lines1 d (V2 x y, V2 z w)
-  | x == z    = foldl' addOr1 d [ V2 x y' | y' <- [min y w .. max y w] ]
-  | y == w    = foldl' addOr1 d [ V2 x' y | x' <- [min x z .. max x z] ]
-  | otherwise = d
+lines1 d (V2 x1 y1, V2 x2 y2) = foldl' addOr1 d vs
+ where
+  (xs, ys) = ([min x1 x2 .. max x1 x2], [min y1 y2 .. max y1 y2])
+  vs | x1 == x2  = V2 x1 <$> ys
+     | y1 == y2  = (`V2` y1) <$> xs
+     | otherwise = []
 
 gt1 :: (Coordinate, Diagram) -> Int
 gt1 (V2 xL yL, d) =
-  length [ V2 a b | a <- [0 .. xL], b <- [0 .. yL], M.findWithDefault 0 (V2 a b) d > 1 ]
+  length [ V2 x y | x <- [0 .. xL], y <- [0 .. yL], M.findWithDefault 0 (V2 x y) d > 1 ]
 
 part1 :: [Pair] -> Int
 part1 = gt1 . foldl' (\(v, d) -> largest v &&& lines1 d) (zero, M.empty)
 
 lines2 :: Diagram -> Pair -> Diagram
-lines2 = error "TODO"
+lines2 d (V2 x1 y1, V2 x2 y2) = foldl' addOr1 d vs
+ where
+  (xs, ys) = ([min x1 x2 .. max x1 x2], [min y1 y2 .. max y1 y2])
+  vs | x1 == x2                       = V2 x1 <$> ys
+     | y1 == y2                       = (`V2` y1) <$> xs
+     | abs (x1 - x2) == abs (y1 - y2) = diag
+     | otherwise                      = []
+   where
+    diag =
+      [ V2 x1 y1 + i *^ V2 (signum $ x2 - x1) (signum $ y2 - y1)
+      | i <- [0 .. abs $ x1 - x2]
+      ]
 
 part2 :: [Pair] -> Int
 part2 = gt1 . foldl' (\(v, d) -> largest v &&& lines2 d) (zero, M.empty)
 
 main :: IO ()
 main = do
-  input <- pairsFrom <$> T.readFile "test.txt"
+  input <- pairsFrom <$> T.readFile "input.txt"
   traverse_ (print . ($ input)) [part1, part2]
