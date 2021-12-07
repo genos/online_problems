@@ -8,20 +8,26 @@ import qualified Data.Text.IO         as T
 import           Data.Vector.Unboxed  (Vector)
 import qualified Data.Vector.Unboxed  as V
 
-readCrabs :: Text -> Vector Int
+type Crabs = Vector Int
+type FuelConsumption = (Int -> Int -> Int)
+
+readCrabs :: Text -> Crabs
 readCrabs = either (error "Parse") V.fromList <$> parseOnly (decimal `sepBy1'` ",")
 
-solve :: Vector Int -> (Vector Int -> Int -> Int) -> Int
-solve crabs fuel =
-  V.minimum . V.map (fuel crabs) $ V.enumFromTo (V.minimum crabs) (V.maximum crabs)
+solve :: Crabs -> FuelConsumption -> Int
+solve crabs fuel = V.minimum . V.map total $ V.enumFromN lo (hi - lo)
+ where
+  lo = V.minimum crabs
+  hi = V.maximum crabs
+  total n = V.sum $ V.map (fuel n) crabs
 
-fuelPart1 :: Vector Int -> Int -> Int
-fuelPart1 crabs i = V.sum $ V.map (abs . (i -)) crabs
+part1 :: FuelConsumption
+part1 n = abs . (n -)
 
-fuelPart2 :: Vector Int -> Int -> Int
-fuelPart2 crabs i = V.sum $ V.map (V.sum . V.enumFromN 0 . (succ . abs . (i -))) crabs
+part2 :: FuelConsumption
+part2 n = V.sum . V.enumFromN 0 . (succ . abs . (n -))
 
 main :: IO ()
 main = do
   crabs <- readCrabs <$> T.readFile "input.txt"
-  traverse_ (print . solve crabs) [fuelPart1, fuelPart2]
+  traverse_ (print . solve crabs) [part1, part2]
