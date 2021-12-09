@@ -1,4 +1,5 @@
 import numpy as np
+from scipy import ndimage
 
 
 def read_heightmap(s: str) -> np.ndarray:
@@ -25,8 +26,16 @@ def part_1(hmap: np.ndarray) -> int:
     return sum(1 + hmap[mask].astype(int))
 
 
+def part_2(hmap: np.ndarray) -> int:
+    labeled, num_labels = ndimage.label(hmap != 9)
+    sizes = sorted(np.count_nonzero(labeled == i) for i in range(1, num_labels + 1))
+    return np.product(sizes[-3:])
+
+
 if __name__ == "__main__":
     test = read_heightmap("test.txt")
     print(part_1(test))
+    print(part_2(test))
     full = read_heightmap("input.txt")
     print(part_1(full))
+    print(part_2(full))
