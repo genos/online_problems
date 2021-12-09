@@ -25,10 +25,11 @@ data Entry = Entry
 readEntries :: Text -> [Entry]
 readEntries = either (error "Bad parse") id . parseOnly (many1' entry)
  where
-  dc    = choice ["a" $> A, "b" $> B, "c" $> C, "d" $> D, "e" $> E, "f" $> F, "g" $> G]
-  ov    = fromMaybe (error "ov") . V.fromList <$> count 4 (many1' dc <* skipSpace)
-  sp    = fromMaybe (error "sp") . V.fromList <$> count 10 (many1' dc <* skipSpace)
   entry = Entry <$> sp <*> ("| " *> ov)
+  sp    = err "signal patterns" . V.fromList <$> count 10 (many1' dc <* skipSpace)
+  ov    = err "output value" . V.fromList <$> count 4 (many1' dc <* skipSpace)
+  dc    = choice ["a" $> A, "b" $> B, "c" $> C, "d" $> D, "e" $> E, "f" $> F, "g" $> G]
+  err   = fromMaybe . error
 
 part1 :: [Entry] -> Int
 part1 = sum . fmap (V.sum . V.map (bool 0 1 . isUnique) . outputValue)
