@@ -39,21 +39,21 @@ toCounter :: Polymer -> Counter
 toCounter polymer = V.create $ do
   !v <- M.replicate 26 0
   for_ polymer $ \p -> do
-    let !i = ord p - ord 'A'
+    let !i = ord p - 65 -- ord 'A'
     M.unsafeModify v succ i
   pure v
 
-applyN :: Int -> (a -> a) -> a -> a
-applyN !n !f !x | n <= 0    = x
-                | otherwise = let !x' = f x
-                                  !n' = n - 1
-                               in applyN n' f x'
+iterateN :: Word -> (a -> a) -> a -> a
+iterateN 0 _ !x = x
+iterateN !n !f !x =  let !x' = f x
+                         !n' = n - 1
+                      in iterateN n' f x'
 
 range :: Counter -> Word
 range = (-) <$> V.maximum <*> (V.minimum . V.filter (> 0))
 
-solve :: Int -> (Rules, Polymer) -> Word
-solve n (rules, polymer) = range . toCounter $ applyN n (step rules) polymer
+solve :: Word -> (Rules, Polymer) -> Word
+solve !n (!rules, !polymer) = range . toCounter $ iterateN n (step rules) polymer
 
 part1 :: (Rules, Polymer) -> Word
 part1 = solve 10
