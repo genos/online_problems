@@ -12,7 +12,7 @@ import           Linear.V2
 data Inst = Down Int | Up Int | Forward Int
 
 inst :: Text -> [Inst]
-inst = fromRight [] . parseOnly (p `sepBy1'` "\n")
+inst = fromRight (error "Bad parse") . parseOnly (p `sepBy1'` "\n")
  where
   p = choice
     [ Down <$> ("down " *> decimal)

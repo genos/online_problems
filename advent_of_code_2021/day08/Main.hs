@@ -4,6 +4,7 @@ module Main where
 
 import           Data.Attoparsec.Text hiding (D)
 import           Data.Bool            (bool)
+import           Data.Either          (fromRight)
 import           Data.Functor         (($>))
 import           Data.Maybe           (fromMaybe)
 import           Data.Text            (Text)
@@ -23,7 +24,7 @@ data Entry = Entry
   deriving Show
 
 readEntries :: Text -> [Entry]
-readEntries = either (error "Bad parse") id . parseOnly (many1' entry)
+readEntries = fromRight (error "Bad parse") . parseOnly (many1' entry)
  where
   entry = Entry <$> sp <*> ("| " *> ov)
   sp    = err "signal patterns" . V.fromList <$> count 10 (many1' dc <* skipSpace)

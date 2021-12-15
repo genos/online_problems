@@ -17,7 +17,7 @@ len :: Int
 len = 5
 
 gameP :: Text -> Game
-gameP = fromRight (error "PARSE") . parseOnly ((,) <$> (nums <* "\n") <*> many1' card)
+gameP = fromRight (error "Bad parse") . parseOnly ((,) <$> (nums <* "\n") <*> many1' card)
  where
   nums = decimal `sepBy1'` ","
   card = bc . M.fromLists <$> count len (count len (skipSpace *> decimal <* skipSpace))

@@ -12,7 +12,7 @@ import qualified Data.Vector.Unboxed         as V
 import qualified Data.Vector.Unboxed.Mutable as M
 
 readFish :: Text -> Vector Int
-readFish = either (const blank) ((blank V.//) . tally) . numbers
+readFish = either (error "Bad parse") ((blank V.//) . tally) . numbers
  where
   numbers = parseOnly (decimal `sepBy1'` ",")
   blank   = V.replicate 9 0

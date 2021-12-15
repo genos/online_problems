@@ -17,7 +17,7 @@ type Pair = (Coordinate, Coordinate)
 type Diagram = Map Coordinate Int
 
 pairsFrom :: Text -> [Pair]
-pairsFrom = fromRight [] . parseOnly (pair `sepBy1'` "\n")
+pairsFrom = fromRight (error "Bad parse") . parseOnly (pair `sepBy1'` "\n")
  where
   pair  = (,) <$> coord <*> (" -> " *> coord)
   coord = V2 <$> decimal <*> ("," *> decimal)

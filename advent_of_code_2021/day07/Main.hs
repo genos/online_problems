@@ -12,7 +12,7 @@ type Crabs = Vector Int
 type FuelConsumption = (Int -> Int -> Int)
 
 readCrabs :: Text -> Crabs
-readCrabs = either (error "Parse") V.fromList <$> parseOnly (decimal `sepBy1'` ",")
+readCrabs = either (error "Bad parse") V.fromList <$> parseOnly (decimal `sepBy1'` ",")
 
 solve :: Crabs -> FuelConsumption -> Int
 solve crabs fuel = V.minimum . V.map total $ V.enumFromN lo (hi - lo)
