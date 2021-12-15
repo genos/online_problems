@@ -6,7 +6,7 @@ module Main where
 
 import           Data.Attoparsec.Text
 import           Data.Either                          (fromRight)
-import           Data.Foldable                        (foldl', traverse_)
+import           Data.Foldable                        (foldl', foldMap', traverse_)
 import           Data.Function                        ((&))
 import           Data.Monoid.Action                   (Action, act)
 import           Data.Monoid.SemiDirectProduct.Strict (embed, inject, untag)
@@ -47,11 +47,10 @@ originalPart2 = ((*) <$> horizontal <*> depth) . foldl' (&) (Sub 0 0 0) . fmap g
   go (Forward x) s = s { horizontal = x + horizontal s, depth = depth s + x * aim s }
 
 newtype Point = P { _unP :: V2 Int }
-  deriving Semigroup via Sum (V2 Int)
-  deriving Monoid via Sum (V2 Int)
+  deriving (Semigroup, Monoid) via Sum (V2 Int)
 
 solve :: Monoid m => (Int -> m) -> (Int -> m) -> (m -> V2 Int) -> [Inst] -> Int
-solve downUp forward extract = product . extract . foldMap
+solve downUp forward extract = product . extract . foldMap'
   (\case
     Down    i -> downUp i
     Up      i -> downUp (-i)
@@ -66,8 +65,7 @@ part1 :: [Inst] -> Int
 part1 = solve toY toX _unP
 
 newtype Aim = Aim Int
-  deriving Semigroup via Sum Int
-  deriving Monoid via Sum Int
+  deriving (Semigroup, Monoid) via Sum Int
 
 instance Action Aim Point where
   act (Aim a) (P (V2 h d)) = P (V2 h (d + a * h))
