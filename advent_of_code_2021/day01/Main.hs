@@ -1,10 +1,9 @@
 module Main where
 
-import Data.Bool     (bool)
 import Data.Foldable (traverse_)
 
 countGT :: [Int] -> [Int] -> Int
-countGT xs = sum . fmap (bool 0 1) . zipWith (<) xs
+countGT xs = length . filter id . zipWith (<) xs
 
 part1 :: [Int] -> Int
 part1 = countGT <*> tail
