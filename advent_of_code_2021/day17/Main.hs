@@ -42,11 +42,11 @@ zenith :: Trajectory -> Int
 zenith = V.maximum . V.map (\(_, y, _, _) -> y)
 
 candidates :: Target -> [Trajectory]
-candidates target@(l, r, b, _) =
+candidates target@(l, r, b, _) = filter (within target . V.last)
   [ trajectory target vx vy | vx <- [(min 1 l) .. r], vy <- [b .. -b] ]
 
 solve :: ([Vector Probe] -> Int) -> Target -> Int
-solve finish target = finish . filter (within target . V.last) $ candidates target
+solve finish = finish . candidates
 
 part1 :: Target -> Int
 part1 = solve (maximum . fmap zenith)
