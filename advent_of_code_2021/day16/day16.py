@@ -1,6 +1,8 @@
 from dataclasses import dataclass, field
 from enum import Enum
+from functools import reduce
 from math import prod
+from operator import eq, gt, lt
 from typing import NewType
 
 RawPacket = NewType("RawPacket", str)
@@ -42,9 +44,9 @@ class Packet:
             TypeId.MIN: min,
             TypeId.MAX: max,
             TypeId.LIT: lambda _: self.value,
-            TypeId.GT: lambda vs: int(next(vs) > next(vs)),
-            TypeId.LT: lambda vs: int(next(vs) < next(vs)),
-            TypeId.EQ: lambda vs: int(next(vs) == next(vs)),
+            TypeId.GT: lambda vs: int(reduce(gt, vs)),
+            TypeId.LT: lambda vs: int(reduce(lt, vs)),
+            TypeId.EQ: lambda vs: int(reduce(eq, vs)),
         }[self.type_id](p.eval() for p in self.subpackets)
 
 
