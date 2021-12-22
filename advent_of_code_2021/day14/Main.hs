@@ -20,7 +20,7 @@ type Rules = Map (Char, Char) Char
 type Counter = Vector Word
 
 readPolymerization :: Text -> (Polymer, Rules)
-readPolymerization = either (error "Bad Parse") (bimap T.unpack M.fromList)
+readPolymerization = either (error "Bad parse") (bimap T.unpack M.fromList)
   . parseOnly ((,) <$> template <*> (rules `sepBy1` "\n"))
  where
   template = takeTill isEndOfLine <* "\n\n"
