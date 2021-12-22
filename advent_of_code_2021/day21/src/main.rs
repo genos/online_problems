@@ -26,6 +26,7 @@ impl Player {
 fn part1(pos1: u64, pos2: u64) -> u64 {
     let mut player1 = Player::new(pos1);
     let mut player2 = Player::new(pos2);
+    let mut ones_turn = true;
     let mut die = 0;
     let mut num_rolls = 0;
     while player1.score < 1000 && player2.score < 1000 {
@@ -38,8 +39,12 @@ fn part1(pos1: u64, pos2: u64) -> u64 {
             }
             step += die;
         }
-        player1.move_spaces(step);
-        std::mem::swap(&mut player1, &mut player2);
+        if ones_turn {
+            player1.move_spaces(step);
+        } else {
+            player2.move_spaces(step);
+        }
+        ones_turn = !ones_turn
     }
     num_rolls * player1.score.min(player2.score)
 }
