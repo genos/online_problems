@@ -1,0 +1,28 @@
+[flake8]
+
+# Set flake8-import-order to Google style
+import-order-style = google
+
+# flake8 max-line-length set for manual linting.
+# Set this value as line-length under [tool.black] in pyproject.toml.
+max-line-length = 120
+
+# E203 : space before ":" (not PEP8 compliant)
+# E231 : missing whitespace after ‘,’, ‘;’, or ‘:’ (not Black compliant)
+# E741 : ambiguous variable name (unfortunately we need to use "I")
+# W503 : line break before binary operator (not PEP8 compliant)
+ignore = E203, E231, E741, W503
+
+exclude =
+    # No need to traverse our git directory
+    .git,
+    # or cache directories
+    __pycache__,
+    # or mypy's cache
+    .mypy_cache,
+    # or Jupyter notebook caches
+    .ipynb_checkpoints,
+    # or pytest's
+    .pytest_cache,
+    # or hypothesis's
+    .hypothesis
