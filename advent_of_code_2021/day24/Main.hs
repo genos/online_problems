@@ -70,7 +70,7 @@ validRun = go (ALU 0 0 0 0)
 
 solveDay24 :: (String -> SBV Int64 -> Symbolic ()) -> Program -> IO OptimizeResult
 solveDay24 opt program = optimize Lexicographic $ do
-  inputs <- sInt64s [ "s" <> show i | i <- [1 :: Int .. 14] ]
+  inputs <- sInt64s [ "digit_" <> show @Int i | i <- reverse [1 .. 14] ]
   constrain $ sAll (\n -> n .>= 1 .&& n .<= 9) inputs .&& validRun program inputs
   opt "model number" $ foldl1 (\acc d -> 10 * acc + d) inputs
 
