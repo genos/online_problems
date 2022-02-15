@@ -13,7 +13,7 @@ import qualified Data.Text                   as T
 import qualified Data.Text.IO                as T
 import           Data.Vector.Unboxed         (Vector)
 import qualified Data.Vector.Unboxed         as V
-import qualified Data.Vector.Unboxed.Mutable as M
+import qualified Data.Vector.Unboxed.Mutable as MV
 
 type Polymer = [Char]  -- aka String
 type Rules = Map (Char, Char) Char
@@ -37,10 +37,10 @@ step !rules !polymer = (p :) . concatMap lookupAndSplice $ zip polymer ps
 
 toCounter :: Polymer -> Counter
 toCounter polymer = V.create $ do
-  !v <- M.replicate 26 0
+  !v <- MV.replicate 26 0
   for_ polymer $ \p -> do
     let !i = ord p - 65 -- ord 'A'
-    M.unsafeModify v succ i
+    MV.unsafeModify v succ i
   pure v
 
 iterateN :: Word -> (a -> a) -> a -> a
