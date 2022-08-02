@@ -6,4 +6,4 @@ include = ["data/input.txt"]
 
 [dependencies]
 lazy_static = "0.2.5"
-regex = "0.2"
+regex = "1.5.5"
