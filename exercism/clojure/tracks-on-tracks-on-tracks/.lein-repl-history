@@ -1,0 +1,15 @@
+(require 'tracks-on-tracks-on-tracks)
+(new-list)
+(require 'tracks-on-tracks-on-tracks.core)
+(require 'tracks-on-tracks-on-tracks)
+(new-list)
+(require 'tracks-on-tracks-on-tracks :as [w])
+(require '[tracks-on-tracks-on-tracks :as w])
+(w/new-list)
+(->
+(w/new-list)
+(w/add-language "asdf"))
+(->>
+(w/new-list)
+(w/add-language "asdf")
+)
