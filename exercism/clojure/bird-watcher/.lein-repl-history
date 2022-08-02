@@ -1,0 +1,6 @@
+(def birds-per-day [2 5 0 7 4 1])
+(doc update)
+(update birds-per-day peek inc)
+(peek birds-per-day )
+birds-per-day 
+(let [n (count birds-per-day)] (assoc birds-per-day (dec n) (inc (peek birds-per-day))))
