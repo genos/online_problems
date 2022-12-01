@@ -1,4 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
 module Main where
 
 import Data.Attoparsec.Text hiding (take)
@@ -8,7 +7,7 @@ import Data.Text (Text)
 import qualified Data.Text.IO as T
 
 parseNums :: Text -> [[Int]]
-parseNums = either (error "Bad parse") id . parseOnly (many' (decimal `sepBy1'` "\n" <* skipSpace))
+parseNums = either (error "Bad parse") id . parseOnly (many' (decimal `sepBy1'` endOfLine <* skipSpace))
 
 main :: IO ()
 main = do
