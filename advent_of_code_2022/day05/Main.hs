@@ -10,7 +10,7 @@ import qualified Data.Text.IO as T
 import Data.Vector (Vector)
 import qualified Data.Vector as V
 
-type Stacks = Vector (Vector Char)
+type Stacks = Vector Text
 
 {-
             [G] [W]         [Q]
@@ -24,7 +24,7 @@ type Stacks = Vector (Vector Char)
  1   2   3   4   5   6   7   8   9
  -}
 theStacks :: Stacks
-theStacks = V.fromList (V.fromList <$> ["ZVTBJGR", "LVRJ", "FQS", "CQVFLNHZ", "WMSCJTQR", "FHCTWS", "JNFVCZD", "QFRWDZGL", "PVWBJ"])
+theStacks = V.fromList ["ZVTBJGR", "LVRJ", "FQS", "CQVFLNHZ", "WMSCJTQR", "FHCTWS", "JNFVCZD", "QFRWDZGL", "PVWBJ"]
 
 data Move = Move {_num :: {-# UNPACK #-} !Int, _from :: {-# UNPACK #-} !Int, _to :: {-# UNPACK #-} !Int}
 
@@ -33,18 +33,18 @@ parseMoves = either (error "Bad parse") id . parseOnly (move `sepBy1'` endOfLine
   where
     move = Move <$> (string "move " *> decimal) <*> (string " from " *> decimal) <*> (string " to " *> decimal)
 
-apply :: (Vector Char -> Vector Char) -> Stacks -> Move -> Stacks
+apply :: (Text -> Text) -> Stacks -> Move -> Stacks
 apply f stacks (Move num from to) = stacks'
   where
     (from', to') = (pred from, pred to)
-    (xs, ys) = V.splitAt num (stacks V.! from')
-    zs = f xs V.++ (stacks V.! to')
+    (xs, ys) = T.splitAt num (stacks V.! from')
+    zs = f xs <> (stacks V.! to')
     stacks' = stacks V.// [(to', zs), (from', ys)]
 
-solve :: (Vector Char -> Vector Char) -> [Move] -> Text
-solve f = V.foldl' T.snoc T.empty . V.concatMap (V.take 1) . foldl' (apply f) theStacks
+solve :: (Text -> Text) -> [Move] -> Text
+solve f = V.foldl' (<>) T.empty . V.map (T.take 1) . foldl' (apply f) theStacks
 
 main :: IO ()
 main = do
     moves <- parseMoves <$> T.readFile "moves.txt"
-    traverse_ (T.putStrLn . (`solve` moves)) [V.reverse, id]
+    traverse_ (T.putStrLn . (`solve` moves)) [T.reverse, id]
