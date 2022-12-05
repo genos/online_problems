@@ -4,6 +4,7 @@ module Main where
 
 import Data.Attoparsec.Text
 import Data.Foldable (foldl', traverse_)
+import Data.Functor (($>))
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
@@ -12,25 +13,16 @@ import qualified Data.Vector as V
 
 type Stacks = Vector Text
 
-{-
-            [G] [W]         [Q]
-[Z]         [Q] [M]     [J] [F]
-[V]         [V] [S] [F] [N] [R]
-[T]         [F] [C] [H] [F] [W] [P]
-[B] [L]     [L] [J] [C] [V] [D] [V]
-[J] [V] [F] [N] [T] [T] [C] [Z] [W]
-[G] [R] [Q] [H] [Q] [W] [Z] [G] [B]
-[R] [J] [S] [Z] [R] [S] [D] [L] [J]
- 1   2   3   4   5   6   7   8   9
- -}
-theStacks :: Stacks
-theStacks = V.fromList ["ZVTBJGR", "LVRJ", "FQS", "CQVFLNHZ", "WMSCJTQR", "FHCTWS", "JNFVCZD", "QFRWDZGL", "PVWBJ"]
-
 data Move = Move {_num :: {-# UNPACK #-} !Int, _from :: {-# UNPACK #-} !Int, _to :: {-# UNPACK #-} !Int}
 
-parseMoves :: Text -> [Move]
-parseMoves = either (error "Bad parse") id . parseOnly (move `sepBy1'` endOfLine)
+parseSetup :: Text -> (Stacks, [Move])
+parseSetup = either (error "Bad parse") id . parseOnly ((,) <$> stacks <*> (skipStuff *> moves))
   where
+    stacks = V.map T.stripStart . V.fromList <$> (T.transpose <$> (row `sepBy1'` endOfLine))
+    row = T.concat <$> entry `sepBy1'` char ' '
+    entry = choice [count 3 (char ' ') $> " ", T.singleton <$> (char '[' *> letter <* char ']')]
+    skipStuff = endOfLine *> skipWhile (/= '\n') *> endOfLine *> endOfLine
+    moves = move `sepBy1'` endOfLine
     move = Move <$> (string "move " *> decimal) <*> (string " from " *> decimal) <*> (string " to " *> decimal)
 
 apply :: (Text -> Text) -> Stacks -> Move -> Stacks
@@ -41,10 +33,10 @@ apply f stacks (Move num from to) = stacks'
     zs = f xs <> (stacks V.! to')
     stacks' = stacks V.// [(to', zs), (from', ys)]
 
-solve :: (Text -> Text) -> [Move] -> Text
-solve f = V.foldl' (<>) T.empty . V.map (T.take 1) . foldl' (apply f) theStacks
+solve :: (Text -> Text) -> (Stacks, [Move]) -> Text
+solve f (stacks, moves) = V.foldMap (T.take 1) $ foldl' (apply f) stacks moves
 
 main :: IO ()
 main = do
-    moves <- parseMoves <$> T.readFile "moves.txt"
-    traverse_ (T.putStrLn . (`solve` moves)) [T.reverse, id]
+    (stacks, moves) <- parseSetup <$> T.readFile "input.txt"
+    traverse_ (T.putStrLn . (`solve` (stacks, moves))) [T.reverse, id]
