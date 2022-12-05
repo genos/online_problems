@@ -21,9 +21,9 @@ parseSetup = either (error "Bad parse") id . parseOnly ((,) <$> stacks <*> (skip
     stacks = V.map T.stripStart . V.fromList <$> (T.transpose <$> (row `sepBy1'` endOfLine))
     row = T.concat <$> entry `sepBy1'` char ' '
     entry = choice [count 3 (char ' ') $> " ", T.singleton <$> (char '[' *> letter <* char ']')]
+    skipStuff = endOfLine *> skipWhile (/= '\n') *> endOfLine *> endOfLine
     moves = move `sepBy1'` endOfLine
     move = Move <$> (string "move " *> decimal) <*> (string " from " *> decimal) <*> (string " to " *> decimal)
-    skipStuff = endOfLine *> skipWhile (/= '\n') *> endOfLine *> endOfLine
 
 apply :: (Text -> Text) -> Stacks -> Move -> Stacks
 apply f stacks (Move num from to) = stacks'
