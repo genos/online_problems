@@ -6,10 +6,10 @@ import Data.List (sort)
 import Data.Text (Text)
 import qualified Data.Text.IO as T
 
-parseNums :: Text -> [[Int]]
-parseNums = either (error "Bad parse") id . parseOnly (many' (decimal `sepBy1'` endOfLine <* skipSpace))
+parseNums :: Text -> [Int]
+parseNums = either (error "Bad parse") (fmap sum) . parseOnly (many' (decimal `sepBy1'` endOfLine <* skipSpace))
 
 main :: IO ()
 main = do
   nums <- parseNums <$> T.readFile "input.txt"
-  traverse_ (print . ($ nums)) [maximum . fmap sum, sum . take 3 . reverse . sort . fmap sum]
+  traverse_ (print . ($ nums)) [maximum, sum . take 3 . reverse . sort]

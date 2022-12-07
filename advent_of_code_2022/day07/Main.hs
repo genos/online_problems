@@ -1,3 +1,4 @@
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Main where
@@ -19,9 +20,6 @@ data Entry
 data Steps = Steps {_cname :: {-# UNPACK #-} !Text, _others :: Set Entry}
 type Zipper = (Entry, [Steps])
 
-newRoot :: Zipper
-newRoot = (Directory S.empty "/", [])
-
 up :: Zipper -> Zipper
 up (_, []) = error "up at root"
 up (entry, (Steps n os) : rs) = (Directory (S.insert entry os) n, rs)
@@ -30,10 +28,8 @@ dn :: Text -> Zipper -> Zipper
 dn _ (File _ _, _) = error "dn file"
 dn n (Directory es _, cs) = (e, Steps n os : cs)
   where
-    (xs, os) = S.partition eqN es -- within a directory, names are unique
+    (xs, os) = S.partition (\case (Directory _ d) -> d == n; _ -> False) es -- within a directory, names are unique
     e = if length xs == 1 then S.findMin xs else error "conflicting names or name not found"
-    eqN (Directory _ d) = d == n
-    eqN (File _ _) = False
 
 insert :: Zipper -> Entry -> Zipper
 insert (File _ _, _) _ = error "insert on File focus"
@@ -49,9 +45,10 @@ sizes = reverse . sort . annotate . toRoot
     size (Directory es _) = sum $ S.map size es
 
 readSizes :: Text -> [Int]
-readSizes = either (error "Bad parse") sizes . parseOnly (parseZipper =<< newRoot <$ (string "$ cd /" <* endOfLine))
+readSizes = either (error "Bad parse") sizes . parseOnly (zipper =<< root <$ (string "$ cd /" <* endOfLine))
   where
-    parseZipper z = (choice [contents z, step z] <* endOfLine) >>= \z' -> choice [z' <$ endOfInput, parseZipper z']
+    root = (Directory S.empty "/", [])
+    zipper z = (choice [contents z, step z] <* endOfLine) >>= \z' -> choice [z' <$ endOfInput, zipper z']
     contents z = foldl' insert z <$> ((string "$ ls" *> endOfLine) *> (entry `sepBy'` endOfLine))
     step z = choice [up z <$ string "$ cd ..", (`dn` z) <$> (string "$ cd " *> name)]
     entry = choice [Directory S.empty <$> (string "dir " *> name), File <$> decimal <*> (skipSpace *> name)]
@@ -62,9 +59,7 @@ part1 = sum . filter (<= 100000) . tail
 
 part2 :: [Int] -> Int
 part2 [] = error "empty list"
-part2 (root : rest) = minimum $ filter ((>= 30000000) . (free +)) rest
-  where
-    free = 70000000 - root
+part2 (root : rest) = let free = 70000000 - root in minimum $ filter ((>= 30000000) . (free +)) rest
 
 main :: IO ()
 main = do

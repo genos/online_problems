@@ -1,9 +1,7 @@
 module Main where
 
 import Data.Attoparsec.Text
-import Data.Bool (bool)
 import Data.Foldable (traverse_)
-import Data.Semigroup (Sum (..))
 import Data.Text (Text)
 import qualified Data.Text.IO as T
 import Data.Word (Word64)
@@ -17,10 +15,10 @@ parseInput = either (error "Bad parse") id . parseOnly (pair `sepBy1'` endOfLine
     interval = Interval <$> decimal <*> (char '-' *> decimal)
 
 solve :: (Interval -> Interval -> Bool) -> [(Interval, Interval)] -> Int
-solve p = getSum . foldMap (\(x, y) -> bool 0 1 (p x y || p y x))
+solve p = length . filter (\(x, y) -> p x y || p y x)
 
-fullyContains :: Interval -> Interval -> Bool
-fullyContains (Interval a b) (Interval c d) = a <= c && b >= d
+contains :: Interval -> Interval -> Bool
+contains (Interval a b) (Interval c d) = a <= c && b >= d
 
 overlaps :: Interval -> Interval -> Bool
 overlaps (Interval a b) (Interval c d) = (a <= c && b >= c) || (a <= d && b >= d)
@@ -28,4 +26,4 @@ overlaps (Interval a b) (Interval c d) = (a <= c && b >= c) || (a <= d && b >= d
 main :: IO ()
 main = do
     pairs <- parseInput <$> T.readFile "input.txt"
-    traverse_ (print . flip solve pairs) [fullyContains, overlaps]
+    traverse_ (print . ($ pairs) . solve) [contains, overlaps]
