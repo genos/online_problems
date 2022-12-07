@@ -1,7 +1,7 @@
 module Main where
 
 import Data.Char (ord)
-import Data.Foldable (foldl1, traverse_)
+import Data.Foldable (traverse_)
 import qualified Data.IntMap.Strict as I
 import Data.List.Split (chunksOf)
 import Data.Set (Set)
