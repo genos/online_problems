@@ -1,3 +1,5 @@
+{-# LANGUAGE LambdaCase #-}
+
 module Main where
 
 import Data.Attoparsec.Text hiding (D)
@@ -21,27 +23,34 @@ readMoves = either (error "Bad parse") id . parseOnly (m `sepBy1'` endOfLine)
     d = choice [U <$ char 'U', D <$ char 'D', L <$ char 'L', R <$ char 'R']
 
 type Coord = V2 Int
-data Paths = Paths { _head :: NonEmpty Coord, _tail :: NonEmpty Coord }
+data Paths = Paths {_head :: NonEmpty Coord, _tail :: NonEmpty Coord}
+
+d2c :: Direction -> Coord
+d2c d = s d . unit $ xy d
+  where
+    s = \case U -> id; D -> negate; L -> negate; R -> id
+    xy = \case U -> _y; D -> _y; L -> _x; R -> _x
+
+m2c :: Move -> [Coord]
+m2c (Move d s) = replicate s (d2c d)
 
 start :: Paths
 start = Paths (N.singleton 0) (N.singleton 0)
 
-move :: Paths -> Move -> Paths
-move (Paths hs@(h :| _) ts@(t :| _)) (Move d s) = Paths (N.prependList (reverse hh) hs) (N.prependList (reverse tt) ts)
+follow :: Coord -> Coord -> Coord
+follow tv@(V2 tx ty) hv@(V2 hx hy) = if qd tv hv < 4 then tv else tv + V2 x y
   where
-    u = case d of
-        U -> unit _y
-        D -> negate $ unit _y
-        L -> negate $ unit _x
-        R -> unit _x
-    hms = replicate s u
-    hh = tail $ scanl' (+) h hms
-    tt = tail $ scanl' f t hh
-    f tv@(V2 tx ty) hv@(V2 hx hy) =
-        let z = qd tv hv
-            xx = signum $ hx - tx
-            yy = signum $ hy - ty
-         in if z < 4 then tv else tv + V2 xx yy
+    x = signum $ hx - tx
+    y = signum $ hy - ty
+
+revPrep :: [a] -> NonEmpty a -> NonEmpty a
+revPrep = N.prependList . reverse
+
+move :: Paths -> Move -> Paths
+move (Paths hs@(h :| _) ts@(t :| _)) m = Paths (revPrep hh hs) (revPrep tt ts)
+  where
+    hh = tail . scanl' (+) h $ m2c m
+    tt = tail $ scanl' follow t hh
 
 part1 :: [Move] -> Int
 part1 = length . N.nub . _tail . foldl' move start
