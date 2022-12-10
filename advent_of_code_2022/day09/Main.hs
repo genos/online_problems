@@ -1,61 +1,36 @@
-{-# LANGUAGE LambdaCase #-}
-
 module Main where
 
-import Data.Attoparsec.Text hiding (D)
-import Data.Foldable (foldl', traverse_)
-import Data.List (scanl')
-import Data.List.NonEmpty (NonEmpty (..))
-import qualified Data.List.NonEmpty as N
+import Data.Attoparsec.Text
+import Data.Bool (bool)
+import Data.Foldable (traverse_)
+import Data.List (nub, scanl', sort)
 import Data.Text (Text)
 import qualified Data.Text.IO as T
-import Linear.Metric (qd)
 import Linear.V2
-import Linear.Vector (unit)
 
-data Direction = U | D | L | R deriving (Show)
-data Move = Move {_dir :: !Direction, _steps :: {-# UNPACK #-} !Int} deriving (Show)
-
-readMoves :: Text -> [Move]
-readMoves = either (error "Bad parse") id . parseOnly (m `sepBy1'` endOfLine)
+readCoords :: Text -> [V2 Int]
+readCoords = either (error "Bad parse") concat . parseOnly (move `sepBy1'` endOfLine)
   where
-    m = Move <$> d <*> (skipSpace *> decimal)
-    d = choice [U <$ char 'U', D <$ char 'D', L <$ char 'L', R <$ char 'R']
+    move = flip replicate <$> unit <*> (skipSpace *> decimal)
+    unit =
+        choice
+            [ V2 0 1 <$ char 'U'
+            , V2 0 (-1) <$ char 'D'
+            , V2 (-1) 0 <$ char 'L'
+            , V2 1 0 <$ char 'R'
+            ]
 
-type Coord = V2 Int
-data Paths = Paths {_head :: NonEmpty Coord, _tail :: NonEmpty Coord}
+-- some inspiration from https://blog.jle.im/
 
-d2c :: Direction -> Coord
-d2c d = s d . unit $ xy d
+follow :: [V2 Int] -> [V2 Int]
+follow = scanl' f 0
   where
-    s = \case U -> id; D -> negate; L -> negate; R -> id
-    xy = \case U -> _y; D -> _y; L -> _x; R -> _x
+    f t h = let d = (h - t) in t + bool 1 0 (maximum (abs d) < 2) * signum d
 
-m2c :: Move -> [Coord]
-m2c (Move d s) = replicate s (d2c d)
-
-start :: Paths
-start = Paths (N.singleton 0) (N.singleton 0)
-
-follow :: Coord -> Coord -> Coord
-follow tv@(V2 tx ty) hv@(V2 hx hy) = if qd tv hv < 4 then tv else tv + V2 x y
-  where
-    x = signum $ hx - tx
-    y = signum $ hy - ty
-
-revPrep :: [a] -> NonEmpty a -> NonEmpty a
-revPrep = N.prependList . reverse
-
-move :: Paths -> Move -> Paths
-move (Paths hs@(h :| _) ts@(t :| _)) m = Paths (revPrep hh hs) (revPrep tt ts)
-  where
-    hh = tail . scanl' (+) h $ m2c m
-    tt = tail $ scanl' follow t hh
-
-part1 :: [Move] -> Int
-part1 = length . N.nub . _tail . foldl' move start
+solve :: Int -> [V2 Int] -> Int
+solve n = length . nub . sort . (!! n) . iterate follow . scanl' (+) 0
 
 main :: IO ()
 main = do
-    moves <- readMoves <$> T.readFile "input.txt"
-    traverse_ (print . ($ moves)) [part1]
+    paths <- readCoords <$> T.readFile "input.txt"
+    traverse_ (print . ($ paths)) [solve 1, solve 9]
