@@ -22,18 +22,16 @@ solve f z g = g . snd . foldl' f z
 part1 :: [Int] -> Text
 part1 = solve f (1, 0) (T.pack . show)
   where
-    f (i, strength) n = (succ i, strength')
-      where
-        strength' = strength + i * n * bool 0 1 (i `elem` [20, 60, 100, 140, 180, 220])
+    f (i, s) n = (succ i, s + i * n * bool 0 1 (i `elem` [20, 60, 100, 140, 180, 220]))
 
 part2 :: [Int] -> Text
 part2 = solve f (0, T.empty) (T.unlines . T.chunksOf 40 . T.take 240 . T.reverse)
   where
-    f (i, screen) sprite = (succ i, T.cons c screen)
+    f (i, screen) sprite = (succ i `mod` 40, T.cons c screen)
       where
-        c = bool '.' '#' (abs (i - sprite) <= 1)
+        c = bool ' ' '#' (abs (i - sprite) <= 1)
 
 main :: IO ()
 main = do
-    sprites <- readInterpretApply <$> T.readFile "test.txt"
+    sprites <- readInterpretApply <$> T.readFile "input.txt"
     traverse_ (T.putStrLn . ($ sprites)) [part1, part2]
