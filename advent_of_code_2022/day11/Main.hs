@@ -11,17 +11,18 @@ import qualified Data.Text.IO as T
 import Data.Vector (Vector)
 import qualified Data.Vector as V
 import qualified Data.Vector.Mutable as M
+import Data.Word (Word64)
 import Deque.Strict (Deque)
 import qualified Deque.Strict as D
 
 data Monkey = M
-    { _number :: !Integer
-    , _worries :: Deque Integer
-    , _operation :: Integer -> Integer
-    , _divBy :: {-# UNPACK #-} !Integer
+    { _number :: {-# UNPACK #-} !Int
+    , _worries :: Deque Word64
+    , _operation :: Word64 -> Word64
+    , _divBy :: !Word64
     , _true :: {-# UNPACK #-} !Int
     , _false :: {-# UNPACK #-} !Int
-    , _inspected :: {-# UNPACK #-} !Integer
+    , _inspected :: !Word64
     }
 
 instance Show Monkey where
@@ -44,28 +45,33 @@ readMonkeys = either (error "Bad Parse") V.fromList . parseOnly (m `sepBy1'` end
     self f = (\n -> f n n) <$ string "old"
     other f = f <$> decimal
 
-catch :: Integer -> Monkey -> Monkey
-catch w (M n is o d t f i) = M n (D.snoc w is) o d t f i
+catch :: Word64 -> Monkey -> Monkey
+catch w (M n ws o d t f i) = M n (D.snoc w ws) o d t f i
 
-turn :: Vector Monkey -> Int -> Vector Monkey
-turn ms n = if null (_worries $ ms V.! n) then ms else ms'
+turn :: (Word64 -> Word64) -> Vector Monkey -> Int -> Vector Monkey
+turn g ms n = ms'
   where
     M k ws op d t f i = ms V.! n
     m0 = M k mempty op d t f (i + fromIntegral (length ws))
-    ms' = V.modify (\v -> M.write v n m0) $ foldl' g ms ws
-    g mz w =
-        let w' = op w `div` 3
+    ms' = V.modify (\v -> M.write v n m0) $ foldl' h ms ws
+    h mz w =
+        let w' = g $ op w
             n' = bool f t $ 0 == (w' `mod` d)
             m1 = catch w' $ mz V.! n'
          in V.modify (\v -> M.write v n' m1) mz
 
-gameRound :: Vector Monkey -> Vector Monkey
-gameRound ms = foldl' turn ms [0 .. V.length ms - 1]
+gameRound :: (Word64 -> Word64) -> Vector Monkey -> Vector Monkey
+gameRound g ms = V.foldl' (turn g) ms . V.enumFromTo 0 . pred $ V.length ms
 
-part1 :: Vector Monkey -> Integer
-part1 ms = product . take 2 . reverse . sort . V.toList . fmap _inspected $ foldl' (\mz _ -> gameRound mz) ms [0 .. 19 :: Int]
+solve :: Word64 -> (Word64 -> Word64) -> Vector Monkey -> Word64
+solve n g = product . take 2 . reverse . sort . V.toList . fmap _inspected . go 0
+  where
+    go k ms
+        | k == n = ms
+        | otherwise = go (succ k) (gameRound g ms)
 
 main :: IO ()
 main = do
     monkeys <- readMonkeys <$> T.readFile "input.txt"
-    traverse_ (print . ($ monkeys)) [part1]
+    let modulus = product $ _divBy <$> monkeys
+    traverse_ (print . ($ monkeys)) [solve 20 (`div` 3), solve 10000 (`mod` modulus)]
