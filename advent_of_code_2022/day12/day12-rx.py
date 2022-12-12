@@ -32,9 +32,12 @@ def read_map(p: Path) -> tuple[Chart, rx.PyDiGraph, Node, Node]:
     g.add_nodes_from([_int((i, j), chart) for i, j in np.ndindex(chart.shape)])
     for ((i, j), height) in np.ndenumerate(chart):
         for x, y in [(i - 1, j), (i + 1, j), (i, j - 1), (i, j + 1)]:
-            if 0 <= x < chart.shape[0] and 0 <= y < chart.shape[1]:
-                if height + 1 >= chart[x, y]:
-                    g.add_edge(_int((i, j), chart), _int((x, y), chart), 1)
+            if (
+                0 <= x < chart.shape[0]
+                and 0 <= y < chart.shape[1]
+                and height + 1 >= chart[x, y]
+            ):
+                g.add_edge(_int((i, j), chart), _int((x, y), chart), 1)
     return (chart, g, start, end)
 
 
