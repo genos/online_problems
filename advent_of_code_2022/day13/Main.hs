@@ -21,14 +21,12 @@ instance Ord Packet where
     compare xs@(List _) (One y) = compare xs (List [One y])
 
 part1 :: [(Packet, Packet)] -> Int
-part1 = sum . fmap fst . filter (uncurry (<) . snd) . zip [1 ..]
+part1 = sum . fmap succ . findIndices (uncurry (<))
 
 part2 :: [(Packet, Packet)] -> Int
-part2 = product . fmap succ . findIndices isDivider . sort . ([two, six] ++) . concatMap (\(a, b) -> [a, b])
+part2 = product . fmap succ . findIndices (`elem` twosix) . sort . (twosix ++) . concatMap (\(x, y) -> [x, y])
   where
-    two = List [List [One 2]]
-    six = List [List [One 6]]
-    isDivider = (`elem` [two, six])
+    twosix = fmap (\x -> List [List [One x]]) [2, 6]
 
 main :: IO ()
 main = do
