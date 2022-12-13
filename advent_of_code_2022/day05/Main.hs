@@ -23,7 +23,7 @@ parseSetup = either (error "Bad parse") id . parseOnly ((,) <$> stacks <*> (skip
     entry = choice [count 3 (char ' ') $> " ", T.singleton <$> (char '[' *> letter <* char ']')]
     skipStuff = endOfLine *> skipWhile (/= '\n') *> endOfLine *> endOfLine
     moves = move `sepBy1'` endOfLine
-    move = Move <$> (string "move " *> decimal) <*> (string " from " *> decimal) <*> (string " to " *> decimal)
+    move = Move <$> ("move " *> decimal) <*> (" from " *> decimal) <*> (" to " *> decimal)
 
 apply :: (Text -> Text) -> Stacks -> Move -> Stacks
 apply f stacks (Move num from to) = stacks'

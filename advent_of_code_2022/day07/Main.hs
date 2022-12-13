@@ -45,13 +45,13 @@ sizes = reverse . sort . annotate . toRoot
     size (Directory es _) = sum $ S.map size es
 
 readSizes :: Text -> [Int]
-readSizes = either (error "Bad parse") sizes . parseOnly (zipper =<< root <$ (string "$ cd /" <* endOfLine))
+readSizes = either (error "Bad parse") sizes . parseOnly (zipper =<< root <$ ("$ cd /" <* endOfLine))
   where
     root = (Directory S.empty "/", [])
     zipper z = (choice [contents z, step z] <* endOfLine) >>= \z' -> choice [z' <$ endOfInput, zipper z']
-    contents z = foldl' insert z <$> ((string "$ ls" *> endOfLine) *> (entry `sepBy'` endOfLine))
-    step z = choice [up z <$ string "$ cd ..", (`dn` z) <$> (string "$ cd " *> name)]
-    entry = choice [Directory S.empty <$> (string "dir " *> name), File <$> decimal <*> (skipSpace *> name)]
+    contents z = foldl' insert z <$> (("$ ls" *> endOfLine) *> (entry `sepBy'` endOfLine))
+    step z = choice [up z <$ "$ cd ..", (`dn` z) <$> ("$ cd " *> name)]
+    entry = choice [Directory S.empty <$> ("dir " *> name), File <$> decimal <*> (skipSpace *> name)]
     name = takeTill isEndOfLine
 
 part1 :: [Int] -> Int
