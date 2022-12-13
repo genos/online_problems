@@ -14,7 +14,7 @@ import qualified Data.Text.IO as T
 readInterpretApply :: Text -> [Int]
 readInterpretApply = either (error "Bad parse") (scanl' (&) 1 . concat) . parseOnly (f `sepBy1'` endOfLine)
   where
-    f = choice [[id] <$ string "noop", (\n -> [id, (+ n)]) <$> (string "addx " *> signed decimal)]
+    f = choice [[id] <$ "noop", (\n -> [id, (+ n)]) <$> ("addx " *> signed decimal)]
 
 solve :: ((a, b) -> Int -> (a, b)) -> (a, b) -> (b -> Text) -> [Int] -> Text
 solve f z g = g . snd . foldl' f z
