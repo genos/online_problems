@@ -21,39 +21,30 @@ readCave = either (error "Bad parse") (S.fromList . concat) . parseOnly (path `s
     path = concat . (zipWith expand <*> tail) <$> stops
     coord = V2 <$> decimal <*> (char ',' *> decimal)
     stops = coord `sepBy1'` " -> "
-    expand a b = let d = signum (b - a) in a ^.. unfolded (\v -> bool (Just (v, v + d)) Nothing $  v - d == b)
+    expand a b = let d = signum (b - a) in a ^.. unfolded (\v -> bool (Just (v, v + d)) Nothing $ v - d == b)
 
 top :: Coordinate
 top = V2 500 0
 
-candidates :: Coordinate -> [Coordinate]
-candidates v = (v +) <$> [V2 0 1, V2 (-1) 1, V2 1 1]
-
-solve :: (Cave -> Cave) -> Cave -> Int
-solve sand cave = length $ sand cave `S.difference` cave
-
-sand1 :: Cave -> Cave
-sand1 cave = go cave top
+sand :: Cave -> Cave
+sand cave = go cave top
   where
-    offX = minimum1Of (folded . _x) cave
-    offY = maximum1Of (folded . _y) cave
+    minX = minimum1Of (folded . _x) cave
+    maxY = maximum1Of (folded . _y) cave
     go c v@(V2 x y)
-        | x < offX || y > offY = c
-        | otherwise =
-            maybe (sand1 $ S.insert v c) (go c) $ findOf folded (`S.notMember` c) (candidates v)
+        | top `S.member` c || x < minX || y > maxY = c
+        | otherwise = maybe (sand $ S.insert v c) (go c) $ findOf folded (`S.notMember` c) ((v +) <$> [V2 0 1, V2 (-1) 1, V2 1 1])
 
-sand2 :: Cave -> Cave
-sand2 cave = go cave top
+solve :: Cave -> Int
+solve cave = length $ sand cave `S.difference` cave
+
+fillFloor :: Cave -> Cave
+fillFloor cave = cave `S.union` S.fromList [V2 x y | x <- [tx - y .. tx + y]]
   where
-    maxY = (2 +) $ maximum1Of (folded . _y) cave
-    go c v@(V2 _ y)
-        | S.member top c = c
-        | y == maxY = sand2 (S.insert v c)
-        | y > maxY = error "impossible"
-        | otherwise =
-            maybe (sand2 $ S.insert v c) (go c) $ findOf folded ((&&) <$> (`S.notMember` c) <*> ((<= maxY) . (^. _y))) (candidates v)
+    y = (2 +) $ maximum1Of (folded . _y) cave
+    tx = top ^. _x
 
 main :: IO ()
 main = do
-    input <- readCave <$> T.readFile "test.txt"
-    traverse_ (print . (`solve` input)) [sand1, sand2]
+    input <- readCave <$> T.readFile "input.txt"
+    traverse_ (print . ($ input)) [solve, solve . fillFloor]
