@@ -1,29 +1,27 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TupleSections #-}
 
 module Main where
 
 import Control.Lens
-import Data.Attoparsec.Text hiding (take)
+import Data.Attoparsec.Text
+import Data.Bool (bool)
 import Data.Foldable (traverse_)
-import Data.Map.Strict (Map)
-import qualified Data.Map.Strict as M
 import Data.Set (Set)
+import qualified Data.Set as S
 import Data.Text (Text)
 import qualified Data.Text.IO as T
 import Linear.V2
 
-data Space = Rock | Sand deriving (Eq)
 type Coordinate = V2 Int
-type Cave = Map Coordinate Space
+type Cave = Set Coordinate
 
 readCave :: Text -> Cave
-readCave = either (error "Bad parse") (M.fromList . concat) . parseOnly (path `sepBy1'` endOfLine)
+readCave = either (error "Bad parse") (S.fromList . concat) . parseOnly (path `sepBy1'` endOfLine)
   where
-    path = fmap (,Rock) . concat . (zipWith expand <*> tail) <$> stops
+    path = concat . (zipWith expand <*> tail) <$> stops
     coord = V2 <$> decimal <*> (char ',' *> decimal)
     stops = coord `sepBy1'` " -> "
-    expand a b = let d = b - a in take (succ . maximum $ abs d) $ iterate (+ signum d) a
+    expand a b = let d = signum (b - a) in a ^.. unfolded (\v -> bool (Just (v, v + d)) Nothing $  v - d == b)
 
 top :: Coordinate
 top = V2 500 0
@@ -32,29 +30,28 @@ candidates :: Coordinate -> [Coordinate]
 candidates v = (v +) <$> [V2 0 1, V2 (-1) 1, V2 1 1]
 
 solve :: (Cave -> Cave) -> Cave -> Int
-solve sand = length . M.filter (== Sand) . sand
+solve sand cave = length $ sand cave `S.difference` cave
 
 sand1 :: Cave -> Cave
 sand1 cave = go cave top
   where
-    keys = M.keys cave
-    offX = minimum1Of (folded . _x) keys
-    offY = maximum1Of (folded . _y) keys
+    offX = minimum1Of (folded . _x) cave
+    offY = maximum1Of (folded . _y) cave
     go c v@(V2 x y)
         | x < offX || y > offY = c
         | otherwise =
-            let next = findOf folded (`M.notMember` c) (candidates v)
-             in maybe (sand1 $ M.insert v Sand c) (go c) next
+            maybe (sand1 $ S.insert v c) (go c) $ findOf folded (`S.notMember` c) (candidates v)
 
 sand2 :: Cave -> Cave
 sand2 cave = go cave top
   where
-    maxY = (2 +) $ maximum1Of (folded . _y) (M.keys cave)
-    go c v
-        | M.member top c = c
+    maxY = (2 +) $ maximum1Of (folded . _y) cave
+    go c v@(V2 _ y)
+        | S.member top c = c
+        | y == maxY = sand2 (S.insert v c)
+        | y > maxY = error "impossible"
         | otherwise =
-            let next = findOf folded (`M.notMember` c) . filter ((<= maxY) . (^. _y)) $ candidates v
-             in maybe (sand2 $ M.insert v Sand c) (go c) next
+            maybe (sand2 $ S.insert v c) (go c) $ findOf folded ((&&) <$> (`S.notMember` c) <*> ((<= maxY) . (^. _y))) (candidates v)
 
 main :: IO ()
 main = do
