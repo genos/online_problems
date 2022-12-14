@@ -5,6 +5,7 @@ module Main where
 
 import Control.Lens
 import Data.Attoparsec.Text hiding (take)
+import Data.Foldable (traverse_)
 import qualified Data.Map as M
 import Data.Map.Strict (Map)
 import Data.Maybe (fromJust, isNothing)
@@ -47,4 +48,4 @@ sand1 cave = either sand1 id (go top cave)
 main :: IO ()
 main = do
     input <- readCave <$> T.readFile "input.txt"
-    print $ solve sand1 input
+    traverse_ (print . (`solve` input)) [sand1]
