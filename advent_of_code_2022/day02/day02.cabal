@@ -6,4 +6,4 @@ executable day02
     main-is:          Main.hs
     build-depends:    base ^>=4.17.0.0, attoparsec ^>= 0.14.4, text ^>= 2.0.1
     default-language: Haskell2010
-    ghc-options:      -Wall -Wextra
+    ghc-options:      -Wall -Wextra -O2
