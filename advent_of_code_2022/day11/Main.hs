@@ -23,7 +23,7 @@ data Monkey = Monkey
     , _inspected :: {-# UNPACK #-}!Int
     }
 
-$(makeLenses ''Monkey)
+makeLenses ''Monkey
 
 readMonkeys :: Text -> Vector Monkey
 readMonkeys = either (error "Bad Parse") V.fromList . parseOnly (m `sepBy1'` endOfLine)

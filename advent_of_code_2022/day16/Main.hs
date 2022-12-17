@@ -18,7 +18,7 @@ data Valve = Valve
     }
     deriving (Show)
 
-$(makeLenses ''Valve)
+makeLenses ''Valve
 
 readValves :: Text -> Map Name Valve
 readValves = either (error "Bad Parse") M.fromList . parseOnly (pValve `sepBy1'` endOfLine)
