@@ -32,8 +32,8 @@ readValves = either (error "Bad Parse") M.fromList . parseOnly (pValve `sepBy1'`
     pTunnels = "; " *> choice ["tunnel leads to valve ", "tunnels lead to valves "] *> (pName `sepBy'` ", ")
     pair n i ns = (n, Valve i ns)
 
-mkAdjacency :: Map Name Valve -> Map (Name, Name) Int
-mkAdjacency m = M.map fromJust $ go (M.fromList [((x, y), edge x y) | x <- keys, y <- keys]) keys
+adjacency :: Map Name Valve -> Map (Name, Name) Int
+adjacency m = M.map fromJust $ go (M.fromList [((x, y), edge x y) | x <- keys, y <- keys]) keys
   where
     min' (Just x) (Just y) = Just $ min x y
     min' (Just x) Nothing = Just x
@@ -42,17 +42,12 @@ mkAdjacency m = M.map fromJust $ go (M.fromList [((x, y), edge x y) | x <- keys,
     (.+.) :: Num a => Maybe a -> Maybe a -> Maybe a
     (Just x) .+. (Just y) = Just $ x + y
     _ .+. _ = Nothing
-    edge x y
-        | x == y = Just 0
-        | y `S.member` (m ^?! ix x . tunnels) = Just 1
-        | otherwise = Nothing
+    edge x y = if y `S.member` (m ^?! ix x . tunnels) then Just 1 else Nothing
     keys = M.keys m
     keyPairs = let ks = M.keysSet m in S.cartesianProduct ks ks
-    go :: Map (Name, Name) (Maybe Int) -> [Name] -> Map (Name, Name) (Maybe Int)
-    go adj [] = adj
-    go adj (k : ks) = go (foldl' f adj keyPairs) ks
+    go = foldl' (\adj k -> foldl' (f k) adj keyPairs)
       where
-        f a (i, j) =
+        f k a (i, j) =
             let aij = a M.! (i, j)
                 aik = a M.! (i, k)
                 akj = a M.! (k, j)
@@ -61,7 +56,7 @@ mkAdjacency m = M.map fromJust $ go (M.fromList [((x, y), edge x y) | x <- keys,
 search :: Int -> Map Name Valve -> Map (Set Name) Int
 search time valves = execState (go time S.empty 0 "AA") M.empty
   where
-    adj = mkAdjacency valves
+    adj = adjacency valves
     nonZero = M.filter ((0 <) . _flow) valves
     go t open f v
         | t <= 0 = pure ()
