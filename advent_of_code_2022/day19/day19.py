@@ -40,8 +40,7 @@ class Blueprint(NamedTuple):
         )
 
     def max_geodes(self, time: int) -> int:
-        material, robot, build = None, None, None
-        constraints = []
+        materials, robots, builds, constraints = [], [], [], []
         for i in range(time + 1):
             m = cp.Variable(4, integer=True)
             r = cp.Variable(4, integer=True)
@@ -55,17 +54,17 @@ class Blueprint(NamedTuple):
                 constraints.append(m >= 0)
                 constraints.append(r >= 0)
                 # add new robots
-                constraints.append(r == robot + build)
+                constraints.append(r == robots[-1] + builds[-1])
                 # can only build one robot
                 constraints.append(cp.sum(b) <= 1)
                 # can only build if we have materials
-                constraints.append(self.costs @ b <= material)
+                constraints.append(self.costs @ b <= materials[-1])
                 # new materials: previous + 1 for each robot - those used for building
-                constraints.append(m == (material + r - (self.costs @ b)))
-            material = m
-            robot = r
-            build = b
-        problem = cp.Problem(cp.Maximize(material[-1]), constraints)
+                constraints.append(m == (materials[-1] + r - (self.costs @ b)))
+            materials.append(m)
+            robots.append(r)
+            builds.append(b)
+        problem = cp.Problem(cp.Maximize(materials[-1][-1]), constraints)
         problem.solve()
         return int(problem.value)
 
