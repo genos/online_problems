@@ -5,62 +5,64 @@ module Main where
 
 import Prelude hiding (readFile, take)
 
+import Control.Monad ((<=<))
 import Data.Attoparsec.Text
+import Data.Foldable (traverse_)
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as M
 import Data.SBV
+import Data.SBV.Internals (CVal (..), cvVal, modelAssocs)
 import Data.Text (Text)
 import Data.Text.IO (readFile)
 
 data Op = Plus | Minus | Mul | Div
 
-apply :: (Num a, SDivisible a) => Op -> a -> a -> a
+apply :: (Num a, Fractional a) => Op -> a -> a -> a
 apply = \case
     Plus -> (+)
     Minus -> (-)
     Mul -> (*)
-    Div -> sDiv
+    Div -> (\x y -> x * recip y) -- workaround a bug in SMTLib2 interface
 
-data Expr = Number Word64 | Operation Text Op Text
+data Expr = Number Rational | Operation Text Op Text
 
 readMonkeys :: Text -> Map Text Expr
 readMonkeys = either (error "Bad parse") M.fromList . parseOnly (pRow `sepBy1'` endOfLine)
   where
     pRow = (,) <$> pName <*> (": " *> pExpr)
     pName = take 4
-    pExpr = choice [Number <$> decimal, pOperation]
+    pExpr = choice [Number . (% 1) <$> decimal, pOperation]
     pOperation = Operation <$> pName <*> (skipSpace *> pOp <* skipSpace) <*> pName
     pOp = choice [Plus <$ "+", Minus <$ "-", Mul <$ "*", Div <$ "/"]
 
-part1 :: Map Text Expr -> Word64
-part1 = calc "root"
+part1 :: Map Text Expr -> IO Integer
+part1 = pure . numerator . calc "root"
   where
     calc m monkeys = case monkeys M.! m of
         (Number n) -> n
         (Operation x o y) -> apply o (calc x monkeys) (calc y monkeys)
 
-part2 :: Map Text Expr -> Symbolic SBool
-part2 monkeys = do
-    let (left, right) = case monkeys M.! "root" of
-            Number _ -> error "Not the correct form"
-            (Operation x _ y) -> (x, y)
-    humn <- sWord64 "humn"
-    let follow m
-            | m == "humn" = humn
-            | otherwise = case monkeys M.! m of
-                (Number n) -> fromIntegral n
-                (Operation x o y) -> apply o (follow x) (follow y)
-    pure $ follow left .== follow right
+part2 :: Map Text Expr -> IO Integer
+part2 monkeys = answer
+  where
+    answer = do
+        (SatResult (Satisfiable _ smtResult)) <- sat go
+        pure . numerator $ case cvVal . snd . head $ modelAssocs smtResult of
+            (CRational r) -> r
+            _ -> error "No rational value found."
+    go = do
+        let (left, right) = case monkeys M.! "root" of
+                Number _ -> error "Not the correct form"
+                (Operation x _ y) -> (x, y)
+        humn <- sRational "humn"
+        let follow m
+                | m == "humn" = humn
+                | otherwise = case monkeys M.! m of
+                    (Number n) -> fromRational n
+                    (Operation x o y) -> apply o (follow x) (follow y)
+        pure (follow left .== follow right)
 
 main :: IO ()
 main = do
     input <- readMonkeys <$> readFile "input.txt"
-    print $ part1 input
-    allSat (part2 input) >>= print
-
-{-
-For part 2:
-
-cabal run | rg 'humn = (\d+) :: Word64' -r '$1' | sort -n | head -n 1
-
--}
+    traverse_ (print <=< ($ input)) [part1, part2]
