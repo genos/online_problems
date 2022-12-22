@@ -1,5 +1,4 @@
 {-# LANGUAGE LambdaCase #-}
-{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TupleSections #-}
 
 module Main where
@@ -54,7 +53,7 @@ facing = \case
     V2 0 1 -> 0
     V2 1 0 -> 1
     V2 0 (-1) -> 2
-    V2 (-1) 0 -> 0
+    V2 (-1) 0 -> 3
     c -> error ("Bad direction: " <> show c)
 
 part1 :: Board -> [Move] -> Int
