@@ -35,18 +35,18 @@ readBoardAndMoves =
 
 step :: Board -> (Coord, Direction) -> Move -> (Coord, Direction)
 step _ (c, d) (Turn t) = let turn = case t of L -> perp; R -> negate . perp in (c, turn d)
-step b (c, d) (Forward n) = go n (c, d)
+step b (c, d) (Forward n) = go n c
   where
-    go k (xy, dir)
-        | k <= 0 = (xy, dir)
-        | otherwise = go (pred k) (xy', dir)
-      where
-        xy' = case b M.!? (xy + dir) of
-            Just Tile -> xy + dir
-            Just Wall -> xy
-            Nothing ->
-                let xy'' = last . takeWhile (`M.member` b) $ iterate (subtract dir) xy
-                 in if b M.! xy'' == Tile then xy'' else xy
+    go k xy
+        | k <= 0 = (xy, d)
+        | otherwise =
+            let xy' = case b M.!? (xy + d) of
+                    Just Tile -> xy + d
+                    Just Wall -> xy
+                    Nothing ->
+                        let xy'' = last . takeWhile (`M.member` b) $ iterate (subtract d) xy
+                         in if b M.! xy'' == Tile then xy'' else xy
+             in go (pred k) xy'
 
 facing :: Direction -> Int
 facing = \case
