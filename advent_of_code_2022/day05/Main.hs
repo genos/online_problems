@@ -26,17 +26,16 @@ parseSetup = either (error "Bad parse") id . parseOnly ((,) <$> stacks <*> (skip
     move = Move <$> ("move " *> decimal) <*> (" from " *> decimal) <*> (" to " *> decimal)
 
 apply :: (Text -> Text) -> Stacks -> Move -> Stacks
-apply f stacks (Move num from to) = stacks'
+apply f stacks (Move num from to) = stacks V.// [(to', zs), (from', ys)]
   where
     (from', to') = (pred from, pred to)
     (xs, ys) = T.splitAt num (stacks V.! from')
     zs = f xs <> (stacks V.! to')
-    stacks' = stacks V.// [(to', zs), (from', ys)]
 
-solve :: (Text -> Text) -> (Stacks, [Move]) -> Text
-solve f (stacks, moves) = V.foldMap (T.take 1) $ foldl' (apply f) stacks moves
+solve :: (Stacks, [Move]) -> (Text -> Text) -> Text
+solve (stacks, moves) f = V.foldMap (T.take 1) $ foldl' (apply f) stacks moves
 
 main :: IO ()
 main = do
-    (stacks, moves) <- parseSetup <$> T.readFile "input.txt"
-    traverse_ (T.putStrLn . (`solve` (stacks, moves))) [T.reverse, id]
+    setup <- parseSetup <$> T.readFile "input.txt"
+    traverse_ (T.putStrLn . solve setup) [T.reverse, id]
