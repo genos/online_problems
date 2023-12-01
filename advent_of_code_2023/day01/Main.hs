@@ -1,24 +1,38 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE LambdaCase #-}
 
 module Main where
 
-import Data.Char (digitToInt, isNumber)
-import Data.Foldable (foldl')
+import Data.Char (digitToInt, isDigit)
+import Data.List (isPrefixOf, tails)
+import Data.Maybe (mapMaybe)
 
-p1Test :: String
-p1Test = "1abc2\npqr3stu8vwx\na1b2c3d4e5f\ntreb7uchet"
+toNum :: (String -> Maybe Int) -> String -> Int
+toNum f s = 10 * head ns + last ns where ns = mapMaybe f $ tails s
 
-firstLast :: [a] -> [a]
-firstLast t = head t : [last t]
+solve :: (String -> Maybe Int) -> String -> Int
+solve f = sum . fmap (toNum f) . lines
 
 part1 :: String -> Int
-part1 = sum . fmap (foldl' ((+) . (* 10)) 0 . fmap digitToInt . firstLast . filter isNumber) . lines
+part1 = solve (\case (c : _) | isDigit c -> Just $ digitToInt c; _ -> Nothing)
 
-p2Test :: String
-p2Test = "two1nine\neightwothree\nabcone2threexyz\nxtwone3four\n4nineeightseven2\nzoneight234\n7pqrstsixteen"
+part2 :: String -> Int
+part2 = solve f
+  where
+    f input@(c : _)
+        | isDigit c = Just $ digitToInt c
+        | "one" `isPrefixOf` input = Just 1
+        | "two" `isPrefixOf` input = Just 2
+        | "three" `isPrefixOf` input = Just 3
+        | "four" `isPrefixOf` input = Just 4
+        | "five" `isPrefixOf` input = Just 5
+        | "six" `isPrefixOf` input = Just 6
+        | "seven" `isPrefixOf` input = Just 7
+        | "eight" `isPrefixOf` input = Just 8
+        | "nine" `isPrefixOf` input = Just 9
+    f _ = Nothing
 
 main :: IO ()
 main = do
-    print $ part1 p1Test
     input <- readFile "input.txt"
     print $ part1 input
+    print $ part2 input
