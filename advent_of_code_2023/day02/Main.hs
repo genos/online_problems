@@ -4,6 +4,7 @@ module Main where
 
 import Control.Applicative
 import Data.Attoparsec.Text
+import Data.Foldable (traverse_)
 import Data.Functor (($>))
 import Data.Map.Strict (Map)
 import Data.Map.Strict qualified as M
@@ -11,8 +12,8 @@ import Data.Text (Text)
 import Data.Text.IO qualified as T
 import Data.Tuple (swap)
 
-data Color = Red | Green | Blue deriving (Eq, Ord, Show)
-data Game = Game {num :: Int, subsets :: [Map Color Int]} deriving (Show)
+data Color = Red | Green | Blue deriving (Eq, Ord)
+data Game = Game {num :: Int, subsets :: [Map Color Int]}
 
 readGames :: Text -> [Game]
 readGames = either (error "Bad parse") id . parseOnly ((game `sepBy1'` "\n") <* endOfInput)
@@ -31,10 +32,9 @@ part1 = sum . fmap num . filter possible
 part2 :: [Game] -> Int
 part2 = sum . fmap power
   where
-    power = M.foldl' (*) 1 . M.unionsWith max . subsets
+    power = product . M.unionsWith max . subsets
 
 main :: IO ()
 main = do
     input <- readGames <$> T.readFile "input.txt"
-    print $ part1 input
-    print $ part2 input
+    traverse_ (print . ($ input)) [part1, part2]
