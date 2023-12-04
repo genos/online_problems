@@ -3,26 +3,13 @@
 module Main where
 
 import Data.Char (digitToInt, isDigit)
-import Data.Foldable (foldMap')
+import Data.Foldable (foldMap', traverse_)
 import Data.Map.Strict (Map)
 import Data.Map.Strict qualified as M
 import Data.Text (Text)
 import Data.Text qualified as T
 import Data.Text.IO qualified as T
 import Linear.V2
-
-test :: Text
-test =
-    "467..114..\n\
-    \...*......\n\
-    \..35..633.\n\
-    \......#...\n\
-    \617*......\n\
-    \.....+.58.\n\
-    \..592.....\n\
-    \......755.\n\
-    \...$.*....\n\
-    \.664.598."
 
 type Coord = V2 Int
 
@@ -54,25 +41,18 @@ neighbors (V2 x y) = [V2 (x + dx) (y + dy) | dx <- [-1, 0, 1], dy <- [-1, 0, 1]]
 range :: Coord -> Coord -> [Coord]
 range (V2 x y0) (V2 _x y1) = [V2 x y | y <- [y0 .. y1]]
 
-adjToSymbol :: Schematic -> [Int]
-adjToSymbol (S ns ss) = M.elems $ M.filterWithKey (\(lo, hi) _v -> any isAdj $ range lo hi) ns
-  where
-    isAdj = any (`M.member` ss) . neighbors
-
 part1 :: Schematic -> Int
 part1 = sum . adjToSymbol
+  where
+    adjToSymbol (S ns ss) = M.elems $ M.filterWithKey (\(lo, hi) _ -> any (any (`M.member` ss) . neighbors) $ range lo hi) ns
 
 part2 :: Schematic -> Int
-part2 (S ns ss) = sum gears
+part2 = sum . gearRatios
   where
-    gears = fmap product . filter ((== 2) . length) . M.elems . M.mapWithKey adjNums $ M.filter (== '*') ss
-    adjNums k _ = M.elems $ M.filterWithKey (\(lo, hi) _ -> any (isAdj k) $ range lo hi) ns
-    isAdj k = (k `elem`) . neighbors
+    gearRatios (S ns ss) = fmap product . filter ((== 2) . length) . M.elems . M.mapWithKey (adjNums ns) $ M.filter (== '*') ss
+    adjNums ns k _ = M.elems $ M.filterWithKey (\(lo, hi) _ -> any ((k `elem`) . neighbors) $ range lo hi) ns
 
 main :: IO ()
 main = do
     input <- readSchematic <$> T.readFile "input.txt"
-    print $ part1 $ readSchematic test
-    print $ part2 $ readSchematic test
-    print $ part1 input
-    print $ part2 input
+    traverse_ (print . ($ input)) [part1, part2]
