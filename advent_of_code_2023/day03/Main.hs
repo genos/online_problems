@@ -51,17 +51,28 @@ readSchematic = foldMap' f . zip [0 :: Int ..] . T.lines
 neighbors :: Coord -> [Coord]
 neighbors (V2 x y) = [V2 (x + dx) (y + dy) | dx <- [-1, 0, 1], dy <- [-1, 0, 1]]
 
+range :: Coord -> Coord -> [Coord]
+range (V2 x y0) (V2 _x y1) = [V2 x y | y <- [y0 .. y1]]
+
 adjToSymbol :: Schematic -> [Int]
 adjToSymbol (S ns ss) = M.elems $ M.filterWithKey (\(lo, hi) _v -> any isAdj $ range lo hi) ns
   where
-    range (V2 x y0) (V2 _x y1) = [V2 x y | y <- [y0 .. y1]]
     isAdj = any (`M.member` ss) . neighbors
 
 part1 :: Schematic -> Int
 part1 = sum . adjToSymbol
 
+part2 :: Schematic -> Int
+part2 (S ns ss) = sum gears
+  where
+    gears = fmap product . filter ((== 2) . length) . M.elems . M.mapWithKey adjNums $ M.filter (== '*') ss
+    adjNums k _ = M.elems $ M.filterWithKey (\(lo, hi) _ -> any (isAdj k) $ range lo hi) ns
+    isAdj k = (k `elem`) . neighbors
+
 main :: IO ()
 main = do
     input <- readSchematic <$> T.readFile "input.txt"
     print $ part1 $ readSchematic test
+    print $ part2 $ readSchematic test
     print $ part1 input
+    print $ part2 input
