@@ -3,8 +3,8 @@
 import Data.Attoparsec.Text hiding (take)
 import Data.Foldable (traverse_)
 import Data.IntMap.Strict qualified as I
-import Data.List (intersect, sort)
-import
+import Data.List (intersect)
+import Data.Sequence qualified as S
 import Data.Text (Text)
 import Data.Text.IO qualified as T
 
@@ -22,14 +22,14 @@ part1 = sum . fmap score
     score (_, w, h) = let i = w `intersect` h in if null i then 0 else (2 ^) . pred $ length i
 
 part2 :: [Card] -> Int
-part2 cards = go 0 $ fmap (\(i, _, _) -> i) cards
+part2 cards = go 0 (S.fromList $ fmap (\(n, _, _) -> n) cards)
   where
-    wins = I.fromList $ fmap (\(i, w, h) -> (i, take (length $ w `intersect` h) [i + 1 ..])) cards
-    go n [] = n
-    go n xs@(y : _) =
-        let (ys, zs) = span (== y) xs
-            ws = concatMap (wins I.!) ys
-         in go (n + length ys) (sort $ ws <> zs)
+    wins = I.fromList $ fmap (\(n, w, h) -> (n, S.fromList $ take (length $ w `intersect` h) [n + 1 ..])) cards
+    go n S.Empty = n
+    go n xs@(y S.:<| _) =
+        let (ys, zs) = S.spanl (== y) xs
+            ws = foldMap (wins I.!) ys
+         in go (n + length ys) (S.unstableSort $ ws <> zs)
 
 main :: IO ()
 main = do
