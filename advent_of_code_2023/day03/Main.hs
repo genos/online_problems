@@ -22,7 +22,7 @@ test =
     \..592.....\n\
     \......755.\n\
     \...$.*....\n\
-    \.664.598.."
+    \.664.598."
 
 type Coord = V2 Int
 
@@ -37,14 +37,16 @@ instance Monoid Schematic where
 readSchematic :: Text -> Schematic
 readSchematic = foldMap' f . zip [0 :: Int ..] . T.lines
   where
-    f (i, t) = (\(_, _, ns, ss, _, _, _, _) -> S ns ss) $ T.foldl' g (i, 0, mempty, mempty, 0, 0, 0, False) t
-    g (i, j, ns, ss, lo, hi, n, inNum) c
-        | isDigit c && not inNum = (i, j + 1, ns, ss, j, j, digitToInt c, True)
-        | isDigit c && inNum = (i, j + 1, ns, ss, lo, j, 10 * n + digitToInt c, True)
-        | c /= '.' && inNum = (i, j + 1, M.insert (V2 i lo, V2 i hi) n ns, M.insert (V2 i j) c ss, j, j, 0, False)
-        | c /= '.' && not inNum = (i, j + 1, ns, M.insert (V2 i j) c ss, j, j, 0, False)
-        | c == '.' && inNum = (i, j + 1, M.insert (V2 i lo, V2 i hi) n ns, ss, j, j, 0, False)
-        | otherwise = (i, j + 1, ns, ss, j, j, 0, False)
+    f (i, t) = (\(_, _, _, ns, ss, _, _, _, _) -> S ns ss) $ T.foldl' g (i, 0, T.length t, mempty, mempty, 0, 0, 0, False) t
+    g (i, j, maxJ, ns, ss, lo, hi, n, inNum) c
+        | isDigit c && not inNum && j == maxJ - 1 = (i, j + 1, maxJ, M.insert (V2 i j, V2 i j) (digitToInt c) ns, ss, j, j, 0, False)
+        | isDigit c && inNum && j == maxJ - 1 = (i, j + 1, maxJ, M.insert (V2 i lo, V2 i j) (10 * n + digitToInt c) ns, ss, j, j, 0, False)
+        | isDigit c && not inNum = (i, j + 1, maxJ, ns, ss, j, j, digitToInt c, True)
+        | isDigit c && inNum = (i, j + 1, maxJ, ns, ss, lo, j, 10 * n + digitToInt c, True)
+        | c /= '.' && inNum = (i, j + 1, maxJ, M.insert (V2 i lo, V2 i hi) n ns, M.insert (V2 i j) c ss, j, j, 0, False)
+        | c /= '.' && not inNum = (i, j + 1, maxJ, ns, M.insert (V2 i j) c ss, j, j, 0, False)
+        | c == '.' && inNum = (i, j + 1, maxJ, M.insert (V2 i lo, V2 i hi) n ns, ss, j, j, 0, False)
+        | otherwise = (i, j + 1, maxJ, ns, ss, j, j, 0, False)
 
 neighbors :: Coord -> [Coord]
 neighbors (V2 x y) = [V2 (x + dx) (y + dy) | dx <- [-1, 0, 1], dy <- [-1, 0, 1]]
