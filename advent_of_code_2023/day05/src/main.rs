@@ -1,4 +1,6 @@
 use eyre::{Result, WrapErr};
+use itertools::Itertools;
+use rayon::prelude::*;
 use std::fs;
 
 struct Row {
@@ -45,9 +47,21 @@ fn part1(almanac: &Almanac) -> Option<u64> {
     almanac.seeds.iter().map(|&s| almanac.lookup(s)).min()
 }
 
+fn part2(almanac: &Almanac) -> Option<u64> {
+    almanac
+        .seeds
+        .iter()
+        .tuples()
+        .collect::<Vec<(_, _)>>()
+        .par_iter()
+        .filter_map(|(&lo, &hi)| (lo..lo + hi).map(|s| almanac.lookup(s)).min())
+        .min()
+}
+
 fn main() -> Result<()> {
     let input = fs::read_to_string("input.txt").wrap_err("Unable to read input file.")?;
     let almanac = parser::almanac(&input.trim()).wrap_err("Bad parse.")?;
     println!("{:?}", part1(&almanac));
+    println!("{:?}", part2(&almanac));
     Ok(())
 }
