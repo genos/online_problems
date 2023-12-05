@@ -3,52 +3,28 @@
 module Main where
 
 import Data.Attoparsec.Text
-import Data.Foldable (foldl')
+import Data.Char (isSpace)
+import Data.Foldable (foldl', traverse_)
 import Data.Maybe (mapMaybe)
 import Data.Text (Text)
 import Data.Text.IO qualified as T
 
-test :: Text
-test =
-    "seeds: 79 14 55 13\n\
-    \\n\
-    \seed-to-soil map:\n\
-    \50 98 2\n\
-    \52 50 48\n\
-    \\n\
-    \soil-to-fertilizer map:\n\
-    \0 15 37\n\
-    \37 52 2\n\
-    \39 0 15\n\
-    \\n\
-    \fertilizer-to-water map:\n\
-    \49 53 8\n\
-    \0 11 42\n\
-    \42 0 7\n\
-    \57 7 4\n\
-    \\n\
-    \water-to-light map:\n\
-    \88 18 7\n\
-    \18 25 70\n\
-    \\n\
-    \light-to-temperature map:\n\
-    \45 77 23\n\
-    \81 45 19\n\
-    \68 64 13\n\
-    \\n\
-    \temperature-to-humidity map:\n\
-    \0 69 1\n\
-    \1 0 69\n\
-    \\n\
-    \humidity-to-location map:\n\
-    \60 56 37\n\
-    \56 93 4"
-
-type Row = (Word, Word, Word)
+type Row = (Int, Int, Int)
 type Map = [Row]
-type Almanac = ([Word], [Map])
+type Almanac = ([Int], [Map])
 
-lup :: Word -> Map -> Word
+readAlmanac :: Text -> Almanac
+readAlmanac = either (error "Bad parse") id . parseOnly (almanac <* endOfInput)
+  where
+    almanac =
+        (,)
+            <$> ("seeds: " *> seeds <* "\n\nseed-to-soil map:\n")
+            <*> (imap `sepBy1'` ("\n\n" *> takeTill isSpace <* " map:\n"))
+    seeds = decimal `sepBy1'` " "
+    imap = row `sepBy1'` "\n"
+    row = (,,) <$> decimal <*> (" " *> decimal) <*> (" " *> decimal)
+
+lup :: Int -> Map -> Int
 lup w m = if null answers then w else head answers
   where
     answers = mapMaybe f m
@@ -56,20 +32,20 @@ lup w m = if null answers then w else head answers
         | i <= w && w <= i + n = Just $ o + w - i
         | otherwise = Nothing
 
-readAlmanac :: Text -> Almanac
-readAlmanac = either (error "Bad parse") id . parseOnly (almanac <* endOfInput)
-  where
-    almanac = (,) <$> ("seeds: " *> seeds <* "\n\nseed-to-soil map:\n") <*> (imap `sepBy1'` ("\n\n" *> name <* "\n"))
-    seeds = decimal `sepBy1'` " "
-    name = many1' letter *> "-" *> many1' letter *> "-" *> many1' letter *> " map:"
-    imap = row `sepBy1'` "\n"
-    row = (,,) <$> decimal <*> (" " *> decimal) <*> (" " *> decimal)
+solve :: ([Int] -> [Int]) -> Almanac -> Int
+solve f (seeds, maps) = minimum $ (\s -> foldl' lup s maps) <$> f seeds
 
-part1 :: Almanac -> Word
-part1 (seeds, maps) = minimum $ fmap (\s -> foldl' lup s maps) seeds
+part1 :: Almanac -> Int
+part1 = solve id
+
+part2 :: Almanac -> Int
+part2 = solve f
+  where
+    f [] = []
+    f [_] = error "Shouldn't happen"
+    f (x : y : zs) = [x .. x + y - 1] <> f zs
 
 main :: IO ()
 main = do
-    print . part1 $ readAlmanac test
     input <- readAlmanac <$> T.readFile "input.txt"
-    print $ part1 input
+    traverse_ (print . ($ input)) [part1, part2]
