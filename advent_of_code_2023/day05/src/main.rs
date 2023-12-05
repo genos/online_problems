@@ -60,7 +60,7 @@ fn part2(almanac: &Almanac) -> Option<u64> {
 
 fn main() -> Result<()> {
     let input = fs::read_to_string("input.txt").wrap_err("Unable to read input file.")?;
-    let almanac = parser::almanac(&input.trim()).wrap_err("Bad parse.")?;
+    let almanac = parser::almanac(input.trim()).wrap_err("Bad parse.")?;
     println!("{:?}", part1(&almanac));
     println!("{:?}", part2(&almanac));
     Ok(())
