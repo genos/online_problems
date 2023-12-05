@@ -44,30 +44,29 @@ test =
     \60 56 37\n\
     \56 93 4"
 
-data Row = Row {_output :: Word, _input :: Word, _num :: Word} deriving (Show)
+type Row = (Word, Word, Word)
 type Map = [Row]
+type Almanac = ([Word], [Map])
 
-mapLup :: Word -> Map -> Word
-mapLup w m = if null answers then w else head answers
+lup :: Word -> Map -> Word
+lup w m = if null answers then w else head answers
   where
-    answers = mapMaybe lup m
-    lup (Row o i n)
+    answers = mapMaybe f m
+    f (o, i, n)
         | i <= w && w <= i + n = Just $ o + w - i
         | otherwise = Nothing
-
-data Almanac = Almanac {_seeds :: [Word], _maps :: [Map]} deriving (Show)
 
 readAlmanac :: Text -> Almanac
 readAlmanac = either (error "Bad parse") id . parseOnly (almanac <* endOfInput)
   where
-    almanac = Almanac <$> ("seeds: " *> seeds <* "\n\nseed-to-soil map:\n") <*> (imap `sepBy1'` ("\n\n" *> name <* "\n"))
+    almanac = (,) <$> ("seeds: " *> seeds <* "\n\nseed-to-soil map:\n") <*> (imap `sepBy1'` ("\n\n" *> name <* "\n"))
     seeds = decimal `sepBy1'` " "
     name = many1' letter *> "-" *> many1' letter *> "-" *> many1' letter *> " map:"
     imap = row `sepBy1'` "\n"
-    row = Row <$> decimal <*> (" " *> decimal) <*> (" " *> decimal)
+    row = (,,) <$> decimal <*> (" " *> decimal) <*> (" " *> decimal)
 
 part1 :: Almanac -> Word
-part1 (Almanac seeds maps) = minimum $ fmap (\s -> foldl' mapLup s maps) seeds
+part1 (seeds, maps) = minimum $ fmap (\s -> foldl' lup s maps) seeds
 
 main :: IO ()
 main = do
