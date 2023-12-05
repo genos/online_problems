@@ -9,9 +9,9 @@ import Data.Maybe (mapMaybe)
 import Data.Text (Text)
 import Data.Text.IO qualified as T
 
-type Row = (Int, Int, Int)
+type Row = (Word, Word, Word)
 type Map = [Row]
-type Almanac = ([Int], [Map])
+type Almanac = ([Word], [Map])
 
 readAlmanac :: Text -> Almanac
 readAlmanac = either (error "Bad parse") id . parseOnly (almanac <* endOfInput)
@@ -24,7 +24,7 @@ readAlmanac = either (error "Bad parse") id . parseOnly (almanac <* endOfInput)
     imap = row `sepBy1'` "\n"
     row = (,,) <$> decimal <*> (" " *> decimal) <*> (" " *> decimal)
 
-lup :: Int -> Map -> Int
+lup :: Word -> Map -> Word
 lup w m = if null answers then w else head answers
   where
     answers = mapMaybe f m
@@ -32,13 +32,13 @@ lup w m = if null answers then w else head answers
         | i <= w && w <= i + n = Just $ o + w - i
         | otherwise = Nothing
 
-solve :: ([Int] -> [Int]) -> Almanac -> Int
+solve :: ([Word] -> [Word]) -> Almanac -> Word
 solve f (seeds, maps) = minimum $ (\s -> foldl' lup s maps) <$> f seeds
 
-part1 :: Almanac -> Int
+part1 :: Almanac -> Word
 part1 = solve id
 
-part2 :: Almanac -> Int
+part2 :: Almanac -> Word
 part2 = solve f
   where
     f [] = []
