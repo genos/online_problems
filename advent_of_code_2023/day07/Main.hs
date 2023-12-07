@@ -4,6 +4,7 @@
 module Main where
 
 import Data.Attoparsec.Text
+import Data.Foldable (traverse_)
 import Data.Functor (($>))
 import Data.List (find, group, sort, sortBy)
 import Data.Maybe (fromMaybe)
@@ -57,7 +58,7 @@ handType h =
             5 -> HighCard
             _ -> error $ "Impossible length: " <> show n
 
-readGame :: Text -> [(Hand, Int)]
+readGame :: Text -> [(Hand, Word)]
 readGame = either (error "Bad parse") id . parseOnly ((handAndBid `sepBy1'` "\n") <* endOfInput)
   where
     handAndBid = (,) <$> hand <*> (skipSpace *> decimal)
@@ -67,17 +68,35 @@ readGame = either (error "Bad parse") id . parseOnly ((handAndBid `sepBy1'` "\n"
 test :: Text
 test = "32T3K 765\nT55J5 684\nKK677 28\nKTJJT 220\nQQQJA 483"
 
-part1 :: [(Hand, Int)] -> Int
-part1 = sum . zipWith (*) [1 ..] . fmap (\(_, _, b) -> b) . sortBy (\(t0, h0, _) (t1, h1, _) -> cmp (t0, h0) (t1, h1)) . fmap (\(h, b) -> (handType h, h, b))
+solve :: (Card -> Card -> Ordering) -> (Hand -> Hand) -> [(Hand, Word)] -> Word
+solve cmp f =
+    sum
+        . zipWith (*) [1 ..]
+        . fmap (\(_, _, b) -> b)
+        . sortBy (\(t0, h0, _) (t1, h1, _) -> cmp' (t0, h0) (t1, h1))
+        . fmap (\(h, b) -> (handType (f h), h, b))
   where
-    cmp (t0, h0) (t1, h1)
+    cmp' (t0, h0) (t1, h1)
         | t0 > t1 = GT
         | t0 < t1 = LT
-        | otherwise = fromMaybe EQ . find (/= EQ) $ zipWith compare h0 h1
+        | otherwise = fromMaybe EQ . find (/= EQ) $ zipWith cmp h0 h1
+
+part1 :: [(Hand, Word)] -> Word
+part1 = solve compare id
+
+part2 :: [(Hand, Word)] -> Word
+part2 = solve cmp f
+  where
+    f = undefined
+    cmp Jack Jack = EQ
+    cmp Jack _ = LT
+    cmp _ Jack = GT
+    cmp x y = compare x y
 
 main :: IO ()
 main = do
     let t = readGame test
+    traverse_ (print . ($ t)) [part1, part2]
     print $ part1 t
     input <- readGame <$> T.readFile "input.txt"
-    print $ part1 input
+    traverse_ (print . ($ input)) [part1, part2]
