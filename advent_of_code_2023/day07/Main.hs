@@ -6,7 +6,7 @@ module Main where
 import Data.Attoparsec.Text
 import Data.Foldable (traverse_)
 import Data.Functor (($>))
-import Data.List (find, group, sort, sortBy)
+import Data.List (find, group, sort, sortBy, sortOn)
 import Data.Maybe (fromMaybe)
 import Data.Text (Text)
 import Data.Text.IO qualified as T
@@ -87,7 +87,9 @@ part1 = solve compare id
 part2 :: [(Hand, Word)] -> Word
 part2 = solve cmp f
   where
-    f = undefined
+    f [a, b, c, d, e] = last . sortOn handType $ [[a', b', c', d', e'] | a' <- repJ a, b' <- repJ b, c' <- repJ c, d' <- repJ d, e' <- repJ e]
+    f _ = error "Bad hand"
+    repJ c = if c == Jack then [Two .. Ace] else [c]
     cmp Jack Jack = EQ
     cmp Jack _ = LT
     cmp _ Jack = GT
