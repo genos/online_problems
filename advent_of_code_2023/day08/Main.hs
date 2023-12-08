@@ -1,9 +1,10 @@
+{-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Main where
 
 import Data.Attoparsec.Text qualified as A
-import Data.Foldable (traverse_)
+import Data.Foldable (foldl', traverse_)
 import Data.Functor (($>))
 import Data.Map.Strict qualified as M
 import Data.Text (Text)
@@ -40,25 +41,24 @@ readMap = either (error "Bad parse") id . A.parseOnly (((,) <$> dirs <*> ("\n\n"
     network = M.fromList <$> row `A.sepBy1'` "\n"
     row = (\x y z -> (x, (y, z))) <$> A.take 3 <*> (" = (" *> A.take 3) <*> (", " *> A.take 3 <* ")")
 
-part1 :: Map -> Int
-part1 (dirs, network) = go 0 "AAA" $ cycle dirs
+distance :: Map -> (Text -> Bool) -> Text -> Word
+distance (dirs, network) f pos = go 0 pos $ cycle dirs
   where
-    go n _ [] = n -- impossible by design, whatevs
-    go n "ZZZ" _ = n
-    go n p (d : ds) =
-        let (l, r) = network M.! p
-            p' = if d == L then l else r
-         in go (n + 1) p' ds
+    go !n _ [] = n -- impossible by design, whatevs
+    go !n !p (!d : ds)
+        | f p = n
+        | otherwise =
+            let (!l, !r) = network M.! p
+                p' = if d == L then l else r
+             in go (n + 1) p' ds
 
-part2 :: Map -> Int
-part2 (dirs, network) = go 0 (M.keys $ M.filterWithKey (\k _ -> T.last k == 'A') network) $ cycle dirs
+part1 :: Map -> Word
+part1 m = distance m (== "ZZZ") "AAA"
+
+part2 :: Map -> Word
+part2 m@(_, network) = foldl' lcm 1 $ distance m ((== 'Z') . T.last) <$> ps
   where
-    go n _ [] = n -- impossible by design, whatevs
-    go n ps _ | all ((== 'Z') . T.last) ps = n
-    go n ps (d : ds) =
-        let f = if d == L then fst else snd
-            ps' = fmap (f . (network M.!)) ps
-         in go (n + 1) ps' ds
+    ps = M.keys $ M.filterWithKey (\k _ -> T.last k == 'A') network
 
 main :: IO ()
 main = do
