@@ -1,25 +1,35 @@
 module Main where
 
+import Data.Foldable (foldl', traverse_)
 import Data.List (nub)
-
-test1 :: String
-test1 = "0 3 6 9 12 15\n1 3 6 10 15 21\n10 13 16 21 30 45"
 
 readOasis :: String -> [[Int]]
 readOasis = fmap (fmap read . words) . lines
 
+solve :: ([Int] -> [Int] -> Int) -> [[Int]] -> Int
+solve f = sum . fmap (f [])
+
+sub :: Int -> Int -> Int
+sub = flip (-)
+
 diff :: [Int] -> [Int]
-diff = zipWith (flip (-)) <*> tail
+diff = zipWith sub <*> tail
 
 part1 :: [[Int]] -> Int
-part1 = sum . fmap (next [])
+part1 = solve next
   where
     next xs ys
         | length (nub ys) == 1 = head ys + sum xs
         | otherwise = next (last ys : xs) (diff ys)
 
+part2 :: [[Int]] -> Int
+part2 = solve prev
+    where
+        prev xs ys 
+          | length (nub ys) == 1 = foldl' sub (head ys) xs
+          | otherwise = prev (head ys : xs) (diff ys)
+
 main :: IO ()
 main = do
-    print . part1 $ readOasis test1
     input <- readOasis <$> readFile "input.txt"
-    print $ part1 input
+    traverse_ (print . ($ input)) [part1, part2]
