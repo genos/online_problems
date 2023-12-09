@@ -10,11 +10,11 @@ diff :: [Int] -> [Int]
 diff = zipWith (flip (-)) <*> tail
 
 solve :: (Int -> Int -> Int) -> ([Int] -> Int) -> [[Int]] -> Int
-solve f ht = sum . fmap (go [])
+solve f hl = sum . fmap (go [])
   where
     go xs ys
         | length (nub ys) == 1 = foldl' f (head ys) xs
-        | otherwise = go (ht ys : xs) (diff ys)
+        | otherwise = go (hl ys : xs) (diff ys)
 
 part1 :: [[Int]] -> Int
 part1 = solve (+) last
