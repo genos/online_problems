@@ -6,28 +6,21 @@ import Data.List (nub)
 readOasis :: String -> [[Int]]
 readOasis = fmap (fmap read . words) . lines
 
-solve :: ([Int] -> [Int] -> Int) -> [[Int]] -> Int
-solve f = sum . fmap (f [])
-
-sub :: Int -> Int -> Int
-sub = flip (-)
-
 diff :: [Int] -> [Int]
-diff = zipWith sub <*> tail
+diff = zipWith (flip (-)) <*> tail
+
+solve :: (Int -> Int -> Int) -> ([Int] -> Int) -> [[Int]] -> Int
+solve f ht = sum . fmap (go [])
+  where
+    go xs ys
+        | length (nub ys) == 1 = foldl' f (head ys) xs
+        | otherwise = go (ht ys : xs) (diff ys)
 
 part1 :: [[Int]] -> Int
-part1 = solve next
-  where
-    next xs ys
-        | length (nub ys) == 1 = head ys + sum xs
-        | otherwise = next (last ys : xs) (diff ys)
+part1 = solve (+) last
 
 part2 :: [[Int]] -> Int
-part2 = solve prev
-    where
-        prev xs ys 
-          | length (nub ys) == 1 = foldl' sub (head ys) xs
-          | otherwise = prev (head ys : xs) (diff ys)
+part2 = solve (flip (-)) head
 
 main :: IO ()
 main = do
