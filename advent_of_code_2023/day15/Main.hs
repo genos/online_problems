@@ -15,9 +15,6 @@ import Data.Vector (Vector)
 import Data.Vector qualified as V
 import Data.Vector.Mutable qualified as M
 
-test :: Text
-test = "rn=1,cm-,qp=3,cm=2,qp-,pc=4,ot=9,ab=5,pc-,pc=6,ot=7"
-
 hash :: Text -> Int
 hash = T.foldl' (\h c -> (17 * (h + ord c)) `rem` 256) 0
 
@@ -40,25 +37,24 @@ set (a, m) ((b, n) : bs)
     | a == b = (a, m) : bs
     | otherwise = (b, n) : set (a, m) bs
 
-perform :: Vector [(Text, Int)] -> [Step] -> Vector [(Text, Int)]
-perform b ss = runST $ do
-    b' <- V.unsafeThaw b
+perform :: [Step] -> Vector [(Text, Int)]
+perform ss = runST $ do
+    b <- V.unsafeThaw $ V.replicate 256 []
     for_ ss $ \(label, op) ->
         let f = case op of
                 Dash -> filter ((/= label) . fst)
                 Equal i -> set (label, i)
-         in M.unsafeModify b' f (hash label)
-    V.unsafeFreeze b'
+         in M.unsafeModify b f (hash label)
+    V.unsafeFreeze b
 
 part2 :: Text -> Int
 part2 =
     V.sum
         . V.imap (\i b -> sum $ zipWith (\j (_l, k) -> (1 + i) * j * k) [1 ..] b)
-        . perform (V.replicate 256 [])
+        . perform
         . readSteps
 
 main :: IO ()
 main = do
-    traverse_ (print . ($ test)) [part1, part2]
     input <- T.readFile "input.txt"
     traverse_ (print . ($ input)) [part1, part2]
