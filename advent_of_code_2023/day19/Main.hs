@@ -1,67 +1,101 @@
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Main where
 
+import Control.Lens (Lens', each, productOf, sumOf, (%~), (.~), (^.), _1, _2, _3, _4)
 import Data.Attoparsec.Text
 import Data.Char (isAlpha)
+import Data.Function ((&))
 import Data.Map.Strict (Map)
 import Data.Map.Strict qualified as M
-import Data.Maybe (mapMaybe)
+import Data.Maybe (mapMaybe, maybeToList)
 import Data.Text (Text)
 import Data.Text.IO qualified as T
 
-test :: Text
-test =
-    "px{a<2006:qkq,m>2090:A,rfg}\n\
-    \pv{a>1716:R,A}\n\
-    \lnx{m>1548:A,A}\n\
-    \rfg{s<537:gd,x>2440:R,A}\n\
-    \qs{s>3448:A,lnx}\n\
-    \qkq{x<1416:A,crn}\n\
-    \crn{x>2662:A,R}\n\
-    \in{s<1351:px,qqz}\n\
-    \qqz{s>2770:qs,m<1801:hdj,R}\n\
-    \gd{a>3333:R,R}\n\
-    \hdj{m>838:A,pv}\n\
-    \\n\
-    \{x=787,m=2655,a=1222,s=2876}\n\
-    \{x=1679,m=44,a=2067,s=496}\n\
-    \{x=2036,m=264,a=79,s=2244}\n\
-    \{x=2461,m=1339,a=466,s=291}\n\
-    \{x=2127,m=1623,a=2188,s=1013}"
-
+data Category = X | M | A | S
 data Destination = Name Text | Accept | Reject
-data Rule = Immediate Destination | Step {_predicate :: Part -> Bool, _destination :: Destination}
-data Part = Part {_x :: Int, _m :: Int, _a :: Int, _s :: Int}
+data Rule = Immediate Destination | Step {_predicate :: (Category, Ordering, Word), _destination :: Destination}
+type Part t = (t, t, t, t)
 
-readSetup :: Text -> (Map Text [Rule], [Part])
-readSetup = either (error "Bad parse") id . parseOnly ((,) <$> workflows <*> ("\n\n" *> parts <* endOfInput))
+cat :: Category -> Lens' (Part t) t
+cat = \case X -> _1; M -> _2; A -> _3; S -> _4
+
+readSetup :: Text -> (Map Text [Rule], [Part Word])
+readSetup = either (error "Bad parse") id . parseOnly ((,) <$> ws <*> ("\n\n" *> ps <* endOfInput))
   where
-    workflows = M.fromList <$> workflow `sepBy1'` "\n"
-    parts = part `sepBy1'` "\n"
+    ws = M.fromList <$> workflow `sepBy1'` "\n"
+    ps = part `sepBy1'` "\n"
     workflow = (,) <$> takeTill (== '{') <*> ("{" *> ((rule `sepBy1'` ",") <* "}"))
-    part = Part <$> ("{x=" *> decimal) <*> (",m=" *> decimal) <*> (",a=" *> decimal) <*> (",s=" *> decimal <* "}")
+    part = (,,,) <$> ("{x=" *> decimal) <*> (",m=" *> decimal) <*> (",a=" *> decimal) <*> (",s=" *> decimal <* "}")
     rule = choice [Step <$> predicate <*> (":" *> destination), Immediate <$> destination]
     predicate = do
-        cat <- choice [_x <$ "x", _m <$ "m", _a <$ "a", _s <$ "s"]
-        lg <- choice [(<) <$ "<", (>) <$ ">"]
+        c <- choice [X <$ "x", M <$ "m", A <$ "a", S <$ "s"]
+        o <- choice [LT <$ "<", GT <$ ">"]
         n <- decimal
-        pure $ \p -> lg (cat p) n
+        pure (c, o, n)
     destination = choice [Accept <$ "A", Reject <$ "R", Name <$> takeTill (not . isAlpha)]
 
-part1 :: Map Text [Rule] -> [Part] -> Int
-part1 flows = sum . fmap (\(Part x m a s) -> x + m + a + s) . filter accept
+part1 :: Map Text [Rule] -> [Part Word] -> Word
+part1 system = sum . fmap (sumOf each) . filter (go $ Name "in")
   where
-    accept p = go (Name "in")
+    go Accept _ = True
+    go Reject _ = False
+    go (Name n) p = go (head . mapMaybe (push p) $ system M.! n) p
+    push _ (Immediate d) = Just d
+    push p (Step (c, o, i) d) = if compare (p ^. cat c) i == o then Just d else Nothing
+
+type Range = (Word, Word)
+
+width :: Range -> Word
+width (l, h) = if l > h then 0 else h + 1 - l
+
+-- TODO
+split :: Range -> Ordering -> Word -> (Maybe Range, Maybe Range)
+split r@(l, h) o i = if o == LT then lt else gt
+  where
+    lt
+        | h < i = (Just r, Nothing)
+        | l > i = (Nothing, Just r)
+        | h == i = (Just (l, i - 1), Just (i, i))
+        | l == i = (Nothing, Just (i, h))
+        | l < i && h > i = (Just (l, i - 1), Just (i, h))
+        | otherwise = (Nothing, Nothing)
+    gt
+        | l > i = (Just r, Nothing)
+        | h < i = (Nothing, Just r)
+        | h == i = (Nothing, Just (l, i))
+        | l == i = (Just (i + 1, h), Just (i, i))
+        | l < i && h > i = (Just (i + 1, h), Just (l, i))
+        | otherwise = (Nothing, Nothing)
+
+part2 :: Map Text [Rule] -> Word
+part2 system = go (Name "in") (full, full, full, full)
+  where
+    full = (1, 4_000)
+    go Accept p = p & each %~ width & productOf each
+    go Reject _ = 0
+    go (Name n) p = sum . fmap (uncurry go) $ percolate (Just p) (system M.! n)
+    percolate _ [] = []
+    percolate Nothing _ = []
+    percolate (Just p) (Immediate d : _) = [(d, p)]
+    percolate (Just p) ((Step (c, o, w) Accept) : rs) = yes <> percolate no rs
       where
-        go Accept = True
-        go Reject = False
-        go (Name n) = go $ (head . mapMaybe push) (flows M.! n)
-        push (Immediate d) = Just d
-        push (Step f d) = if f p then Just d else Nothing
+        (gud, bad) = split (p ^. cat c) o w
+        yes = (Accept,) . (\l -> p & cat c .~ l) <$> maybeToList gud
+        no = (\r -> p & cat c .~ r) <$> bad
+    percolate (Just p) ((Step (c, o, w) Reject) : rs) = percolate no rs
+      where
+        (_, bad) = split (p ^. cat c) o w
+        no = (\r -> p & cat c .~ r) <$> bad
+    percolate (Just p) ((Step (c, o, w) (Name n)) : rs) = percolate yes (system M.! n) <> percolate no rs
+      where
+        (gud, bad) = split (p ^. cat c) o w
+        yes = (\l -> p & cat c .~ l) <$> gud
+        no = (\r -> p & cat c .~ r) <$> bad
 
 main :: IO ()
 main = do
-    print . uncurry part1 $ readSetup test
-    input <- readSetup <$> T.readFile "input.txt"
-    print $ uncurry part1 input
+    (system, parts) <- readSetup <$> T.readFile "input.txt"
+    print $ part1 system parts
+    print $ part2 system
