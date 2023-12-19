@@ -2,6 +2,11 @@
 
 module Main where
 
+import Data.Attoparsec.Text
+import Data.Char (isAlpha)
+import Data.Map.Strict (Map)
+import Data.Map.Strict qualified as M
+import Data.Maybe (mapMaybe)
 import Data.Text (Text)
 import Data.Text.IO qualified as T
 
@@ -25,6 +30,48 @@ test =
     \{x=2461,m=1339,a=466,s=291}\n\
     \{x=2127,m=1623,a=2188,s=1013}"
 
+data Destination = Name Text | Accept | Reject deriving (Eq)
+data Rule = Immediate Destination | Step {_predicate :: Part -> Bool, _destination :: Destination}
+data Part = Part {_x :: Word, _m :: Word, _a :: Word, _s :: Word}
+
+readSetup :: Text -> (Map Text [Rule], [Part])
+readSetup = either (error "Bad parse") id . parseOnly ((,) <$> workflows <*> ("\n\n" *> parts <* endOfInput))
+  where
+    workflows = M.fromList <$> workflow `sepBy1'` "\n"
+    parts = part `sepBy1'` "\n"
+    workflow = (,) <$> takeTill (== '{') <*> ("{" *> ((rule `sepBy1'` ",") <* "}"))
+    part = Part <$> ("{x=" *> decimal) <*> (",m=" *> decimal) <*> (",a=" *> decimal) <*> (",s=" *> decimal <* "}")
+    rule = choice [Step <$> predicate <*> (":" *> destination), Immediate <$> destination]
+    predicate = do
+        cat <- choice [_x <$ "x", _m <$ "m", _a <$ "a", _s <$ "s"]
+        lg <- choice [(<) <$ "<", (>) <$ ">"]
+        n <- decimal
+        pure $ \p -> lg (cat p) n
+    destination = choice [Accept <$ "A", Reject <$ "R", Name <$> takeTill (not . isAlpha)]
+
+flow :: Part -> [Rule] -> Destination
+flow p = head . mapMaybe pass
+  where
+    pass (Immediate d) = Just d
+    pass (Step f d) = if f p then Just d else Nothing
+
+accept :: Map Text [Rule] -> Part -> Bool
+accept flows p = go (Name "in")
+  where
+    go Accept = True
+    go Reject = False
+    go (Name n) =
+        let w = flows M.! n
+            d = flow p w
+         in go d
+
+part1 :: Map Text [Rule] -> [Part] -> Word
+part1 flows = sum . fmap rate . filter (flows `accept`)
+  where
+    rate (Part x m a s) = x + m + a + s
 
 main :: IO ()
-main = T.putStrLn test
+main = do
+    print . uncurry part1 $ readSetup test
+    input <- readSetup <$> T.readFile "input.txt"
+    print $ uncurry part1 input
