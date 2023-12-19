@@ -29,28 +29,20 @@ readSetup = either (error "Bad parse") id . parseOnly ((,) <$> ws <*> ("\n\n" *>
     workflow = (,) <$> takeTill (== '{') <*> ("{" *> ((rule `sepBy1'` ",") <* "}"))
     part = (,,,) <$> ("{x=" *> decimal) <*> (",m=" *> decimal) <*> (",a=" *> decimal) <*> (",s=" *> decimal <* "}")
     rule = choice [Step <$> predicate <*> (":" *> destination), Immediate <$> destination]
-    predicate = do
-        c <- choice [X <$ "x", M <$ "m", A <$ "a", S <$ "s"]
-        o <- choice [LT <$ "<", GT <$ ">"]
-        n <- decimal
-        pure (c, o, n)
+    predicate = (,,) <$> choice [X <$ "x", M <$ "m", A <$ "a", S <$ "s"] <*> choice [LT <$ "<", GT <$ ">"] <*> decimal
     destination = choice [Accept <$ "A", Reject <$ "R", Name <$> takeTill (not . isAlpha)]
 
 part1 :: Map Text [Rule] -> [Part Word] -> Word
-part1 system = sum . fmap (sumOf each) . filter (go $ Name "in")
+part1 system = sum . fmap (sumOf each) . filter (accept $ Name "in")
   where
-    go Accept _ = True
-    go Reject _ = False
-    go (Name n) p = go (head . mapMaybe (push p) $ system M.! n) p
+    accept Accept _ = True
+    accept Reject _ = False
+    accept (Name n) p = accept (head . mapMaybe (push p) $ system M.! n) p
     push _ (Immediate d) = Just d
     push p (Step (c, o, i) d) = if compare (p ^. cat c) i == o then Just d else Nothing
 
 type Range = (Word, Word)
 
-width :: Range -> Word
-width (l, h) = if l > h then 0 else h + 1 - l
-
--- TODO
 split :: Range -> Ordering -> Word -> (Maybe Range, Maybe Range)
 split r@(l, h) o i = if o == LT then lt else gt
   where
@@ -70,29 +62,27 @@ split r@(l, h) o i = if o == LT then lt else gt
         | otherwise = (Nothing, Nothing)
 
 part2 :: Map Text [Rule] -> Word
-part2 system = go (Name "in") (full, full, full, full)
+part2 system = numAccept (Name "in") (full, full, full, full)
   where
     full = (1, 4_000)
-    go Accept p = p & each %~ width & productOf each
-    go Reject _ = 0
-    go (Name n) p = sum . fmap (uncurry go) $ percolate (Just p) (system M.! n)
+    numAccept Accept p = p & each %~ width & productOf each
+    numAccept Reject _ = 0
+    numAccept (Name n) p = sum . fmap (uncurry numAccept) $ percolate (Just p) (system M.! n)
+    width (l, h) = if l > h then 0 else h + 1 - l
     percolate _ [] = []
     percolate Nothing _ = []
     percolate (Just p) (Immediate d : _) = [(d, p)]
-    percolate (Just p) ((Step (c, o, w) Accept) : rs) = yes <> percolate no rs
+    percolate (Just p) ((Step (c, o, w) Accept) : rs) = ((Accept,) <$> maybeToList yes) <> percolate no rs
       where
-        (gud, bad) = split (p ^. cat c) o w
-        yes = (Accept,) . (\l -> p & cat c .~ l) <$> maybeToList gud
-        no = (\r -> p & cat c .~ r) <$> bad
+        (yes, no) = yesNo p c o w
     percolate (Just p) ((Step (c, o, w) Reject) : rs) = percolate no rs
       where
-        (_, bad) = split (p ^. cat c) o w
-        no = (\r -> p & cat c .~ r) <$> bad
+        (_, no) = yesNo p c o w
     percolate (Just p) ((Step (c, o, w) (Name n)) : rs) = percolate yes (system M.! n) <> percolate no rs
       where
-        (gud, bad) = split (p ^. cat c) o w
-        yes = (\l -> p & cat c .~ l) <$> gud
-        no = (\r -> p & cat c .~ r) <$> bad
+        (yes, no) = yesNo p c o w
+    update p c x = p & cat c .~ x
+    yesNo p c o w = let (good, bad) = split (p ^. cat c) o w in (update p c <$> good, update p c <$> bad)
 
 main :: IO ()
 main = do
