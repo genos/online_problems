@@ -1,4 +1,3 @@
-{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Main where
@@ -21,7 +20,7 @@ hash = T.foldl' (\h c -> (17 * (h + ord c)) `rem` 256) 0
 part1 :: Text -> Int
 part1 = sum . fmap hash . T.split (== ',')
 
-data Op = Dash | Equal Int deriving (Show)
+data Op = Dash | Equal Int
 type Step = (Text, Op)
 
 readSteps :: Text -> [Step]
