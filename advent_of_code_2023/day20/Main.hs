@@ -23,7 +23,9 @@ isConj :: Module -> Bool
 isConj = \case Conjunction _ -> True; _ -> False
 
 readCircuit :: Text -> Circuit
-readCircuit = either (error "bad parse") (addSinks . fillInConj . M.fromList) . parseOnly ((module_ `sepBy1'` "\n") <* endOfInput)
+readCircuit =
+    either (error "bad parse") (addSinks . fillInConj . M.fromList)
+        . parseOnly ((module_ `sepBy1'` "\n") <* endOfInput)
   where
     module_ = choice [broadcast, flipflop, conjunction]
     broadcast = ("broadcaster",) . (Broadcast,) <$> ("broadcaster -> " *> names)
@@ -31,17 +33,15 @@ readCircuit = either (error "bad parse") (addSinks . fillInConj . M.fromList) . 
     conjunction = (,) <$> ("&" *> name) <*> ((Conjunction mempty,) <$> (" -> " *> names))
     names = name `sepBy'` ", "
     name = takeTill (not . isLetter)
-    fillInConj circ = foldl' go circ (M.assocs $ M.filter (\(m, _ns) -> isConj m) circ)
+    fillInConj circ = foldl' f circ (M.assocs $ M.filter (\(m, _ns) -> isConj m) circ)
       where
-        go c (n, (Conjunction _, ns)) =
+        f c (n, (Conjunction _, ns)) =
             let pulses = M.fromList . fmap (,Low) . M.keys $ M.filter (\(_, ns') -> n `elem` ns') c
              in c & at n ?~ (Conjunction pulses, ns)
-        go c _ = c
-    addSinks circ = foldl' go circ (concatMap snd $ M.elems circ)
+        f c _ = c
+    addSinks circ = foldl' f circ (concatMap snd $ M.elems circ)
       where
-        go c n
-            | n `M.member` c = c
-            | otherwise = c & at n ?~ (Sink, [])
+        f c n = if n `M.member` c then c else c & at n ?~ (Sink, [])
 
 tick :: Text -> Pulse -> Module -> (Module, Maybe Pulse)
 tick _ p Broadcast = (Broadcast, Just p)
@@ -72,31 +72,29 @@ step :: Meter m -> (Seq Action, Circuit, m) -> (Seq Action, Circuit, m)
 step _ (S.Empty, c, m) = (S.Empty, c, m)
 step f (a :<| ax, c, m) = let (c', todo) = tock a c in (ax S.>< S.fromList todo, c', f a m)
 
-start :: Circuit -> m -> (Seq Action, Circuit, m)
-start = (S.singleton ("button", Low, "broadcaster"),,)
+push :: Circuit -> m -> (Seq Action, Circuit, m)
+push = (S.singleton ("button", Low, "broadcaster"),,)
 
-part1 :: Circuit -> Int
-part1 = productOf each . (^. _2) . (`run` (1000 :: Int))
+part1 :: Circuit -> Word
+part1 = productOf each . (^. _2) . (`run` 1000)
   where
-    run circ = foldl' f (circ, (0, 0)) . enumFromTo 1
-    f (c, (l, h)) _ = let (_, c', (l', h')) = go $ start c (0, 0) in (c', (l + l', h + h'))
+    run c = foldl' f (c, (0, 0)) . enumFromTo @Word 1
+    f (c, (l, h)) _ = let (_, c', (l', h')) = go $ push c (0, 0) in (c', (l + l', h + h'))
     go s = let s' = step meter s in if s' ^. _1 & S.null then s' else go s'
     meter (_, p, _) (l, h) = if p == Low then (l + 1, h) else (l, h + 1)
 
-rxCycleNames :: Circuit -> [Text]
-rxCycleNames =
-    concatMap ((\case Conjunction ms -> M.keys ms; _ -> []) . fst)
-        . filter (andOf each . bimap isConj ("rx" `elem`))
-        . M.elems
-
-part2 :: Circuit -> Int
-part2 = go . setup
+part2 :: Circuit -> Word
+part2 = run . setup
   where
-    setup c = start c (M.fromList $ (,0) <$> rxCycleNames c, 0)
-    go s@(ax, c, (cs, i))
+    setup c = push c (M.fromList $ (,0) <$> starts c, 0)
+    starts =
+        concatMap ((\case Conjunction ms -> M.keys ms; _ -> []) . fst)
+            . filter (andOf each . bimap isConj ("rx" `elem`))
+            . M.elems
+    run (ax, c, (cs, i))
         | all (> 0) (M.elems cs) = foldl' lcm 1 $ M.elems cs
-        | S.null ax = go $ start c (cs, i + 1)
-        | otherwise = go $ step meter s
+        | S.null ax = run $ push c (cs, i)
+        | otherwise = run $ step meter (ax, c, (cs, i))
     meter (_, p, dst) (cs, i) = case (cs ^. at dst, p) of
         (Just _, High) -> (cs & at dst ?~ i, i + 1)
         _ -> (cs, i + 1)
