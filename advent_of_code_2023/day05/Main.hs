@@ -25,7 +25,9 @@ readAlmanac = either (error "Bad parse") id . parseOnly (almanac <* endOfInput)
     row = (,,) <$> decimal <*> (" " *> decimal) <*> (" " *> decimal)
 
 lup :: Word -> Map -> Word
-lup w m = if null answers then w else head answers
+lup w m = case answers of
+    [] -> w
+    (a : _) -> a
   where
     answers = mapMaybe f m
     f (o, i, n)

@@ -14,8 +14,8 @@ import Data.Text (Text)
 import Data.Text.IO qualified as T
 
 data Category = X | M | A | S
-data Destination = Name Text | Accept | Reject
-data Rule = Immediate Destination | Step {_predicate :: (Category, Ordering, Word), _destination :: Destination}
+data Destination = Name !Text | Accept | Reject
+data Rule = Immediate !Destination | Step {_predicate :: !(Category, Ordering, Word), _destination :: !Destination}
 type Part t = (t, t, t, t)
 
 cat :: Category -> Lens' (Part t) t
