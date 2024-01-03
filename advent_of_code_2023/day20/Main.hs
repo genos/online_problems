@@ -16,11 +16,11 @@ import Data.Text.IO qualified as T
 
 data Pulse = Low | High deriving (Eq, Show)
 data OnOff = On | Off deriving (Eq, Show)
-data Module = Broadcast | FlipFlop OnOff | Conjunction (Map Text Pulse) | Sink deriving (Show)
+data Module = Broadcast | FlipFlop !OnOff | Conjunction !(Map Text Pulse) | Sink
 type Circuit = Map Text (Module, [Text])
 
 isConj :: Module -> Bool
-isConj = \case Conjunction _ -> True; _ -> False
+isConj = \case Conjunction _ -> True; _otherMod -> False
 
 readCircuit :: Text -> Circuit
 readCircuit =
@@ -88,7 +88,7 @@ part2 = run . setup
   where
     setup c = push c (M.fromList $ (,0) <$> starts c, 0)
     starts =
-        concatMap ((\case Conjunction ms -> M.keys ms; _ -> []) . fst)
+        concatMap ((\case Conjunction ms -> M.keys ms; _otherMod -> []) . fst)
             . filter (andOf each . bimap isConj ("rx" `elem`))
             . M.elems
     run (ax, c, (cs, i))
@@ -97,7 +97,7 @@ part2 = run . setup
         | otherwise = run $ step meter (ax, c, (cs, i))
     meter (_, p, dst) (cs, i) = case (cs ^. at dst, p) of
         (Just _, High) -> (cs & at dst ?~ i, i + 1)
-        _ -> (cs, i + 1)
+        _noneOrLow -> (cs, i + 1)
 
 main :: IO ()
 main = do

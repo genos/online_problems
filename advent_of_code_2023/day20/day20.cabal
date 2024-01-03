@@ -1,9 +1,9 @@
-cabal-version:   3.6
+cabal-version:   3.8
 name:            day20
 version:         0.1.0.0
 
 executable day20
     main-is:          Main.hs
-    build-depends:    base ^>=4.17.2.0, attoparsec ^>= 0.14.4, containers ^>= 0.6.8, lens ^>= 5.2.3, text ^>= 2.1
+    build-depends:    base ^>=4.19.0.0, attoparsec ^>= 0.14.4, containers ^>= 0.6.8, lens ^>= 5.2.3, text ^>= 2.1
     default-language: GHC2021
     ghc-options: -Wall
