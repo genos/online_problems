@@ -6,5 +6,5 @@ let acronym s =
        | ' ' | '-' -> Some ' '
        | c -> Option.some_if (Char.is_alpha c) c)
   |> String.split ~on:' '
-  |> List.map ~f:(Fn.compose String.uppercase (Fn.flip String.prefix 1))
-  |> String.concat
+  |> List.map ~f:(Fn.flip String.prefix 1)
+  |> String.concat |> String.uppercase
