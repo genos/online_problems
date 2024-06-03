@@ -1,12 +1,23 @@
 open Base
 
 let max = 26 * 26 * 10 * 10 * 10
-let counter = ref 0
 
-type robot = { mutable start : int; mutable current : int }
+let permutation =
+  let create () =
+    let ids = Array.init ~f:Fn.id max in
+    Array.permute ids;
+    ids
+  in
+  create ()
 
-let alpha n = Stdlib.Char.chr @@ (65 + n)
-let num n = Stdlib.Char.chr @@ (48 + n)
+let global = ref 0
+let step () = global := (!global + 1) % max
+let read () = permutation.(!global)
+
+type robot = { mutable counter : int }
+
+let alpha n = Char.of_int_exn (65 + n)
+let num n = Char.of_int_exn (48 + n)
 
 let num2name n =
   let _5 = n % 10 in
@@ -17,16 +28,14 @@ let num2name n =
   String.of_list [ alpha _1; alpha _2; num _3; num _4; num _5 ]
 
 let new_robot () =
-  let r = { start = !counter; current = !counter } in
-  counter := !counter + 1;
-  r
+  step ();
+  { counter = read () }
 
 let name r =
-  let n = num2name r.current in
-  r.current <- (r.current + 1) % max;
+  let n = num2name r.counter in
+  r.counter <- (r.counter + 1) % max;
   n
 
 let reset r =
-  counter := !counter + 1;
-  r.start <- !counter;
-  r.current <- !counter;
+  step ();
+  r.counter <- read ()
