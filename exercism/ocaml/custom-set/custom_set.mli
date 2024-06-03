@@ -16,6 +16,9 @@ module Make :
       val equal : t -> t -> bool
       val of_list : El.t list -> t
       val add : t -> el -> t
+      type status = [ `Both | `OnlyA | `OnlyB ]
+      val diff_filter :
+        (status -> bool) -> t -> t -> t
       val difference : t -> t -> t
       val intersect : t -> t -> t
       val union : t -> t -> t
