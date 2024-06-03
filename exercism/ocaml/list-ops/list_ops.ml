@@ -1,17 +1,13 @@
-let fold ~init ~f xs =
-  let rec go = function
-  | ([], acc) -> acc
-  | (y::ys, acc)  -> go (ys, f acc y)
-  in go (xs, init)
+let rec fold ~init ~f = function
+  | [] -> init
+  | x :: xs -> fold ~init:(f init x) ~f xs
 
 let length xs = fold ~init:0 ~f:(fun n _ -> succ n) xs
+let reverse xs = fold ~init:[] ~f:(Fun.flip List.cons) xs
+let map ~f xs = fold ~init:[] ~f:(fun ys x -> f x :: ys) (reverse xs)
 
-let reverse xs = fold ~init:[] ~f:(fun acc x -> x :: acc) xs
+let filter ~f xs =
+  fold ~init:[] ~f:(fun ys x -> if f x then x :: ys else ys) (reverse xs)
 
-let map ~f xs = reverse @@ fold ~init:[] ~f:(fun acc x -> (f x) :: acc) xs
-
-let filter ~f xs = reverse @@ fold ~init:[] ~f:(fun acc x -> if f x then x :: acc else acc) xs
-
-let append xs ys = fold ~init:ys ~f:(fun acc x -> x :: acc) (reverse xs)
-
+let append xs ys = fold ~init:ys ~f:(Fun.flip List.cons) (reverse xs)
 let concat xss = fold ~init:[] ~f:append xss
