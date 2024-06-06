@@ -1,0 +1,29 @@
+{
+  "authors": [
+    "stevejb71"
+  ],
+  "contributors": [
+    "daveyarwood",
+    "iHiD",
+    "kytrinyx",
+    "marionebl",
+    "Peaupote",
+    "sbl",
+    "sshine"
+  ],
+  "files": {
+    "solution": [
+      "forth.ml"
+    ],
+    "test": [
+      "test.ml"
+    ],
+    "example": [
+      ".meta/example.ml"
+    ],
+    "editor": [
+      "forth.mli"
+    ]
+  },
+  "blurb": "Implement an evaluator for a very simple subset of Forth."
+}
