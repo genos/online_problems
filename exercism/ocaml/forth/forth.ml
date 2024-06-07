@@ -3,8 +3,6 @@ open Base
 type word = Num of int | Str of string
 type forth = { stack : int list; env : word list Hashtbl.M(String).t }
 
-let word_of_string s = try Num (Int.of_string s) with _ -> Str (String.lowercase s)
-
 let def name words forth =
   Hashtbl.set forth.env ~key:name ~data:words;
   Some forth
@@ -44,6 +42,7 @@ and app_all forth =
     ~finish:Option.some
 
 let words_of_line line =
+  let word_of_string s = try Num (Int.of_string s) with _ -> Str (String.lowercase s) in
   String.split ~on:' ' line
   |> List.filter_map ~f:(fun s -> if String.is_empty s then None else Some (word_of_string s))
 
