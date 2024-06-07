@@ -1,0 +1,29 @@
+{
+  "authors": [
+    "stevejb71"
+  ],
+  "contributors": [
+    "iHiD",
+    "marionebl",
+    "Peaupote",
+    "sbl",
+    "sshine"
+  ],
+  "files": {
+    "solution": [
+      "pangram.ml"
+    ],
+    "test": [
+      "test.ml"
+    ],
+    "example": [
+      ".meta/example.ml"
+    ],
+    "editor": [
+      "pangram.mli"
+    ]
+  },
+  "blurb": "Determine if a sentence is a pangram.",
+  "source": "Wikipedia",
+  "source_url": "https://en.wikipedia.org/wiki/Pangram"
+}
