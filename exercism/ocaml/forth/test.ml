@@ -120,8 +120,8 @@ let user_defined_words_tests = [
   ae (Some [1; 1]) (evaluate [": swap dup ;"; "1 swap"]);
   "can override built-in operators" >::
   ae (Some [12]) (evaluate [": + * ;"; "3 4 +"]);
-  (* "can use different words with the same name" >:: *)
-  (* ae (Some [5; 6]) (evaluate [": foo 5 ;"; ": bar foo ;"; ": foo 6 ;"; "bar foo"]); *)
+  "can use different words with the same name" >::
+  ae (Some [5; 6]) (evaluate [": foo 5 ;"; ": bar foo ;"; ": foo 6 ;"; "bar foo"]);
   "can define word that uses word with the same name" >::
   ae (Some [11]) (evaluate [": foo 10 ;"; ": foo foo 1 + ;"; "foo"]);
   "cannot redefine numbers" >::
