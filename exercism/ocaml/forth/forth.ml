@@ -3,23 +3,19 @@ open Base
 type word = Num of int | Str of string
 type forth = { stack : int list; env : word list Hashtbl.M(String).t }
 
-let def name words forth =
-  Hashtbl.set forth.env ~key:name ~data:words;
-  Some forth
-
-let is_builtin =
-  Set.mem (Set.of_list (module String) [ "+"; "-"; "*"; "/"; "dup"; "drop"; "swap"; "over" ])
+let def key data forth = Hashtbl.set forth.env ~key ~data |> Fn.const @@ Some forth
+let is_builtin = Set.mem (Set.of_list (module String) [ "+"; "-"; "*"; "/"; "dup"; "drop"; "swap"; "over" ])
 
 let builtin = function
-  | "+"    -> (function [] -> None | [_] -> None | x :: y :: zs -> Some (y + x :: zs))
-  | "-"    -> (function [] -> None | [_] -> None | x :: y :: zs -> Some (y - x :: zs))
-  | "*"    -> (function [] -> None | [_] -> None | x :: y :: zs -> Some (y * x :: zs))
-  | "/"    -> (function [] -> None | [_] -> None | 0 :: _ -> None | x :: y :: zs -> Some (y / x :: zs))
-  | "dup"  -> (function [] -> None | x :: xs -> Some (x :: x :: xs))
-  | "drop" -> (function [] -> None | _ :: xs -> Some xs)
-  | "swap" -> (function [] -> None | [_] -> None | x :: y :: zs -> Some (y :: x :: zs))
-  | "over" -> (function [] -> None | [_] -> None | x :: y :: zs -> Some (y :: x :: y :: zs))
-  | _      -> Fn.const None  [@@ocamlformat "disable"]
+  | "+" -> ( function [] -> None | [ _ ] -> None | x :: y :: zs -> Some ((y + x) :: zs))
+  | "-" -> ( function [] -> None | [ _ ] -> None | x :: y :: zs -> Some ((y - x) :: zs))
+  | "*" -> ( function [] -> None | [ _ ] -> None | x :: y :: zs -> Some ((y * x) :: zs))
+  | "/" -> ( function [] -> None | [ _ ] -> None | 0 :: _ -> None | x :: y :: zs -> Some ((y / x) :: zs))
+  | "dup" -> ( function [] -> None | x :: xs -> Some (x :: x :: xs))
+  | "drop" -> ( function [] -> None | _ :: xs -> Some xs)
+  | "swap" -> ( function [] -> None | [ _ ] -> None | x :: y :: zs -> Some (y :: x :: zs))
+  | "over" -> ( function [] -> None | [ _ ] -> None | x :: y :: zs -> Some (y :: x :: y :: zs))
+  | _ -> Fn.const None
 
 let rec lookup forth = function
   | Num n -> [ Num n ]
@@ -43,17 +39,13 @@ and app_all forth =
 
 let words_of_line line =
   let word_of_string s = try Num (Int.of_string s) with _ -> Str (String.lowercase s) in
-  String.split ~on:' ' line
-  |> List.filter_map ~f:(fun s -> if String.is_empty s then None else Some (word_of_string s))
+  String.split ~on:' ' line |> List.filter ~f:(Fn.non String.is_empty) |> List.map ~f:word_of_string
 
 let handle forth line =
   if String.is_prefix ~prefix:":" line && String.is_suffix ~suffix:";" line then
     match words_of_line (String.strip ~drop:(fun c -> Char.(equal c ':' || equal c ';')) line) with
     | [] | [ _ ] | Num _ :: _ -> None
-    | Str name :: rest -> (
-        match List.concat_map rest ~f:(lookup forth) with
-        | [] -> None
-        | words -> def name words forth)
+    | Str s :: ws -> ( match List.concat_map ws ~f:(lookup forth) with [] -> None | words -> def s words forth)
   else words_of_line line |> app_all forth
 
 let evaluate lines =
