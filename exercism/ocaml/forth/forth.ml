@@ -35,7 +35,7 @@ let rec app forth = function
   | Num i -> Some { forth with stack = i :: forth.stack }
   | Str s ->
       Option.first_some
-        (Hashtbl.find forth.env s |> Option.map ~f:(app_all forth) |> Option.join)
+        (Hashtbl.find forth.env s |> Option.value_map ~default:None ~f:(app_all forth))
         (builtin s forth.stack |> Option.map ~f:(fun stack -> { forth with stack }))
 
 and app_all forth =
