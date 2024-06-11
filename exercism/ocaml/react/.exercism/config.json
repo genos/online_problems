@@ -1,0 +1,29 @@
+{
+  "authors": [
+    "stevejb71"
+  ],
+  "contributors": [
+    "daveyarwood",
+    "iHiD",
+    "kytrinyx",
+    "marionebl",
+    "Peaupote",
+    "sbl",
+    "sshine"
+  ],
+  "files": {
+    "solution": [
+      "react.ml"
+    ],
+    "test": [
+      "test.ml"
+    ],
+    "example": [
+      ".meta/example.ml"
+    ],
+    "editor": [
+      "react.mli"
+    ]
+  },
+  "blurb": "Implement a basic reactive system."
+}
