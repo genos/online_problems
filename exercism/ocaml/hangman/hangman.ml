@@ -1,33 +1,31 @@
 open Base
 open React
 
-type t = { word : char array; known : bool array; lives : int ref }
 type progress = Win | Lose | Busy of int
+type t = (char -> unit) * string signal * progress signal
 
-let create word =
-  {
-    word = String.to_array word;
-    known = Array.create ~len:(String.length word) false;
-    lives = ref 9;
-  }
+let step = function Win -> Win | Busy n when n > 0 -> Busy (n - 1) | _ -> Lose
 
-let feed c { word; known; lives } =
+let guess w (m, p) c =
   let ok = ref false in
-  Array.iteri word ~f:(fun i x ->
-      if Char.equal c x then
-        if not known.(i) then (
+  let m' =
+    String.mapi m ~f:(fun i x ->
+        if Char.(equal x '_' && equal w.[i] c) then (
           ok := true;
-          known.(i) <- true));
-  if not !ok then lives := !lives - 1
+          c)
+        else x)
+  in
+  let p' =
+    if String.equal m' w then Win else if ok.contents then p else step p
+  in
+  (m', p')
 
-let masked_word { word; known; _ } =
-  Array.zip_exn word known
-  |> Array.map ~f:(fun (c, b) -> if b then c else '_')
-  |> String.of_array |> S.const
+let create w =
+  let init = (String.map ~f:(Fn.const '_') w, Busy 9) in
+  let guesses, send_guess = E.create () in
+  let states = S.fold (guess w) init guesses in
+  ((fun c -> send_guess c), S.map fst states, S.map snd states)
 
-let progress { known; lives; _ } =
-  S.const
-    (match (Array.for_all ~f:Fn.id known, !lives) with
-    | true, _ -> Win
-    | _, n when n < 0 -> Lose
-    | _, n -> Busy n)
+let feed c (f, _, _) = f c
+let masked_word (_, m, _) = m
+let progress (_, _, p) = p
