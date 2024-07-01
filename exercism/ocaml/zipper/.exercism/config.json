@@ -1,0 +1,32 @@
+{
+  "authors": [],
+  "contributors": [
+    "daveyarwood",
+    "dvberkel",
+    "iHiD",
+    "ismaelga",
+    "kytrinyx",
+    "marionebl",
+    "Peaupote",
+    "pminten",
+    "sbl",
+    "sshine",
+    "stevejb71",
+    "tmcgilchrist"
+  ],
+  "files": {
+    "solution": [
+      "zipper.ml"
+    ],
+    "test": [
+      "test.ml"
+    ],
+    "example": [
+      ".meta/example.ml"
+    ],
+    "editor": [
+      "zipper.mli"
+    ]
+  },
+  "blurb": "Creating a zipper for a binary tree."
+}
