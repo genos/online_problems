@@ -1,5 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 module Main where
 
 import Data.Attoparsec.Text
@@ -9,16 +7,14 @@ import Data.Text (Text)
 import Data.Text.IO qualified as T
 
 parse_ :: Text -> [[Int]]
-parse_ = either (error "Bad parse") id . parseOnly ((line `sepBy1'` "\n") <* endOfInput)
+parse_ = either (error "Bad parse") id . parseOnly ((line `sepBy1'` char '\n') <* endOfInput)
   where
-    line = decimal `sepBy1'` " "
+    line = decimal `sepBy1'` char ' '
 
 isSafe :: [Int] -> Bool
-isSafe xs = close xs && (monotonic xs || monotonic (reverse xs))
+isSafe xs = (\(up, down, close) -> (up || down) && close) . foldl' f (True, True, True) . zip xs $ drop 1 xs
   where
-    pair f zs = zipWith f zs $ drop 1 zs
-    monotonic = and . pair (<)
-    close = all ((< 4) . abs) . pair (-)
+    f (up, down, close) (x, y) = (up && x < y, down && x > y, close && abs (x - y) < 4)
 
 dropAtMost1 :: [Int] -> [[Int]]
 dropAtMost1 xs = filter (\zs -> length zs >= pred (length xs)) (subsequences xs)

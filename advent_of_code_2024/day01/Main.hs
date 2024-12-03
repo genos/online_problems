@@ -1,5 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 module Main where
 
 import Data.Attoparsec.Text
@@ -12,7 +10,7 @@ import Data.Text.IO qualified as T
 parse_ :: Text -> ([Int], [Int])
 parse_ = either (error "Bad pasre") unzip . parseOnly (line <* endOfInput)
   where
-    line = ((,) <$> decimal <*> (skipSpace *> decimal)) `sepBy1'` "\n"
+    line = ((,) <$> decimal <*> (skipSpace *> decimal)) `sepBy1'` char '\n'
 
 part1 :: ([Int], [Int]) -> Int
 part1 (xs, ys) = sum . fmap abs $ zipWith (-) (sort xs) (sort ys)
