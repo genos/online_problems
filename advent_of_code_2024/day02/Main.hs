@@ -8,31 +8,26 @@ import Data.List (subsequences)
 import Data.Text (Text)
 import Data.Text.IO qualified as T
 
-testInput :: Text
-testInput = "7 6 4 2 1\n1 2 7 8 9\n9 7 6 2 1\n1 3 2 4 5\n8 6 4 4 1\n1 3 6 7 9"
-
 parse_ :: Text -> [[Int]]
-parse_ = either (error "Bad pasre") id . parseOnly ((line `sepBy1'` "\n") <* endOfInput)
+parse_ = either (error "Bad parse") id . parseOnly ((line `sepBy1'` "\n") <* endOfInput)
   where
     line = decimal `sepBy1'` " "
 
 isSafe :: [Int] -> Bool
-isSafe xs = (monotonic xs && close xs) || (monotonic xs' && close xs')
+isSafe xs = close xs && (monotonic xs || monotonic (reverse xs))
   where
-    xs' = reverse xs
-    monotonic zs = and . zipWith (<) zs $ tail zs
-    close zs = all ((< 4) . abs) . zipWith (-) zs $ tail zs
+    pair f zs = zipWith f zs $ drop 1 zs
+    monotonic = and . pair (<)
+    close = all ((< 4) . abs) . pair (-)
 
-atMost1Drop :: [Int] -> [[Int]]
-atMost1Drop xs = filter (\zs -> length zs >= n') (subsequences xs)
-  where
-    n' = pred $ length xs
+dropAtMost1 :: [Int] -> [[Int]]
+dropAtMost1 xs = filter (\zs -> length zs >= pred (length xs)) (subsequences xs)
 
-part1, part2 :: [[Int]] -> Int
-part1 = length . filter isSafe
-part2 = length . filter (any isSafe . atMost1Drop)
+part1, part2 :: [Int] -> Bool
+part1 = isSafe
+part2 = any isSafe . dropAtMost1
 
 main :: IO ()
 main = do
     input <- parse_ <$> T.readFile "input.txt"
-    traverse_ (print . ($ input)) [part1, part2]
+    traverse_ (print . (\p -> length $ filter p input)) [part1, part2]
