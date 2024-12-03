@@ -15,16 +15,16 @@ parse_ p = either (error "Bad parse") id . parseOnly (many' loop)
   where
     loop = try p <|> try (anyChar *> loop)
 
+solve :: ([a] -> [(Int, Int)]) -> Parser a -> Text -> Int
+solve f p = sum . fmap (uncurry (*)) . f . parse_ p
+
 mul :: Parser (Int, Int)
 mul = (,) <$> ("mul(" *> decimal) <*> ("," *> decimal <* ")")
-
-solve :: ([a] -> [(Int, Int)]) -> Parser a -> Text -> Int
-solve f p = sum . fmap (uncurry(*)) . f . parse_ p
 
 part1 :: Text -> Int
 part1 = solve id mul
 
-data P2 = Do | Don't | Pair (Int, Int) deriving (Show)
+data P2 = Do | Don't | Pair (Int, Int)
 
 p2 :: Parser P2
 p2 = ("do()" $> Do) <|> ("don't()" $> Don't) <|> (Pair <$> mul)
@@ -32,10 +32,9 @@ p2 = ("do()" $> Do) <|> ("don't()" $> Don't) <|> (Pair <$> mul)
 prune :: [P2] -> [(Int, Int)]
 prune = reverse . fst . foldl' f ([], True)
   where
-    f (nss, _) Do = (nss, True)
-    f (nss, _) Don't = (nss, False)
-    f (nss, False) (Pair _) = (nss, False)
     f (nss, True) (Pair ns) = (ns : nss, True)
+    f (nss, _) Do = (nss, True)
+    f (nss, _) _ = (nss, False)
 
 part2 :: Text -> Int
 part2 = solve prune p2
