@@ -8,7 +8,7 @@ import Data.Text (Text)
 import Data.Text.IO qualified as T
 
 parse_ :: Text -> ([Int], [Int])
-parse_ = either (error "Bad pasre") unzip . parseOnly (line <* endOfInput)
+parse_ = either (error "Bad parse") unzip . parseOnly (line <* endOfInput)
   where
     line = ((,) <$> decimal <*> (skipSpace *> decimal)) `sepBy1'` char '\n'
 
