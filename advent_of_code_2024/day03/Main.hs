@@ -5,23 +5,42 @@ module Main where
 import Control.Applicative ((<|>))
 import Data.Attoparsec.Text
 import Data.Foldable (traverse_)
+import Data.Functor (($>))
 import Data.Text (Text)
 import Data.Text.IO qualified as T
 
-testInput :: Text
-testInput = "xmul(2,4)%&mul[3,7]!@^do_not_mul(5,5)+mul(32,64]then(mul(11,8)mul(8,5))"
-
 -- https://stackoverflow.com/a/79247429
-parse_ :: Text -> [(Int, Int)]
-parse_ = either (error "Bad parse") id . parseOnly (many' loop)
+parse_ :: Parser a -> Text -> [a]
+parse_ p = either (error "Bad parse") id . parseOnly (many' loop)
   where
-    loop = try pairs <|> try (anyChar *> loop)
-    pairs = (,) <$> ("mul(" *> decimal) <*> ("," *> decimal <* ")")
+    loop = try p <|> try (anyChar *> loop)
 
-part1 :: [(Int, Int)] -> Int
-part1 = sum . fmap (uncurry (*))
+mul :: Parser (Int, Int)
+mul = (,) <$> ("mul(" *> decimal) <*> ("," *> decimal <* ")")
+
+solve :: ([a] -> [(Int, Int)]) -> Parser a -> Text -> Int
+solve f p = sum . fmap (uncurry(*)) . f . parse_ p
+
+part1 :: Text -> Int
+part1 = solve id mul
+
+data P2 = Do | Don't | Pair (Int, Int) deriving (Show)
+
+p2 :: Parser P2
+p2 = ("do()" $> Do) <|> ("don't()" $> Don't) <|> (Pair <$> mul)
+
+prune :: [P2] -> [(Int, Int)]
+prune = reverse . fst . foldl' f ([], True)
+  where
+    f (nss, _) Do = (nss, True)
+    f (nss, _) Don't = (nss, False)
+    f (nss, False) (Pair _) = (nss, False)
+    f (nss, True) (Pair ns) = (ns : nss, True)
+
+part2 :: Text -> Int
+part2 = solve prune p2
 
 main :: IO ()
 main = do
-    input <- parse_ <$> T.readFile "input.txt"
-    traverse_ (print . ($ input)) [part1]
+    input <- T.readFile "input.txt"
+    traverse_ (print . ($ input)) [part1, part2]
