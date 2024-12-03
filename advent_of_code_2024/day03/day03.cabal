@@ -1,11 +1,11 @@
 cabal-version: 3.6
-name: day02
+name: day03
 version: 0.1.0.0
 license: MIT
 author: Graham Enos
 maintainer: graham@strangeworks.com
 
-executable day02
+executable day03
   ghc-options:
     -Wall
     -Wextra
