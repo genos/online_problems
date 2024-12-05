@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module Main where
 
 import Data.Attoparsec.Text
@@ -7,9 +9,9 @@ import Data.Text (Text)
 import Data.Text.IO qualified as T
 
 parse_ :: Text -> [[Int]]
-parse_ = either (error "Bad parse") id . parseOnly ((line `sepBy1'` char '\n') <* endOfInput)
+parse_ = either (error "Bad parse") id . parseOnly (line `sepBy1'` "\n")
   where
-    line = decimal `sepBy1'` char ' '
+    line = decimal `sepBy1'` " "
 
 isSafe :: [Int] -> Bool
 isSafe xs = (\(up, down, close) -> (up || down) && close) . foldl' f (True, True, True) . zip xs $ drop 1 xs

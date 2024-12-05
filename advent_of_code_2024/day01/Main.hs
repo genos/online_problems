@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module Main where
 
 import Data.Attoparsec.Text
@@ -8,7 +10,7 @@ import Data.Text (Text)
 import Data.Text.IO qualified as T
 
 parse_ :: Text -> ([Int], [Int])
-parse_ = either (error "Bad parse") unzip . parseOnly (line `sepBy1'` char '\n')
+parse_ = either (error "Bad parse") unzip . parseOnly (line `sepBy1'` "\n")
   where
     line = (,) <$> decimal <*> (skipSpace *> decimal)
 
