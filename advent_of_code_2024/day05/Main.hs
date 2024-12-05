@@ -17,7 +17,7 @@ parse_ :: Text -> (IntMap IntSet, [[Int]])
 parse_ = either (error "Bad parse") id . parseOnly ((,) <$> rules <*> ("\n\n" *> pages))
   where
     rules = IM.fromListWith (<>) . fmap (second IS.singleton) <$> pairs
-    pages = (decimal `sepBy1'` ",") `sepBy1'` endOfLine
+    pages = (decimal `sepBy1'` ",") `sepBy1'` "\n"
     pairs = ((,) <$> decimal <*> ("|" *> decimal)) `sepBy1'` "\n"
 
 middle :: [Int] -> Int
