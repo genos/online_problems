@@ -30,13 +30,9 @@ part1 :: IntMap IntSet -> [[Int]] -> Int
 part1 rs = sum . fmap middle . filter (inOrder rs)
 
 part2 :: IntMap IntSet -> [[Int]] -> Int
-part2 rs = sum . fmap (middle . sortBy order) . filter (not . inOrder rs)
+part2 rs = sum . fmap (middle . sortBy (⋈)) . filter (not . inOrder rs)
   where
-    order x y = case (after x y, after y x) of
-        (True, False) -> GT
-        (False, True) -> LT
-        _ -> EQ
-    after x y = IS.member y (IM.findWithDefault mempty x rs)
+    x ⋈ y = if IS.member y (IM.findWithDefault mempty x rs) then GT else LT
 
 main :: IO ()
 main = do
