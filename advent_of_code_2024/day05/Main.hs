@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module Main where
 
 import Data.Attoparsec.Text
@@ -12,11 +14,11 @@ import Data.Text (Text)
 import Data.Text.IO qualified as T
 
 parse_ :: Text -> (IntMap IntSet, [[Int]])
-parse_ = either (error "Bad parse") id . parseOnly ((,) <$> rules <*> (endOfLine *> endOfLine *> pages))
+parse_ = either (error "Bad parse") id . parseOnly ((,) <$> rules <*> ("\n\n" *> pages))
   where
     rules = IM.fromListWith (<>) . fmap (second IS.singleton) <$> pairs
-    pages = (decimal `sepBy1'` char ',') `sepBy1'` endOfLine
-    pairs = ((,) <$> decimal <*> (char '|' *> decimal)) `sepBy1'` endOfLine
+    pages = (decimal `sepBy1'` ",") `sepBy1'` endOfLine
+    pairs = ((,) <$> decimal <*> ("|" *> decimal)) `sepBy1'` "\n"
 
 middle :: [Int] -> Int
 middle xs = xs !! (length xs `div` 2)
