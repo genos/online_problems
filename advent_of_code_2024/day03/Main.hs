@@ -13,7 +13,7 @@ import Data.Text.IO qualified as T
 parse_ :: Parser a -> Text -> [a]
 parse_ p = either (error "Bad parse") id . parseOnly (many' loop)
   where
-    loop = try p <|> (anyChar *> loop)
+    loop = try p <|> try (anyChar *> loop)
 
 solve :: ([a] -> [(Int, Int)]) -> Parser a -> Text -> Int
 solve f p = sum . fmap (uncurry (*)) . f . parse_ p
