@@ -105,14 +105,10 @@ impl Map {
         Ok(Self(n, data))
     }
     fn find_caret(&self) -> Result<Coord> {
-        for i in 0..self.0 {
-            for j in 0..self.0 {
-                if self.1[ix!(self.0, i, j)] == '^' {
-                    return Ok(Coord(i, j));
-                }
-            }
-        }
-        Err(eyre!("No ^ found."))
+        (0..self.0)
+            .cartesian_product(0..self.0)
+            .find_map(|(i, j)| (self.1[ix!(self.0, i, j)] == '^').then_some(Coord(i, j)))
+            .ok_or(eyre!("No ^ found."))
     }
     fn start<T: Trail>(&mut self) -> Result<Guard<T>> {
         let pos = self.find_caret()?;
