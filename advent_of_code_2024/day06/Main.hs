@@ -25,10 +25,10 @@ start f m = (m', Guard p U (S.singleton $ f p U))
     m' = M.update (const $ Just '.') p m
 
 turnRight :: Dir -> Dir
-turnRight = \case U -> R; R -> D; D -> L; L -> U
+turnRight = \case U -> R; D -> L; L -> U; R -> D
 
 toStep :: Dir -> V2 Int
-toStep = \case U -> V2 1 0; D -> V2 (-1) 0; R -> V2 0 1; L -> V2 0 (-1)
+toStep = \case U -> V2 1 0; D -> V2 (-1) 0; L -> V2 0 (-1); R -> V2 0 1
 
 next :: (Ord a) => (Coord -> Dir -> a) -> Map -> Guard a -> Guard a
 next f m Guard{pos, dir, visited} = Guard pos' dir' visited'
