@@ -70,7 +70,6 @@ enum Walk {
     OutOfBounds(usize),
 }
 
-#[inline(always)]
 fn ix(n: u8, i: u8, j: u8) -> usize {
     n as usize * j as usize + i as usize
 }
