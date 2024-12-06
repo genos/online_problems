@@ -64,7 +64,7 @@ impl Trail for (Coord, Dir) {
     }
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Clone)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 struct Guard<T: Trail> {
     pos: Coord,
     dir: Dir,
@@ -164,7 +164,7 @@ fn part2(mut m: Map) -> Result<usize> {
             } else {
                 let mut m_ = m.clone();
                 m_.set(p, '#');
-                matches!(m_.go(g.clone()), Walk::EarlyStop(_))
+                matches!(m_.go(g), Walk::EarlyStop(_))
             }
         })
         .count();
