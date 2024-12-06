@@ -7,8 +7,8 @@ import Linear.V2 (V2 (..))
 
 type Coord = V2 Int
 type Map = M.Map Coord Char
-data Dir = U | D | L | R deriving (Eq)
-data Guard a = Guard {pos :: Coord, dir :: Dir, visited :: S.Set a} deriving (Eq)
+data Dir = U | D | L | R deriving (Eq, Ord, Show)
+data Guard a = Guard {pos :: Coord, dir :: Dir, visited :: S.Set a} deriving (Eq, Show)
 
 parse :: String -> Map
 parse input =
@@ -41,13 +41,22 @@ next f m Guard{pos, dir, visited} = Guard pos' dir' visited'
     pos' = if blocked || done then pos else ahead
     visited' = if blocked || done then visited else S.insert (f pos' dir') visited
 
-goTilSame :: (Eq a) => (a -> a) -> a -> a
-goTilSame f x = let y = f x in if y == x then x else goTilSame f y
-
 part1 :: Map -> Int
-part1 m = let (m', g) = start const m in S.size . visited $ goTilSame (next const m') g
+part1 m = length . visited $ go g
+  where
+    (m', g) = start const m
+    go x = let y = next const m' x in if x == y then x else go y
+
+part2 :: Map -> Int
+part2 m = length . filter ((&&) <$> loops <*> (/= p0)) $ M.keys m'
+  where
+    f = (,)
+    (m', g) = start f m
+    p0 = pos g
+    loops p = let m'' = M.update (const $ Just '#') p m'
+               in undefined
 
 main :: IO ()
 main = do
     m <- parse <$> readFile "input.txt"
-    traverse_ (print . ($ m)) [part1]
+    traverse_ (print . ($ m)) [part1, part2]
