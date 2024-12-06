@@ -50,11 +50,12 @@ part1 m = length . visited $ go g
 part2 :: Map -> Int
 part2 m = length . filter ((&&) <$> loops <*> (/= p0)) $ M.keys m'
   where
-    f = (,)
-    (m', g) = start f m
+    (m', g) = start (,) m
     p0 = pos g
-    loops p = let m'' = M.update (const $ Just '#') p m'
-               in undefined
+    loops p =
+        let m'' = M.update (const $ Just '#') p m'
+            go g' = let g'' = next (,) m'' g' in (g'' /= g') && ((pos g'', dir g'') `S.member` visited g' || go g'')
+         in go g
 
 main :: IO ()
 main = do
