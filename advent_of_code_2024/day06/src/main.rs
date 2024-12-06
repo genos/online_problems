@@ -6,12 +6,6 @@ use std::{collections::BTreeSet, fs, marker::PhantomData};
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 struct Coord(u8, u8);
 
-impl Coord {
-    fn in_bounds(self, n: u8) -> bool {
-        self.0 < n && self.1 < n
-    }
-}
-
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 enum Dir {
     U,
@@ -76,21 +70,23 @@ enum Walk {
     OutOfBounds(usize),
 }
 
-macro_rules! ix {
-    ($n:expr, $i:expr, $j:expr) => {
-        $n as usize * $j as usize + $i as usize
-    };
+#[inline(always)]
+fn ix(n: u8, i: u8, j: u8) -> usize {
+    n as usize * j as usize + i as usize
 }
 
 #[derive(Clone)]
 struct Map(u8, Vec<char>);
 
 impl Map {
+    fn contains(&self, p: Coord) -> bool {
+        p.0 < self.0 && p.1 < self.0
+    }
     fn get(&self, p: Coord) -> char {
-        self.1[ix!(self.0, p.0, p.1)]
+        self.1[ix(self.0, p.0, p.1)]
     }
     fn set(&mut self, p: Coord, c: char) {
-        self.1[ix!(self.0, p.0, p.1)] = c;
+        self.1[ix(self.0, p.0, p.1)] = c;
     }
     fn parse(n: usize, input: &str) -> Result<Self> {
         let mut data = vec!['.'; n * n];
@@ -99,7 +95,7 @@ impl Map {
             for (j, c) in line.chars().enumerate() {
                 let i: u8 = i.try_into().wrap_err("i too big")?;
                 let j: u8 = j.try_into().wrap_err("i too big")?;
-                data[ix!(n, i, j)] = c;
+                data[ix(n, i, j)] = c;
             }
         }
         Ok(Self(n, data))
@@ -107,7 +103,7 @@ impl Map {
     fn find_caret(&self) -> Result<Coord> {
         (0..self.0)
             .cartesian_product(0..self.0)
-            .find_map(|(i, j)| (self.1[ix!(self.0, i, j)] == '^').then_some(Coord(i, j)))
+            .find_map(|(i, j)| (self.1[ix(self.0, i, j)] == '^').then_some(Coord(i, j)))
             .ok_or(eyre!("No ^ found."))
     }
     fn start<T: Trail>(&mut self) -> Result<Guard<T>> {
@@ -122,7 +118,7 @@ impl Map {
         let mut visited = BTreeSet::new();
         loop {
             let ahead = g.dir.step(g.pos);
-            if ahead.in_bounds(self.0) {
+            if self.contains(ahead) {
                 if self.get(ahead) == '#' {
                     g.dir = g.dir.turn_right();
                 } else {
