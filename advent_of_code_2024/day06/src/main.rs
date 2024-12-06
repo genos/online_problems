@@ -97,8 +97,8 @@ impl Map {
         let n: u8 = n.try_into().wrap_err("n too big")?;
         for (i, line) in input.lines().rev().enumerate() {
             for (j, c) in line.chars().enumerate() {
-                let _: u8 = i.try_into().wrap_err("i too big")?;
-                let _: u8 = j.try_into().wrap_err("i too big")?;
+                let i: u8 = i.try_into().wrap_err("i too big")?;
+                let j: u8 = j.try_into().wrap_err("i too big")?;
                 data[ix!(n, i, j)] = c;
             }
         }
