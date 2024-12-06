@@ -138,7 +138,7 @@ impl Map {
                 }
                 visited.insert(trail);
             } else {
-                return Walk::OutOfBounds(visited.len());
+                return Walk::OutOfBounds(1 + visited.len());
             }
         }
     }
