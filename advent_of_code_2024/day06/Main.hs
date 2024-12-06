@@ -7,15 +7,15 @@ import Linear.V2 (V2 (..))
 
 type Coord = V2 Int
 type Map = M.Map Coord Char
-data Dir = U | D | L | R deriving (Eq, Ord, Show)
-data Guard a = Guard {pos :: Coord, dir :: Dir, visited :: S.Set a} deriving (Eq, Show)
+data Dir = U | D | L | R deriving (Eq, Ord)
+data Guard a = Guard {pos :: Coord, dir :: Dir, visited :: S.Set a} deriving (Eq)
 
 parse :: String -> Map
 parse input =
     M.fromList
         [ (V2 j i, c)
-        | (j, l) <- zip [0 ..] $ lines $ reverse input
-        , (i, c) <- zip [0 ..] $ reverse l
+        | (j, l) <- zip [0 ..] $ reverse $ lines input
+        , (i, c) <- zip [0 ..] l
         ]
 
 start :: (Coord -> Dir -> a) -> Map -> (Map, Guard a)
@@ -50,12 +50,12 @@ part1 m = length . visited $ go g
 part2 :: Map -> Int
 part2 m = length . filter ((&&) <$> loops <*> (/= p0)) $ M.keys m'
   where
-    (m', g) = start (,) m
-    p0 = pos g
-    loops p =
-        let m'' = M.update (const $ Just '#') p m'
-            go g' = let g'' = next (,) m'' g' in (g'' /= g') && ((pos g'', dir g'') `S.member` visited g' || go g'')
-         in go g
+    (m', g0) = start (,) m
+    p0 = pos g0
+    loops p = go g0
+      where
+        go g = let g' = next (,) m'' g in (g' /= g) && ((pos g', dir g') `S.member` visited g || go g')
+        m'' = M.update (const $ Just '#') p m'
 
 main :: IO ()
 main = do
