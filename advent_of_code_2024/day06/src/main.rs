@@ -1,7 +1,7 @@
 use eyre::{eyre, Result, WrapErr};
 use itertools::Itertools;
 use rayon::prelude::*;
-use std::{collections::BTreeSet, fs, marker::PhantomData};
+use std::{collections::BTreeSet, fs};
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 struct Coord(u8, u8);
@@ -37,7 +37,7 @@ impl Dir {
     }
 }
 
-trait Trail: Ord + Sized {
+trait Trail: Ord + Clone + Copy + Sized {
     fn f(pos: Coord, dir: Dir) -> Self;
     fn stop_early(&self, visited: &BTreeSet<Self>) -> bool;
 }
@@ -59,10 +59,9 @@ impl Trail for (Coord, Dir) {
 }
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
-struct Guard<T: Trail> {
+struct Guard {
     pos: Coord,
     dir: Dir,
-    trail: PhantomData<T>,
 }
 
 enum Walk {
@@ -87,7 +86,7 @@ impl Map {
     fn set(&mut self, p: Coord, c: char) {
         self.1[ix(self.0, p.0, p.1)] = c;
     }
-    fn parse(n: usize, input: &str) -> Result<Self> {
+    fn parse(n: usize, input: &str) -> Result<(Self, Guard)> {
         let mut data = vec!['.'; n * n];
         let n: u8 = n.try_into().wrap_err("n too big")?;
         for (i, line) in input.lines().rev().enumerate() {
@@ -97,24 +96,16 @@ impl Map {
                 data[ix(n, i, j)] = c;
             }
         }
-        Ok(Self(n, data))
+        let pos = (0..n)
+            .cartesian_product(0..n)
+            .find_map(|(i, j)| (data[ix(n, i, j)] == '^').then_some(Coord(i, j)))
+            .ok_or(eyre!("No ^ found."))?;
+        data[ix(n, pos.0, pos.1)] = '.';
+        Ok((Self(n, data), Guard { pos, dir: Dir::U }))
     }
-    fn find_caret(&self) -> Result<Coord> {
-        (0..self.0)
-            .cartesian_product(0..self.0)
-            .find_map(|(i, j)| (self.1[ix(self.0, i, j)] == '^').then_some(Coord(i, j)))
-            .ok_or(eyre!("No ^ found."))
-    }
-    fn start<T: Trail>(&mut self) -> Result<Guard<T>> {
-        let pos = self.find_caret()?;
-        self.set(pos, '.');
-        let dir = Dir::U;
-        let trail = PhantomData;
-        Ok(Guard { pos, dir, trail })
-    }
-    fn go<T: Trail>(&self, mut g: Guard<T>) -> Walk {
+    fn go<T: Trail>(&self, mut g: Guard) -> Walk {
         // Assumes input is well-formed (terminating)
-        let mut visited = BTreeSet::new();
+        let mut visited = BTreeSet::from([<T as Trail>::f(g.pos, g.dir)]);
         loop {
             let ahead = g.dir.step(g.pos);
             if self.contains(ahead) {
@@ -129,33 +120,27 @@ impl Map {
                 }
                 visited.insert(trail);
             } else {
-                return Walk::OutOfBounds(1 + visited.len());
+                return Walk::OutOfBounds(visited.len());
             }
         }
     }
 }
 
-fn part1(mut m: Map) -> Result<usize> {
-    let g = m.start::<Coord>()?;
-    match m.go(g) {
+fn part1(m: Map, g: Guard) -> Result<usize> {
+    match m.go::<Coord>(g) {
         Walk::EarlyStop(n) | Walk::OutOfBounds(n) => Ok(n),
     }
 }
 
-fn part2(mut m: Map) -> Result<usize> {
-    let g = m.start::<(Coord, Dir)>()?;
-    let p0 = g.pos;
+fn part2(m: Map, g: Guard) -> Result<usize> {
     let n = (0..m.0)
         .cartesian_product(0..m.0)
         .par_bridge()
-        .filter(|(i, j)| {
-            let p = Coord(*i, *j);
-            if p == p0 {
-                false
-            } else {
+        .filter(|&(i, j)| {
+            (i, j) != (g.pos.0, g.pos.1) && {
                 let mut m_ = m.clone();
-                m_.set(p, '#');
-                matches!(m_.go(g), Walk::EarlyStop(_))
+                m_.set(Coord(i, j), '#');
+                matches!(m_.go::<(Coord, Dir)>(g), Walk::EarlyStop(_))
             }
         })
         .count();
@@ -165,8 +150,8 @@ fn part2(mut m: Map) -> Result<usize> {
 fn main() -> Result<()> {
     let input = fs::read_to_string("input.txt").wrap_err("Unable to read input file.")?;
     let n = input.chars().filter(|c| *c == '\n').count();
-    let map = Map::parse(1 + n, &input)?;
-    println!("{}", part1(map.clone())?);
-    println!("{}", part2(map)?);
+    let (m, g) = Map::parse(1 + n, &input)?;
+    println!("{}", part1(m.clone(), g)?);
+    println!("{}", part2(m, g)?);
     Ok(())
 }
