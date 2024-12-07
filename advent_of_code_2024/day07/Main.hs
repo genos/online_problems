@@ -34,7 +34,7 @@ part1 = solve [(+), (*)]
 part2 :: [Equation] -> Word64
 part2 = solve [(+), (*), conc]
   where
-    conc x y = x * 10 ^ tens 0 y + y
+    conc x y = x * tens 0 y + y
     -- copy-pasta from number-length package
     tens :: Op
     tens t 0 = 10 ^ t
