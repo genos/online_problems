@@ -37,31 +37,28 @@ impl Dir {
     }
 }
 
-trait Trail: Ord + Clone + Copy + Sized {
-    fn f(pos: Coord, dir: Dir) -> Self;
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
+struct Guard(Coord, Dir);
+
+trait Trail: Ord + Sized {
+    fn f(g: Guard) -> Self;
     fn stop_early(&self, visited: &BTreeSet<Self>) -> bool;
 }
 impl Trail for Coord {
-    fn f(pos: Coord, _dir: Dir) -> Self {
-        pos
+    fn f(g: Guard) -> Self {
+        g.0
     }
     fn stop_early(&self, _visited: &BTreeSet<Self>) -> bool {
         false
     }
 }
 impl Trail for (Coord, Dir) {
-    fn f(pos: Coord, dir: Dir) -> Self {
-        (pos, dir)
+    fn f(g: Guard) -> Self {
+        (g.0, g.1)
     }
     fn stop_early(&self, visited: &BTreeSet<Self>) -> bool {
         visited.contains(self)
     }
-}
-
-#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
-struct Guard {
-    pos: Coord,
-    dir: Dir,
 }
 
 enum Walk {
@@ -101,20 +98,20 @@ impl Map {
             .find_map(|(i, j)| (data[ix(n, i, j)] == '^').then_some(Coord(i, j)))
             .ok_or(eyre!("No ^ found."))?;
         data[ix(n, pos.0, pos.1)] = '.';
-        Ok((Self(n, data), Guard { pos, dir: Dir::U }))
+        Ok((Self(n, data), Guard(pos, Dir::U)))
     }
     fn go<T: Trail>(&self, mut g: Guard) -> Walk {
         // Assumes input is well-formed (terminating)
-        let mut visited = BTreeSet::from([<T as Trail>::f(g.pos, g.dir)]);
+        let mut visited = BTreeSet::from([<T as Trail>::f(g)]);
         loop {
-            let ahead = g.dir.step(g.pos);
+            let ahead = g.1.step(g.0);
             if self.contains(ahead) {
                 if self.get(ahead) == '#' {
-                    g.dir = g.dir.turn_right();
+                    g.1 = g.1.turn_right();
                 } else {
-                    g.pos = ahead;
+                    g.0 = ahead;
                 }
-                let trail = <T as Trail>::f(g.pos, g.dir);
+                let trail = <T as Trail>::f(g);
                 if trail.stop_early(&visited) {
                     return Walk::EarlyStop(visited.len());
                 }
@@ -137,7 +134,7 @@ fn part2(m: Map, g: Guard) -> Result<usize> {
         .cartesian_product(0..m.0)
         .par_bridge()
         .filter(|&(i, j)| {
-            (i, j) != (g.pos.0, g.pos.1) && {
+            (i, j) != (g.0 .0, g.0 .1) && {
                 let mut m_ = m.clone();
                 m_.set(Coord(i, j), '#');
                 matches!(m_.go::<(Coord, Dir)>(g), Walk::EarlyStop(_))
