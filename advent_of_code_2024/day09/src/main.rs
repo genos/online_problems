@@ -1,56 +1,35 @@
+// https://github.com/hasanghorbel/aoc-2024/tree/master/day9/src assistance
 use eyre::{Result, WrapErr};
 use std::fs;
 
-#[derive(Debug, Clone, Copy)]
-enum Block {
-    File(usize),
-    Free,
-}
-
-impl Block {
-    fn is_file(&self) -> bool {
-        matches!(self, Self::File(_))
-    }
-    fn is_free(&self) -> bool {
-        matches!(self, Self::Free)
-    }
-    fn get(&self) -> Option<usize> {
-        match self {
-            Self::File(n) => Some(*n),
-            Self::Free => None,
-        }
-    }
-}
-
-fn parse(input: &str) -> Vec<Block> {
+fn parse(input: &str) -> Vec<Option<usize>> {
     let mut i = 0;
     let mut is_file = true;
     let mut output = vec![];
     for c in input.chars() {
         if c.is_numeric() {
-            let d = c.to_digit(10).expect("is_numeric() should handle this.");
-            let b = if is_file {
+            let d = c.to_digit(10).expect("is_numeric() should handle this.") as usize;
+            let to_add = if is_file {
+                let x = Some(i);
                 i += 1;
-                Block::File(i - 1)
+                x
             } else {
-                Block::Free
+                None
             };
-            for _ in 0..d {
-                output.push(b);
-            }
+            output.extend(vec![to_add; d]);
             is_file = !is_file;
         }
     }
     output
 }
 
-fn part1(mut blocks: Vec<Block>) -> usize {
+fn part1(mut blocks: Vec<Option<usize>>) -> usize {
     let (mut left, mut right) = (0, blocks.len() - 1);
     while left < right {
-        while blocks[left].is_file() {
+        while blocks[left].is_some() {
             left += 1;
         }
-        while blocks[right].is_free() {
+        while blocks[right].is_none() {
             right -= 1;
         }
         if left < right {
@@ -62,7 +41,7 @@ fn part1(mut blocks: Vec<Block>) -> usize {
     blocks
         .into_iter()
         .enumerate()
-        .filter_map(|(i, b)| b.get().map(|n| i * n))
+        .filter_map(|(i, b)| b.map(|n| i * n))
         .sum()
 }
 
