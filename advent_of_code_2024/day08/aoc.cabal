@@ -1,11 +1,11 @@
 cabal-version: 3.6
-name: day08
+name: aoc
 version: 0.1.0.0
 license: MIT
 author: Graham Enos
 maintainer: graham@strangeworks.com
 
-executable day08
+executable aoc
   ghc-options:
     -Wall
     -Wextra
