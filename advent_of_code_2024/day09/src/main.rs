@@ -2,7 +2,15 @@
 use eyre::{Result, WrapErr};
 use std::fs;
 
-fn parse(input: &str) -> Vec<Option<usize>> {
+fn checksum(blocks: &[Option<usize>]) -> usize {
+    blocks
+        .iter()
+        .enumerate()
+        .filter_map(|(i, b)| b.map(|n| i * n))
+        .sum()
+}
+
+fn parse1(input: &str) -> Vec<Option<usize>> {
     let (mut i, mut is_file, mut output) = (0, true, vec![]);
     for c in input.chars() {
         if c.is_numeric() {
@@ -20,7 +28,8 @@ fn parse(input: &str) -> Vec<Option<usize>> {
     output
 }
 
-fn part1(mut blocks: Vec<Option<usize>>) -> usize {
+fn part1(input: &str) -> usize {
+    let mut blocks = parse1(input);
     let (mut left, mut right) = (0, blocks.len() - 1);
     while left < right {
         while blocks[left].is_some() {
@@ -34,16 +43,11 @@ fn part1(mut blocks: Vec<Option<usize>>) -> usize {
         }
         (left, right) = (left + 1, right - 1);
     }
-    blocks
-        .iter()
-        .enumerate()
-        .filter_map(|(i, b)| b.map(|n| i * n))
-        .sum()
+    checksum(&blocks)
 }
 
 fn main() -> Result<()> {
     let input = fs::read_to_string("input.txt").wrap_err("Unable to read input file.")?;
-    let blocks = parse(&input);
-    println!("{}", part1(blocks.clone()));
+    println!("{}", part1(&input));
     Ok(())
 }
