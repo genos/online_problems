@@ -1,5 +1,5 @@
 use eyre::{Result, WrapErr};
-use std::{fs, iter, ops};
+use std::{fs, iter};
 
 // with help from https://github.com/hasanghorbel/aoc-2024/tree/master/day9/src
 fn part1(input: &str) -> usize {
@@ -34,9 +34,7 @@ fn part1(input: &str) -> usize {
 
 // with help from https://github.com/nertsch/advent-of-code-2024/blob/master/src/day_09.rs
 fn part2(input: &str) -> usize {
-    let mut files: Vec<(ops::Range<usize>, usize)> = Vec::new();
-    let mut frees: Vec<ops::Range<usize>> = Vec::new();
-    let mut ix = 0;
+    let (mut files, mut frees, mut ix) = (Vec::new(), Vec::new(), 0);
     for (i, c) in input.chars().filter(|&c| c.is_numeric()).enumerate() {
         let d = c.to_digit(10).expect("is_numeric() should handle this.") as usize;
         let r = ix..ix + d;
