@@ -34,16 +34,16 @@ fn part1(input: &str) -> usize {
 
 // with help from https://github.com/nertsch/advent-of-code-2024/blob/master/src/day_09.rs
 fn part2(input: &str) -> usize {
-    let (mut files, mut frees, mut ix) = (Vec::new(), Vec::new(), 0);
+    let (mut files, mut frees, mut j) = (Vec::new(), Vec::new(), 0);
     for (i, c) in input.chars().filter(|&c| c.is_numeric()).enumerate() {
         let d = c.to_digit(10).expect("is_numeric() should handle this.") as usize;
-        let r = ix..ix + d;
+        let r = j..j + d;
         if i & 1 == 0 {
             files.push((r, i / 2));
         } else {
             frees.push(r);
         }
-        ix += d;
+        j += d;
     }
     for (file, _d) in files.iter_mut().rev() {
         if let Some((i, free)) = frees
