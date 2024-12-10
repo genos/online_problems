@@ -45,7 +45,7 @@ fn part2(input: &str) -> usize {
         }
         j += d;
     }
-    for file in files.iter_mut().map(|(f, _)| f).rev() {
+    for (file, _d) in files.iter_mut().rev() {
         if let Some((i, free)) = frees
             .iter_mut()
             .enumerate()
