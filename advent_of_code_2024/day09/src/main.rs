@@ -10,11 +10,16 @@ fn checksum(blocks: impl Iterator<Item = Option<usize>>) -> usize {
 }
 
 fn parse1(input: &str) -> Vec<Option<usize>> {
-   input.chars().filter(|&c| c.is_numeric()).enumerate().flat_map(|(i, c)| {
-        let d = c.to_digit(10).expect("is_numeric() should handle this.") as usize;
-        let to_add = if i & 1 == 0 { Some(i / 2) } else { None };
-        iter::repeat_n(to_add, d)
-    }).collect()
+    input
+        .chars()
+        .filter(|&c| c.is_numeric())
+        .enumerate()
+        .flat_map(|(i, c)| {
+            let d = c.to_digit(10).expect("is_numeric() should handle this.") as usize;
+            let to_add = if i & 1 == 0 { Some(i / 2) } else { None };
+            iter::repeat_n(to_add, d)
+        })
+        .collect()
 }
 
 fn part1(input: &str) -> usize {
