@@ -1,11 +1,11 @@
 cabal-version: 3.6
-name: day01
+name: aoc
 version: 0.1.0.0
 license: MIT
 author: Graham Enos
 maintainer: graham@strangeworks.com
 
-executable day01
+executable aoc
   ghc-options:
     -Wall
     -Wextra
@@ -14,7 +14,7 @@ executable day01
   build-depends:
     attoparsec ^>=0.14.3,
     base ^>=4.20.0.0,
-    containers ^>=0.7,
+    containers ^>= 0.7,
     text ^>=2.1.2,
 
   default-language: GHC2024

@@ -30,8 +30,8 @@ impl Dir {
         let (i, j) = (c.0, c.1);
         match self {
             Dir::U => Coord(i + 1, j),
-            Dir::D => Coord(i - 1, j),
-            Dir::L => Coord(i, j - 1),
+            Dir::D => Coord(i.wrapping_sub(1), j),
+            Dir::L => Coord(i, j.wrapping_sub(1)),
             Dir::R => Coord(i, j + 1),
         }
     }
