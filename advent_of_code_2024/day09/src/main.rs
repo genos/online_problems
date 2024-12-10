@@ -2,9 +2,8 @@
 use eyre::{Result, WrapErr};
 use std::fs;
 
-fn checksum(blocks: &[Option<usize>]) -> usize {
+fn checksum(blocks: impl Iterator<Item = Option<usize>>) -> usize {
     blocks
-        .iter()
         .enumerate()
         .filter_map(|(i, b)| b.map(|n| i * n))
         .sum()
@@ -43,7 +42,7 @@ fn part1(input: &str) -> usize {
         }
         (left, right) = (left + 1, right - 1);
     }
-    checksum(&blocks)
+    checksum(blocks.into_iter())
 }
 
 fn main() -> Result<()> {
