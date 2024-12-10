@@ -1,29 +1,17 @@
-// https://github.com/hasanghorbel/aoc-2024/tree/master/day9/src assistance
 use eyre::{Result, WrapErr};
-use std::{fs, iter};
+use std::{fs, iter, ops};
 
-fn checksum(blocks: impl Iterator<Item = Option<usize>>) -> usize {
-    blocks
-        .enumerate()
-        .filter_map(|(i, b)| b.map(|n| i * n))
-        .sum()
-}
-
-fn parse1(input: &str) -> Vec<Option<usize>> {
-    input
+// with help from https://github.com/hasanghorbel/aoc-2024/tree/master/day9/src
+fn part1(input: &str) -> usize {
+    let mut blocks = input
         .chars()
         .filter(|&c| c.is_numeric())
         .enumerate()
         .flat_map(|(i, c)| {
             let d = c.to_digit(10).expect("is_numeric() should handle this.") as usize;
-            let to_add = if i & 1 == 0 { Some(i / 2) } else { None };
-            iter::repeat_n(to_add, d)
+            iter::repeat_n(if i & 1 == 0 { Some(i / 2) } else { None }, d)
         })
-        .collect()
-}
-
-fn part1(input: &str) -> usize {
-    let mut blocks = parse1(input);
+        .collect::<Vec<_>>();
     let (mut left, mut right) = (0, blocks.len() - 1);
     while left < right {
         while blocks[left].is_some() {
@@ -37,11 +25,48 @@ fn part1(input: &str) -> usize {
         }
         (left, right) = (left + 1, right - 1);
     }
-    checksum(blocks.into_iter())
+    blocks
+        .iter()
+        .enumerate()
+        .filter_map(|(i, b)| b.map(|n| i * n))
+        .sum()
+}
+
+// with help from https://github.com/nertsch/advent-of-code-2024/blob/master/src/day_09.rs
+fn part2(input: &str) -> usize {
+    let mut files: Vec<(ops::Range<usize>, usize)> = Vec::new();
+    let mut frees: Vec<ops::Range<usize>> = Vec::new();
+    let mut ix = 0;
+    for (i, c) in input.chars().filter(|&c| c.is_numeric()).enumerate() {
+        let d = c.to_digit(10).expect("is_numeric() should handle this.") as usize;
+        let r = ix..ix + d;
+        if i & 1 == 0 {
+            files.push((r, i / 2));
+        } else {
+            frees.push(r);
+        }
+        ix += d;
+    }
+    for (file, _d) in files.iter_mut().rev() {
+        if let Some((i, free)) = frees
+            .iter_mut()
+            .enumerate()
+            .find(|(_, b)| b.end <= file.start && b.len() >= file.len())
+        {
+            let start = free.start;
+            *free = start + file.len()..free.end;
+            *file = start..start + file.len();
+            if free.len() == 0 {
+                frees.remove(i);
+            }
+        }
+    }
+    files.into_iter().map(|(r, d)| r.sum::<usize>() * d).sum()
 }
 
 fn main() -> Result<()> {
     let input = fs::read_to_string("input.txt").wrap_err("Unable to read input file.")?;
     println!("{}", part1(&input));
+    println!("{}", part2(&input));
     Ok(())
 }
