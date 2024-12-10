@@ -1,6 +1,6 @@
 // https://github.com/hasanghorbel/aoc-2024/tree/master/day9/src assistance
 use eyre::{Result, WrapErr};
-use std::fs;
+use std::{fs, iter};
 
 fn checksum(blocks: impl Iterator<Item = Option<usize>>) -> usize {
     blocks
@@ -10,21 +10,11 @@ fn checksum(blocks: impl Iterator<Item = Option<usize>>) -> usize {
 }
 
 fn parse1(input: &str) -> Vec<Option<usize>> {
-    let (mut i, mut is_file, mut output) = (0, true, vec![]);
-    for c in input.chars() {
-        if c.is_numeric() {
-            let d = c.to_digit(10).expect("is_numeric() should handle this.") as usize;
-            let to_add = if is_file {
-                i += 1;
-                Some(i - 1)
-            } else {
-                None
-            };
-            output.extend(vec![to_add; d]);
-            is_file = !is_file;
-        }
-    }
-    output
+   input.chars().filter(|&c| c.is_numeric()).enumerate().flat_map(|(i, c)| {
+        let d = c.to_digit(10).expect("is_numeric() should handle this.") as usize;
+        let to_add = if i & 1 == 0 { Some(i / 2) } else { None };
+        iter::repeat_n(to_add, d)
+    }).collect()
 }
 
 fn part1(input: &str) -> usize {
