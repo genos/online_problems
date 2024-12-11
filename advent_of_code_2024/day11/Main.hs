@@ -1,36 +1,30 @@
 module Main where
 
 import Data.Foldable (traverse_)
-import Data.Word (Word64)
+import Data.IntMap.Strict (IntMap)
+import Data.IntMap.Strict qualified as IM
+import Data.NumberLength (numberLength)
 
-parse :: String -> [Word64]
-parse = fmap read . words
+parse :: String -> IntMap Int
+parse = IM.fromListWith (+) . fmap ((,1) . read) . words
 
-digits :: Word64 -> [Word64]
-digits = go []
-  where
-    go ds n =
-        let (q, r) = n `divMod` 10
-            ds' = r : ds
-         in if q == 0 then ds' else go ds' q
-
-undigits :: [Word64] -> Word64
-undigits = foldl' (\acc d -> 10 * acc + d) 0
-
-blink :: Word64 -> [Word64]
+blink :: Int -> [Int]
 blink 0 = [1]
-blink n | even d = [undigits l, undigits r]
+blink n | even d = [l, r]
   where
-    ds = digits n
-    d = length ds
-    (l, r) = splitAt (d `div` 2) ds
+    d = numberLength n
+    (l, r) = n `divMod` (10 ^ (d `div` 2))
 blink n = [2024 * n]
 
-part1 :: [Word64] -> Int
-part1 = length . (!! 25) . iterate (concatMap blink)
+blinkAll :: IntMap Int -> IntMap Int
+blinkAll = IM.fromListWith (+) . concatMap (\(k, v) -> (,v) <$> blink k) . IM.toList
 
-part2 :: [Word64] -> Int
-part2 = length . (!! 75) . iterate (concatMap blink)
+solve :: Int -> IntMap Int -> Int
+solve n = sum . (!! n) . iterate blinkAll
+
+part1, part2 :: IntMap Int -> Int
+part1 = solve 25
+part2 = solve 75
 
 main :: IO ()
 main = do
