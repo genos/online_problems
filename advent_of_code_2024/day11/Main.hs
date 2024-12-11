@@ -8,18 +8,15 @@ import Data.NumberLength (numberLength)
 parse :: String -> IntMap Int
 parse = IM.fromListWith (+) . fmap ((,1) . read) . words
 
-blink :: Int -> [Int]
-blink 0 = [1]
-blink n | even d = [l, r]
-  where
-    d = numberLength n
-    (l, r) = n `divMod` (10 ^ (d `div` 2))
-blink n = [2024 * n]
-
 blinkAll :: IntMap Int -> IntMap Int
-blinkAll = IM.foldlWithKey' f IM.empty
+blinkAll = IM.foldlWithKey' (\m k v -> IM.unionWith (+) m $ blink k v) IM.empty
   where
-    f m k v = IM.unionWith (+) m $ IM.fromListWith (+) [(k', v) | k' <- blink k]
+    blink 0 v = IM.singleton 1 v
+    blink k v | even d = IM.fromListWith (+) [(l, v), (r, v)]
+      where
+        d = numberLength k
+        (l, r) = k `divMod` (10 ^ (d `div` 2))
+    blink k v = IM.singleton (2024 * k) v
 
 solve :: Int -> IntMap Int -> Int
 solve n = sum . (!! n) . iterate blinkAll
