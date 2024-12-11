@@ -17,7 +17,9 @@ blink n | even d = [l, r]
 blink n = [2024 * n]
 
 blinkAll :: IntMap Int -> IntMap Int
-blinkAll = IM.fromListWith (+) . concatMap (\(k, v) -> (,v) <$> blink k) . IM.toList
+blinkAll = IM.foldlWithKey' f IM.empty
+  where
+    f m k v = IM.unionWith (+) m $ IM.fromListWith (+) [(k', v) | k' <- blink k]
 
 solve :: Int -> IntMap Int -> Int
 solve n = sum . (!! n) . iterate blinkAll
