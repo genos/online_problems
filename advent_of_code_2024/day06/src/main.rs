@@ -123,13 +123,13 @@ impl Map {
     }
 }
 
-fn part1(m: Map, g: Guard) -> Result<usize> {
+fn part1(m: Map, g: Guard) -> usize {
     match m.go::<Coord>(g) {
-        Walk::EarlyStop(n) | Walk::OutOfBounds(n) => Ok(n),
+        Walk::EarlyStop(n) | Walk::OutOfBounds(n) => n,
     }
 }
 
-fn part2(m: Map, g: Guard) -> Result<usize> {
+fn part2(m: Map, g: Guard) -> usize {
     let n = (0..m.0)
         .cartesian_product(0..m.0)
         .par_bridge()
@@ -141,14 +141,14 @@ fn part2(m: Map, g: Guard) -> Result<usize> {
             }
         })
         .count();
-    Ok(n)
+    n
 }
 
 fn main() -> Result<()> {
     let input = fs::read_to_string("input.txt").wrap_err("Unable to read input file.")?;
     let n = input.chars().filter(|c| *c == '\n').count();
     let (m, g) = Map::parse(1 + n, &input)?;
-    println!("{}", part1(m.clone(), g)?);
-    println!("{}", part2(m, g)?);
+    println!("{}", part1(m.clone(), g));
+    println!("{}", part2(m, g));
     Ok(())
 }
