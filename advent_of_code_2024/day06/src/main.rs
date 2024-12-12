@@ -38,7 +38,10 @@ impl Dir {
 }
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
-struct Guard(Coord, Dir);
+struct Guard {
+    pos: Coord,
+    dir: Dir,
+}
 
 trait Trail: Ord + Sized {
     fn f(g: Guard) -> Self;
@@ -46,7 +49,7 @@ trait Trail: Ord + Sized {
 }
 impl Trail for Coord {
     fn f(g: Guard) -> Self {
-        g.0
+        g.pos
     }
     fn stop_early(&self, _visited: &BTreeSet<Self>) -> bool {
         false
@@ -54,7 +57,7 @@ impl Trail for Coord {
 }
 impl Trail for (Coord, Dir) {
     fn f(g: Guard) -> Self {
-        (g.0, g.1)
+        (g.pos, g.dir)
     }
     fn stop_early(&self, visited: &BTreeSet<Self>) -> bool {
         visited.contains(self)
@@ -99,18 +102,18 @@ impl Map {
             .find_map(|(i, j)| (data[ix(n, i, j)] == '^').then_some(Coord(i, j)))
             .ok_or(eyre!("No ^ found."))?;
         data[ix(n, pos.0, pos.1)] = '.';
-        Ok((Self(n, data), Guard(pos, Dir::U)))
+        Ok((Self(n, data), Guard { pos, dir: Dir::U }))
     }
     fn go<T: Trail>(&self, mut g: Guard) -> Walk {
         let mut visited = BTreeSet::from([T::f(g)]);
         let mut n = 0;
-        while n < 10_000 {
-            let ahead = g.1.step(g.0);
+        while n < self.1.len() {
+            let ahead = g.dir.step(g.pos);
             if self.contains(ahead) {
                 if self.get(ahead) == '#' {
-                    g.1 = g.1.turn_right();
+                    g.dir = g.dir.turn_right();
                 } else {
-                    g.0 = ahead;
+                    g.pos = ahead;
                 }
                 let trail = <T as Trail>::f(g);
                 if trail.stop_early(&visited) {
@@ -129,7 +132,7 @@ impl Map {
 fn part1(m: Map, g: Guard) -> Result<usize> {
     match m.go::<Coord>(g) {
         Walk::EarlyStop(n) | Walk::OutOfBounds(n) => Ok(n),
-        Walk::Bail => Err(eyre!("Bail")),
+        Walk::Bail => Err(eyre!("Bigger than map's size")),
     }
 }
 
@@ -138,7 +141,7 @@ fn part2(m: Map, g: Guard) -> Result<usize> {
         .cartesian_product(0..m.0)
         .par_bridge()
         .filter(|&(i, j)| {
-            (i, j) != (g.0 .0, g.0 .1) && {
+            (i, j) != (g.pos.0, g.pos.1) && {
                 let mut m_ = m.clone();
                 m_.set(Coord(i, j), '#');
                 matches!(m_.go::<(Coord, Dir)>(g), Walk::EarlyStop(_))
