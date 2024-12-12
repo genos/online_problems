@@ -115,7 +115,7 @@ impl Map {
                 } else {
                     g.pos = ahead;
                 }
-                let trail = <T as Trail>::f(g);
+                let trail = T::f(g);
                 if trail.stop_early(&visited) {
                     return Walk::EarlyStop(visited.len());
                 }
