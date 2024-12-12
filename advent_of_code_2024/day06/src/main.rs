@@ -139,13 +139,12 @@ fn part1(m: &Map, g: Guard) -> Result<usize> {
 fn part2(m: &Map, g: Guard) -> usize {
     (0..m.0)
         .cartesian_product(0..m.0)
+        .filter(|&ij| ij != (g.pos.0, g.pos.1))
         .par_bridge()
         .filter(|&(i, j)| {
-            (i, j) != (g.pos.0, g.pos.1) && {
-                let mut m_ = m.clone();
-                m_.set(Coord(i, j), '#');
-                matches!(m_.go::<(Coord, Dir)>(g), Walk::EarlyStop(_))
-            }
+            let mut m_ = m.clone();
+            m_.set(Coord(i, j), '#');
+            matches!(m_.go::<(Coord, Dir)>(g), Walk::EarlyStop(_))
         })
         .count()
 }
