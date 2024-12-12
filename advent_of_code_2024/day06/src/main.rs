@@ -37,18 +37,18 @@ impl Dir {
     }
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Clone)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 struct Guard {
     pos: Coord,
     dir: Dir,
 }
 
 trait Trail: Ord + Sized {
-    fn f(g: &Guard) -> Self;
+    fn f(g: Guard) -> Self;
     fn stop_early(&self, visited: &BTreeSet<Self>) -> bool;
 }
 impl Trail for Coord {
-    fn f(g: &Guard) -> Self {
+    fn f(g: Guard) -> Self {
         g.pos
     }
     fn stop_early(&self, _visited: &BTreeSet<Self>) -> bool {
@@ -56,7 +56,7 @@ impl Trail for Coord {
     }
 }
 impl Trail for (Coord, Dir) {
-    fn f(g: &Guard) -> Self {
+    fn f(g: Guard) -> Self {
         (g.pos, g.dir)
     }
     fn stop_early(&self, visited: &BTreeSet<Self>) -> bool {
@@ -105,7 +105,7 @@ impl Map {
         Ok((Self(n, data), Guard { pos, dir: Dir::U }))
     }
     fn go<T: Trail>(&self, mut g: Guard) -> Walk {
-        let mut visited = BTreeSet::from([T::f(&g)]);
+        let mut visited = BTreeSet::from([T::f(g)]);
         let mut n = 0;
         while n < self.1.len() {
             let ahead = g.dir.step(g.pos);
@@ -115,7 +115,7 @@ impl Map {
                 } else {
                     g.pos = ahead;
                 }
-                let trail = T::f(&g);
+                let trail = T::f(g);
                 if trail.stop_early(&visited) {
                     return Walk::EarlyStop(visited.len());
                 }
@@ -129,14 +129,14 @@ impl Map {
     }
 }
 
-fn part1(m: &Map, g: &Guard) -> Result<usize> {
-    match m.go::<Coord>(g.clone()) {
+fn part1(m: &Map, g: Guard) -> Result<usize> {
+    match m.go::<Coord>(g) {
         Walk::EarlyStop(n) | Walk::OutOfBounds(n) => Ok(n),
         Walk::Bail => Err(eyre!("Bigger than map's size")),
     }
 }
 
-fn part2(m: &Map, g: &Guard) -> usize {
+fn part2(m: &Map, g: Guard) -> usize {
     (0..m.0)
         .cartesian_product(0..m.0)
         .par_bridge()
@@ -144,7 +144,7 @@ fn part2(m: &Map, g: &Guard) -> usize {
             (i, j) != (g.pos.0, g.pos.1) && {
                 let mut m_ = m.clone();
                 m_.set(Coord(i, j), '#');
-                matches!(m_.go::<(Coord, Dir)>(g.clone()), Walk::EarlyStop(_))
+                matches!(m_.go::<(Coord, Dir)>(g), Walk::EarlyStop(_))
             }
         })
         .count()
@@ -154,7 +154,7 @@ fn main() -> Result<()> {
     let input = fs::read_to_string("input.txt").wrap_err("Unable to read input file.")?;
     let n = input.chars().filter(|c| *c == '\n').count();
     let (m, g) = Map::parse(1 + n, &input)?;
-    println!("{}", part1(&m, &g)?);
-    println!("{}", part2(&m, &g));
+    println!("{}", part1(&m, g)?);
+    println!("{}", part2(&m, g));
     Ok(())
 }
