@@ -64,6 +64,7 @@ impl Trail for (Coord, Dir) {
 enum Walk {
     EarlyStop(usize),
     OutOfBounds(usize),
+    Bail,
 }
 
 fn ix(n: u8, i: u8, j: u8) -> usize {
@@ -101,9 +102,9 @@ impl Map {
         Ok((Self(n, data), Guard(pos, Dir::U)))
     }
     fn go<T: Trail>(&self, mut g: Guard) -> Walk {
-        // Assumes input is well-formed (terminating)
-        let mut visited = BTreeSet::from([<T as Trail>::f(g)]);
-        loop {
+        let mut visited = BTreeSet::from([T::f(g)]);
+        let mut n = 0;
+        while n < 10_000 {
             let ahead = g.1.step(g.0);
             if self.contains(ahead) {
                 if self.get(ahead) == '#' {
@@ -119,17 +120,20 @@ impl Map {
             } else {
                 return Walk::OutOfBounds(visited.len());
             }
+            n += 1;
         }
+        Walk::Bail
     }
 }
 
-fn part1(m: Map, g: Guard) -> usize {
+fn part1(m: Map, g: Guard) -> Result<usize> {
     match m.go::<Coord>(g) {
-        Walk::EarlyStop(n) | Walk::OutOfBounds(n) => n,
+        Walk::EarlyStop(n) | Walk::OutOfBounds(n) => Ok(n),
+        Walk::Bail => Err(eyre!("Bail")),
     }
 }
 
-fn part2(m: Map, g: Guard) -> usize {
+fn part2(m: Map, g: Guard) -> Result<usize> {
     let n = (0..m.0)
         .cartesian_product(0..m.0)
         .par_bridge()
@@ -141,14 +145,14 @@ fn part2(m: Map, g: Guard) -> usize {
             }
         })
         .count();
-    n
+    Ok(n)
 }
 
 fn main() -> Result<()> {
     let input = fs::read_to_string("input.txt").wrap_err("Unable to read input file.")?;
     let n = input.chars().filter(|c| *c == '\n').count();
     let (m, g) = Map::parse(1 + n, &input)?;
-    println!("{}", part1(m.clone(), g));
-    println!("{}", part2(m, g));
+    println!("{}", part1(m.clone(), g)?);
+    println!("{}", part2(m, g)?);
     Ok(())
 }
