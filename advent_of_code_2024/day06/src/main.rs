@@ -129,8 +129,8 @@ impl Map {
     }
 }
 
-fn part1(m: &Map, g: Guard) -> Result<usize> {
-    match m.go::<Coord>(g) {
+fn part1(m: &Map, g: &Guard) -> Result<usize> {
+    match m.go::<Coord>(g.clone()) {
         Walk::EarlyStop(n) | Walk::OutOfBounds(n) => Ok(n),
         Walk::Bail => Err(eyre!("Bigger than map's size")),
     }
@@ -154,7 +154,7 @@ fn main() -> Result<()> {
     let input = fs::read_to_string("input.txt").wrap_err("Unable to read input file.")?;
     let n = input.chars().filter(|c| *c == '\n').count();
     let (m, g) = Map::parse(1 + n, &input)?;
-    println!("{}", part1(&m, g.clone())?);
+    println!("{}", part1(&m, &g)?);
     println!("{}", part2(&m, &g));
     Ok(())
 }
