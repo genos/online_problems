@@ -75,34 +75,37 @@ fn ix(n: u8, i: u8, j: u8) -> usize {
 }
 
 #[derive(Clone)]
-struct Map(u8, Vec<char>);
+struct Map(u8, Vec<bool>);
 
 impl Map {
     fn contains(&self, p: Coord) -> bool {
         p.0 < self.0 && p.1 < self.0
     }
-    fn get(&self, p: Coord) -> char {
+    fn get(&self, p: Coord) -> bool {
         self.1[ix(self.0, p.0, p.1)]
     }
-    fn set(&mut self, p: Coord, c: char) {
+    fn set(&mut self, p: Coord, c: bool) {
         self.1[ix(self.0, p.0, p.1)] = c;
     }
     fn parse(n: usize, input: &str) -> Result<(Self, Guard)> {
-        let mut data = vec!['.'; n * n];
+        let mut data = vec![false; n * n];
         let n: u8 = n.try_into().wrap_err("n too big")?;
+        let mut pos = Coord(255, 255);
         for (i, line) in input.lines().rev().enumerate() {
             for (j, c) in line.chars().enumerate() {
                 let i: u8 = i.try_into().wrap_err("i too big")?;
                 let j: u8 = j.try_into().wrap_err("i too big")?;
-                data[ix(n, i, j)] = c;
+                data[ix(n, i, j)] = c == '#';
+                if c == '^' {
+                    pos = Coord(i, j);
+                }
             }
         }
-        let pos = (0..n)
-            .cartesian_product(0..n)
-            .find_map(|(i, j)| (data[ix(n, i, j)] == '^').then_some(Coord(i, j)))
-            .ok_or(eyre!("No ^ found."))?;
-        data[ix(n, pos.0, pos.1)] = '.';
-        Ok((Self(n, data), Guard { pos, dir: Dir::U }))
+        if pos == Coord(255, 255) {
+            Err(eyre!("No ^ found."))
+        } else {
+            Ok((Self(n, data), Guard { pos, dir: Dir::U }))
+        }
     }
     fn go<T: Trail>(&self, mut g: Guard) -> Walk {
         let mut visited = BTreeSet::from([T::f(g)]);
@@ -110,7 +113,7 @@ impl Map {
         while n < self.1.len() {
             let ahead = g.dir.step(g.pos);
             if self.contains(ahead) {
-                if self.get(ahead) == '#' {
+                if self.get(ahead) {
                     g.dir = g.dir.turn_right();
                 } else {
                     g.pos = ahead;
@@ -143,7 +146,7 @@ fn part2(m: &Map, g: Guard) -> usize {
         .par_bridge()
         .filter(|&(i, j)| {
             let mut m_ = m.clone();
-            m_.set(Coord(i, j), '#');
+            m_.set(Coord(i, j), true);
             matches!(m_.go::<(Coord, Dir)>(g), Walk::EarlyStop(_))
         })
         .count()
