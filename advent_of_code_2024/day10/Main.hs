@@ -12,7 +12,7 @@ type Map = M.Map Coord Int
 parse :: String -> Map
 parse input =
     M.fromList
-        [ (V2 j i, digitToInt c)
+        [ (V2 i j, digitToInt c)
         | (j, l) <- zip [0 ..] $ reverse $ lines input
         , (i, c) <- zip [0 ..] l
         ]
