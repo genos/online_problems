@@ -36,12 +36,12 @@ part1 = sum . fmap minimum . filter (not . null) . fmap f
 -}
 
 tokens :: Machine -> Int
-tokens (M (B ax ay) (B bx by) x y) = if ok then 3 * i + j else 0
+tokens (M (B ax ay) (B bx by) x y) = if ok then 3 * a + b else 0
   where
     -- https://en.wikipedia.org/wiki/Cramer%27s_rule#Explicit_formulas_for_small_systems
-    ok = (i * ax + j * bx, i * ay + j * by) == (x, y)
-    i = (x * by - bx * y) `div` d
-    j = (ax * y - x * ay) `div` d
+    ok = ra == 0 && rb == 0
+    (a, ra) = (x * by - bx * y) `quotRem` d
+    (b, rb) = (ax * y - x * ay) `quotRem` d
     d = ax * by - bx * ay
 
 part1, part2 :: [Machine] -> Int
