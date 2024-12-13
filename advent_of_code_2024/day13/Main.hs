@@ -24,9 +24,15 @@ parse_ = either (error "Bad parse") id . parseOnly (m `sepBy1'` "\n\n")
     b = B <$> ("Button " *> ("A" <|> "B") *> ": X+" *> decimal) <*> (", Y+" *> decimal)
 
 part1 :: [Machine] -> Word
-part1 = sum . fmap minimum . filter (not . null) . fmap solutions
+part1 = sum . fmap minimum . filter (not . null) . fmap f
   where
-    solutions (M a b x y) = [3 * p + q | p <- [0 .. 100], q <- [0 .. 100], x == p * _x a + q * _x b, y == p * _y a + q * _y b]
+    f (M a b x y) =
+        [ 3 * p + q
+        | p <- [0 .. 100]
+        , q <- [0 .. 100]
+        , x == p * _x a + q * _x b
+        , y == p * _y a + q * _y b
+        ]
 
 main :: IO ()
 main = do
