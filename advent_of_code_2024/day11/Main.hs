@@ -1,27 +1,27 @@
 module Main where
 
 import Data.Foldable (traverse_)
-import Data.IntMap.Strict (IntMap)
-import Data.IntMap.Strict qualified as IM
+import Data.IntMultiSet (IntMultiSet)
+import Data.IntMultiSet qualified as IM
 import Data.NumberLength (numberLength)
 
-parse :: String -> IntMap Int
-parse = IM.fromListWith (+) . fmap ((,1) . read) . words
+parse :: String -> IntMultiSet
+parse = IM.fromList . fmap read . words
 
-blinkAll :: IntMap Int -> IntMap Int
-blinkAll = IM.foldlWithKey' (\m k v -> IM.unionWith (+) m $ blink k v) IM.empty
+blinkAll :: IntMultiSet -> IntMultiSet
+blinkAll = IM.concatMap blink
   where
-    blink 0 v = IM.singleton 1 v
-    blink k v | even d = IM.fromListWith (+) [(l, v), (r, v)]
+    blink 0 = [1]
+    blink k | even d = [l, r]
       where
         d = numberLength k
         (l, r) = k `divMod` (10 ^ (d `div` 2))
-    blink k v = IM.singleton (2024 * k) v
+    blink k = [2024 * k]
 
-solve :: Int -> IntMap Int -> Int
-solve n = sum . (!! n) . iterate blinkAll
+solve :: Int -> IntMultiSet -> Int
+solve n = IM.size . (!! n) . iterate blinkAll
 
-part1, part2 :: IntMap Int -> Int
+part1, part2 :: IntMultiSet -> Int
 part1 = solve 25
 part2 = solve 75
 
