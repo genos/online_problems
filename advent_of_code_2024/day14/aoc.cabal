@@ -14,6 +14,7 @@ executable aoc
   build-depends:
     attoparsec ^>=0.14.3,
     base ^>=4.20.0.0,
+    containers ^>=0.7,
     linear ^>=1.23,
     text ^>=2.1.2,
 
