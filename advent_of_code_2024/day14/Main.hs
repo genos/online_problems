@@ -16,8 +16,6 @@ xMax = 101
 yMax = 103
 xMid = xMax `div` 2
 yMid = yMax `div` 2
-lim :: V2 Int
-lim = V2 xMax yMax
 
 parse_ :: Text -> [Robot]
 parse_ = either (error "Bad parse") id . parseOnly (robot `sepBy1'` "\n")
@@ -26,7 +24,7 @@ parse_ = either (error "Bad parse") id . parseOnly (robot `sepBy1'` "\n")
     v2 = V2 <$> signed decimal <*> ("," *> signed decimal)
 
 step :: [Robot] -> [Robot]
-step = fmap (\(R p v) -> R (liftA2 mod (p + v) lim) v)
+step = fmap (\(R p v) -> R (liftA2 mod (p + v) (V2 xMax yMax)) v)
 
 part1 :: [Robot] -> Int
 part1 rs = uL' * uR' * dR' * dL'
