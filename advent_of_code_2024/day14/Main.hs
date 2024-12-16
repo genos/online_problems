@@ -45,7 +45,7 @@ part1 rs = uL' * uR' * dR' * dL'
 -- help from https://work.njae.me.uk/2024/12/14/advent-of-code-2024-day-14/
 -- look for lots of diagonals
 part2 :: [Robot] -> Int
-part2 = fst . maximumBy (comparing snd) . zip [0 .. 10_000] . fmap (numDiags . fmap _p) . iterate step
+part2 = fst . maximumBy (comparing snd) . zip [0 .. xMax * yMax] . fmap (numDiags . fmap _p) . iterate step
   where
     numDiags ps = length $ filter ok ps
       where
