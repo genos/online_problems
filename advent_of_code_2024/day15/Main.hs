@@ -14,9 +14,8 @@ import Linear.V2
 
 type Coord = V2 Int
 data Spot = Box | Open | Closed deriving (Eq)
-type Map = M.Map Coord Spot
 data Direction = U | D | L | R
-data Warehouse = W {layout :: Map, robot :: Coord}
+data Warehouse = W {layout :: M.Map Coord Spot, robot :: Coord}
 
 instance Show Spot where
     show Box = "O"; show Open = "."; show Closed = "#"
@@ -43,11 +42,11 @@ d2c :: Direction -> Coord
 d2c = \case U -> V2 0 (-1); D -> V2 0 1; L -> V2 (-1) 0; R -> V2 1 0
 
 parse :: Text -> (Warehouse, [Direction])
-parse t = (w, is)
+parse t = (w, ds)
   where
     w = W m (fromJust $ getAlt g)
     (m, g) = foldl' f (M.empty, mempty) . zip [0 ..] $ T.lines a
-    is = catMaybes $ T.foldr' ((:) . c2mi) [] b
+    ds = catMaybes $ T.foldr' ((:) . c2mi) [] b
     (a, b) = T.breakOn "\n\n" t
     f (m', g') (j, l) = (M.union m' $ M.fromList cs, g' <> g'')
       where
@@ -68,11 +67,10 @@ step (W m c) d = W m' c''
         (Box, Just xy) -> M.adjust (const Open) c' $ M.adjust (const Box) xy m
         _ -> m
 
-sumGPS :: Map -> Int
-sumGPS = sum . fmap (\(V2 x y) -> x + 100 * y) . M.keys . M.filter (== Box)
-
 part1 :: (Warehouse, [Direction]) -> Int
-part1 (w, ds) = sumGPS . layout $ foldl' step w ds
+part1 (w, ds) = sum . fmap gps . M.keys . M.filter (== Box) . layout $ foldl' step w ds
+  where
+    gps (V2 x y) = x + 100 * y
 
 main :: IO ()
 main = do
