@@ -17,7 +17,7 @@ type Map = M.Map Coord Spot
 data Instruction = U | D | L | R deriving (Show)
 
 makeC2X :: String -> [a] -> (Char -> a)
-makeC2X s as = let m = M.fromList $ zip s as in (m M.!)
+makeC2X s as = (m M.!) where m = M.fromList $ zip s as
 
 c2s :: Char -> Spot
 c2s = makeC2X "O.@#" [Box, Open, Open, Closed]
@@ -31,12 +31,11 @@ parse t = (m, fromJust $ getFirst g, is)
     (m, g) = foldl' f (M.empty, mempty) . zip [0 ..] $ T.lines left
     is = concatMap (T.foldr' ((:) . c2i) []) $ T.lines right
     (left, right) = T.breakOn "\n\n" t
-    f (m', g') (j, l) =
-        let l' = T.unpack l
-            cs = [(V2 i j, c2s c) | (i, c) <- zip [0 ..] l']
-            g'' = First ((`V2` j) <$> elemIndex '@' l')
-         in (M.union m' $ M.fromList cs, g' <> g'')
+    f (m', g') (j, l) = (M.union m' $ M.fromList cs, g' <> g'')
+      where
+        l' = T.unpack l
+        cs = [(V2 i j, c2s c) | (i, c) <- zip [0 ..] l']
+        g'' = First ((`V2` j) <$> elemIndex '@' l')
 
 main :: IO ()
-main =
-    T.putStrLn "TODO"
+main = T.putStrLn "TODO"
