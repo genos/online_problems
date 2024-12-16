@@ -10,7 +10,7 @@ import Data.Text (Text)
 import Data.Text.IO qualified as T
 import Linear.V2
 
-data Robot = R {_p :: V2 Int, _v :: V2 Int} deriving (Eq, Show)
+data Robot = R {_p :: V2 Int, _v :: V2 Int}
 xMax, yMax, xMid, yMid :: Int
 xMax = 101
 yMax = 103
