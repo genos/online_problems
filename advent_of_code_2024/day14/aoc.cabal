@@ -12,8 +12,10 @@ executable aoc
 
   main-is: Main.hs
   build-depends:
+    attoparsec ^>=0.14.3,
     base ^>=4.20.0.0,
-    multiset ^>=0.3.4.3,
-    number-length ^>=0.2.1.0,
+    containers ^>=0.7,
+    linear ^>=1.23,
+    text ^>=2.1.2,
 
   default-language: GHC2024
