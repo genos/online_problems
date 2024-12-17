@@ -5,7 +5,7 @@ module Main where
 
 import Control.Lens
 import Data.Attoparsec.Text
-import Data.Bits (shiftL, xor)
+import Data.Bits (shiftR, xor)
 import Data.Text (Text)
 import Data.Text qualified as T
 import Data.Text.IO qualified as T
@@ -46,14 +46,14 @@ run = go []
                 i' = if a /= 0 && code == 3 then word else i + 2
                 output' = if code == 5 then (com `mod` 8) : output else output
                 computer' = case code of
-                    0 -> computer & regA .~ a `shiftL` com
+                    0 -> computer & regA .~ a `shiftR` com
                     1 -> computer & regB .~ xor b word
                     2 -> computer & regB .~ com `mod` 8
                     3 -> computer & ip .~ i'
                     4 -> computer & regB .~ xor b c
                     5 -> computer
-                    6 -> computer & regB .~ a `shiftL` com
-                    7 -> computer & regC .~ a `shiftL` com
+                    6 -> computer & regB .~ a `shiftR` com
+                    7 -> computer & regC .~ a `shiftR` com
                     _ -> error $ "Bad code: " <> show code
              in
                 go output' (computer' & ip .~ i')
