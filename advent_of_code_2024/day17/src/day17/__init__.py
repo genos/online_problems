@@ -17,21 +17,10 @@ class Part1:
     print_out: bool = True
 
     def combo(self, w: int) -> int | BitVecRef:
-        match w:
-            case 4:
-                return self.a
-            case 5:
-                return self.b
-            case 6:
-                return self.c
-            case _:
-                return w
+        return {4: self.a, 5: self.b, 6: self.c}.get(w, w)
 
     def jnz(self, w: int) -> bool:
-        if self.a != 0:  # type: ignore
-            self.ip = w
-            return True
-        return False
+        return isinstance(self.a, int) and self.a != 0
 
     def out(self, w: int, output: list[int] | None = None):
         if output is not None:
@@ -43,27 +32,19 @@ class Part1:
         output = []
         while self.ip < len(self.prog):
             w = self.prog[self.ip + 1]
+            # ruff: noqa: E701 E702
+            # fmt: off
             match self.prog[self.ip]:
-                case 0:
-                    self.a >>= self.combo(w)
-                case 1:
-                    self.b ^= w
-                case 2:
-                    self.b = self.combo(w) % 8
-                case 3:
-                    if self.jnz(w):
-                        self.ip = w
-                        continue
-                case 4:
-                    self.b ^= self.c
-                case 5:
-                    self.out(w, output)
-                case 6:
-                    self.b = self.a >> self.combo(w)
-                case 7:
-                    self.c = self.a >> self.combo(w)
-                case _:
-                    pass
+                case 0: self.a >>= self.combo(w)
+                case 1: self.b ^= w
+                case 2: self.b = self.combo(w) % 8
+                case 3 if self.jnz(w): self.ip = w; continue
+                case 4: self.b ^= self.c
+                case 5: self.out(w, output)
+                case 6: self.b = self.a >> self.combo(w)
+                case 7: self.c = self.a >> self.combo(w)
+                case _: pass
+            # fmt: on
             self.ip += 2
         if self.print_out:
             print(",".join(str(i) for i in output))
@@ -86,12 +67,12 @@ class Part2(Part1):
             self.opt.add(self.combo(w) % 8 == self.prog[self.out_ptr])
             self.out_ptr += 1
 
-    def run(self, print_out: bool = False):
-        start_a = self.a
+    def run(self):
+        a = self.a
         super().run()
-        self.opt.minimize(start_a)
+        self.opt.minimize(a)
         assert self.opt.check() == sat
-        print(self.opt.model()[start_a])
+        print(self.opt.model()[a])
 
 
 cli = typer.Typer()
