@@ -42,7 +42,7 @@ impl Computer {
             let code = unsafe { *self.ops.get_unchecked(self.ip) };
             let word = unsafe { *self.ops.get_unchecked(self.ip + 1) };
             match code {
-                0 => self.a /= 1 << self.combo(word),
+                0 => self.a >>= self.combo(word),
                 1 => self.b ^= word,
                 2 => self.b = self.combo(word) % 8,
                 3 => {
@@ -56,8 +56,8 @@ impl Computer {
                     #[allow(clippy::cast_possible_truncation)]
                     output.push(self.combo(word) % 8);
                 }
-                6 => self.b = self.a / (1 << self.combo(word)),
-                7 => self.c = self.a / (1 << self.combo(word)),
+                6 => self.b = self.a >> self.combo(word),
+                7 => self.c = self.a >> self.combo(word),
                 _ => {} // invalid, pass through
             }
             self.ip += 2;
