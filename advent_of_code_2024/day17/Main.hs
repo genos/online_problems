@@ -9,8 +9,8 @@ import Data.Bits (shiftR, xor)
 import Data.Text (Text)
 import Data.Text qualified as T
 import Data.Text.IO qualified as T
-import Data.Vector (Vector)
-import Data.Vector qualified as V
+import Data.Vector.Unboxed (Vector)
+import Data.Vector.Unboxed qualified as V
 
 data Computer = C {_regA :: Int, _regB :: Int, _regC :: Int, _ip :: Int, _ops :: Vector Int}
 makeLenses ''Computer
@@ -18,11 +18,11 @@ makeLenses ''Computer
 parse_ :: Text -> Computer
 parse_ = either (error "Bad parse") id . parseOnly c
   where
-    c = C <$> rA <*> rB <*> rC <*> pure 0 <*> ws
+    c = C <$> rA <*> rB <*> rC <*> pure 0 <*> os
     rA = "Register A: " *> decimal
     rB = "\nRegister B: " *> decimal
     rC = "\nRegister C: " *> decimal
-    ws = V.fromList <$> ("\n\nProgram: " *> (decimal `sepBy1'` ","))
+    os = V.fromList <$> ("\n\nProgram: " *> (decimal `sepBy1'` ","))
 
 combo :: Computer -> Int -> Int
 combo c =
@@ -36,27 +36,27 @@ combo c =
 run :: Computer -> [Int]
 run = go []
   where
-    go output computer@(C a b c i ws)
-        | i >= V.length ws - 1 = reverse output
+    go out c
+        | (c ^. ip) >= (c ^. ops & V.length) - 1 = reverse out
         | otherwise =
             let
-                code = ws V.! i
-                word = ws V.! (i + 1)
-                com = combo computer word
-                i' = if a /= 0 && code == 3 then word else i + 2
-                output' = if code == 5 then (com `mod` 8) : output else output
-                computer' = case code of
-                    0 -> computer & regA .~ a `shiftR` com
-                    1 -> computer & regB .~ xor b word
-                    2 -> computer & regB .~ com `mod` 8
-                    3 -> computer & ip .~ i'
-                    4 -> computer & regB .~ xor b c
-                    5 -> computer
-                    6 -> computer & regB .~ a `shiftR` com
-                    7 -> computer & regC .~ a `shiftR` com
+                code = (c ^. ops) V.! (c ^. ip)
+                word = (c ^. ops) V.! (c ^. ip + 1)
+                com = combo c word
+                i = if (c ^. regA) /= 0 && code == 3 then word else c ^. ip + 2
+                out' = if code == 5 then (com `mod` 8) : out else out
+                c' = case code of
+                    0 -> c & regA %~ (`shiftR` com)
+                    1 -> c & regB %~ xor word
+                    2 -> c & regB .~ com `mod` 8
+                    3 -> c
+                    4 -> c & regB %~ xor (c ^. regC)
+                    5 -> c
+                    6 -> c & regB .~ (c ^. regA) `shiftR` com
+                    7 -> c & regC .~ (c ^. regA) `shiftR` com
                     _ -> error $ "Bad code: " <> show code
              in
-                go output' (computer' & ip .~ i')
+                go out' (c' & ip .~ i)
 
 part1 :: Computer -> Text
 part1 = T.init . T.tail . T.pack . show . run
