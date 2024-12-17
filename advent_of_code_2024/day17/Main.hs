@@ -12,7 +12,7 @@ import Data.Text.IO qualified as T
 import Data.Vector (Vector)
 import Data.Vector qualified as V
 
-data Registers = R {_regA :: Int, _regB :: Int, _regC :: Int} deriving (Eq, Show)
+data Registers = R {_regA :: Int, _regB :: Int, _regC :: Int} deriving (Eq)
 type Operand = Int
 data Computer = C
     { _registers :: Registers
@@ -20,7 +20,7 @@ data Computer = C
     , _ops :: Vector Int
     , _output :: [Int]
     }
-    deriving (Eq, Show)
+    deriving (Eq)
 
 makeLenses ''Registers
 makeLenses ''Computer
@@ -61,11 +61,10 @@ next computer@(C (R a b c) i ws _)
         7 -> computer & (registers . regC) .~ a `div` 2 ^ com
         _ -> error $ "Bad code: " <> show code
 
-run :: Computer -> [Int]
-run c = let c' = next c in if c' == c then c ^. output & reverse else run c'
-
 part1 :: Computer -> Text
 part1 = T.init . T.tail . T.pack . show . run
+  where
+    run c = let c' = next c in if c' == c then c ^. output & reverse else run c'
 
 main :: IO ()
 main = do
