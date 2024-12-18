@@ -2,9 +2,9 @@ use eyre::{OptionExt, Result};
 use pathfinding::prelude::astar;
 use std::{collections::BTreeSet, fs};
 
-const LO: u16 = 0;
-const HI: u16 = 70;
-type Coord = (u16, u16);
+const LO: u8 = 0;
+const HI: u8 = 70;
+type Coord = (u8, u8);
 
 struct MemorySpace(BTreeSet<Coord>);
 
@@ -12,7 +12,7 @@ peg::parser! {
     grammar parser() for str {
         pub rule coords(n: usize) -> Vec<Coord> = cs:(coord() ** "\n") { cs.into_iter().take(n).collect() }
         rule coord() -> Coord = u:num() "," v:num() { (u, v) }
-        rule num() -> u16 = n:$(['0'..='9']['0'..='9']*) {? n.parse().or(Err("num")) }
+        rule num() -> u8 = n:$(['0'..='9']['0'..='9']*) {? n.parse().or(Err("num")) }
     }
 }
 
@@ -33,7 +33,7 @@ impl MemorySpace {
         astar(
             &(LO, LO),
             |&c| self.successors(c),
-            |&c| c.0.abs_diff(HI) + c.1.abs_diff(HI),
+            |&c| u16::from(c.0.abs_diff(HI)) + u16::from(c.1.abs_diff(HI)),
             |&c| c == (HI, HI),
         )
     }
