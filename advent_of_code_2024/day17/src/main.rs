@@ -25,8 +25,6 @@ peg::parser! {
 }
 
 impl Computer {
-    #[allow(clippy::inline_always)]
-    #[inline(always)]
     fn combo(&self, w: usize) -> usize {
         match w {
             4 => self.a,
@@ -38,9 +36,8 @@ impl Computer {
     fn run(&mut self) -> Vec<usize> {
         let mut output = vec![];
         while self.ip < self.ops.len() {
-            // safety checked above
-            let code = unsafe { *self.ops.get_unchecked(self.ip) };
-            let word = unsafe { *self.ops.get_unchecked(self.ip + 1) };
+            let code = self.ops[self.ip];
+            let word = self.ops[self.ip + 1];
             match code {
                 0 => self.a >>= self.combo(word),
                 1 => self.b ^= word,
@@ -72,17 +69,16 @@ impl Computer {
         }
         println!();
     }
-    fn set_a(&mut self, a: usize) -> &mut Self {
-        self.a = a;
-        self
-    }
     fn part2(&self) {
         println!(
             "{:?}",
             (0..usize::MAX)
                 .into_par_iter()
-                .by_exponential_blocks()
-                .find_first(|&i| self.clone().set_a(i).run() == self.ops)
+                .find_first(|&i| {
+                    let mut c = self.clone();
+                    c.a = i;
+                    c.run() == self.ops
+                })
         );
     }
 }
