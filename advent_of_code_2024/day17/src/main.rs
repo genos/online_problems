@@ -17,7 +17,7 @@ peg::parser! {
             "Register A: " a:num()
             "\nRegister B: " b:num()
             "\nRegister C: " c:num()
-            "\n\nProgram: " ops:(num() ++",") {
+            "\n\nProgram: " ops:(num() ++ ",") {
                 Computer { a, b, c, ip: 0, ops }
             }
         rule num() -> usize = n:$(['0'..='9']['0'..='9']*) {? n.parse().or(Err("num")) }
