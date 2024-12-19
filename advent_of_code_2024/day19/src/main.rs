@@ -32,7 +32,7 @@ fn solve(available: &FxHashSet<&[u8]>, designs: &[&[u8]]) -> (u64, u64) {
     designs
         .par_iter()
         .map(|d| wbc(available, d))
-        .reduce(|| (0, 0), |(a0, a1), (b0, b1)| (a0 + b0, a1 + b1))
+        .reduce(|| (0, 0), |a, b| (a.0 + b.0, a.1 + b.1))
 }
 
 fn main() {
