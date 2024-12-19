@@ -13,6 +13,7 @@ fn parse(input: &str) -> (FxHashSet<&[u8]>, Vec<&[u8]>) {
     (av, it.skip(1).map(str::as_bytes).collect())
 }
 
+// dynamic programming: word break, but counting
 fn wbc(available: &FxHashSet<&[u8]>, d: &[u8]) -> u64 {
     let mut dp = vec![0; d.len() + 1];
     dp[0] = 1;
