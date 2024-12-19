@@ -16,35 +16,28 @@ peg::parser! {
 }
 
 impl Problem {
-    // dynamic programing word break
-    fn is_possible(&self, d: &str) -> bool {
-        let mut dp = vec![false; d.len() + 1];
-        dp[0] = true;
+    // generic dynamic programing word break
+    fn word_break<T: Copy>(&self, d: &str, zero: T, one: T, f: impl Fn(T, T) -> T) -> T {
+        let mut dp = vec![zero; d.len() + 1];
+        dp[0] = one;
         for i in 0..=d.len() {
             for j in 0..i {
-                if dp[j] && self.available.contains(&d[j..i]) {
-                    dp[i] = true;
-                    break;
+                if self.available.contains(&d[j..i]) {
+                    dp[i] = f(dp[i], dp[j]);
                 }
             }
         }
         dp[d.len()]
+    }
+    fn is_possible(&self, d: &str) -> bool {
+        self.word_break(d, false, true, |a, b| a | b)
     }
     fn part1(&self) -> usize {
         self.designs.iter().filter(|d| self.is_possible(d)).count()
     }
     // redo is_possible, but counting
     fn count_possible(&self, d: &str) -> usize {
-        let mut dp = vec![0; d.len() + 1];
-        dp[0] = 1;
-        for i in 0..=d.len() {
-            for j in 0..i {
-                if self.available.contains(&d[j..i]) {
-                    dp[i] += dp[j];
-                }
-            }
-        }
-        dp[d.len()]
+        self.word_break(d, 0, 1, |a, b| a + b)
     }
     fn part2(&self) -> usize {
         self.designs.iter().map(|d| self.count_possible(d)).sum()
