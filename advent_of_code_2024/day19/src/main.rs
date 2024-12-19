@@ -1,4 +1,5 @@
 use eyre::Result;
+use rayon::prelude::*;
 use std::{collections::HashSet, fs};
 
 struct Problem<'a> {
@@ -16,14 +17,14 @@ peg::parser! {
 }
 
 impl Problem<'_> {
-    // generic dynamic programing word break
-    fn word_break<T: Copy>(&self, d: &str, zero: T, one: T, f: impl Fn(T, T) -> T) -> T {
-        let mut dp = vec![zero; d.len() + 1];
-        dp[0] = one;
+    // dynamic programing: word break count
+    fn wbc(&self, d: &str) -> u64 {
+        let mut dp = vec![0; d.len() + 1];
+        dp[0] = 1;
         for i in 0..=d.len() {
             for j in 0..i {
                 if self.available.contains(&d[j..i]) {
-                    dp[i] = f(dp[i], dp[j]);
+                    dp[i] += dp[j];
                 }
             }
         }
@@ -31,14 +32,14 @@ impl Problem<'_> {
     }
     fn part1(&self) -> usize {
         self.designs
-            .iter()
-            .filter(|d| self.word_break(d, false, true, |a, b| a | b))
+            .par_iter()
+            .filter(|d| self.wbc(d) > 0)
             .count()
     }
     fn part2(&self) -> u64 {
         self.designs
-            .iter()
-            .map(|d| self.word_break(d, 0, 1, |a, b| a + b))
+            .par_iter()
+            .map(|d| self.wbc(d))
             .sum()
     }
 }
