@@ -1,16 +1,17 @@
 use eyre::Result;
 use rayon::prelude::*;
-use std::{collections::HashSet, fs};
+use fxhash::FxHashSet;
+use std::fs;
 
 struct Problem<'a> {
-    available: HashSet<&'a str>,
+    available: FxHashSet<&'a str>,
     designs: Vec<&'a str>,
 }
 
 peg::parser! {
     grammar parser() for str {
         pub rule problem() -> Problem<'input> = available:av() "\n\n" designs:ds() { Problem { available, designs } }
-        rule av() -> HashSet<&'input str> = ts:(towel() ++ ", ") { ts.into_iter().collect() }
+        rule av() -> FxHashSet<&'input str> = ts:(towel() ++ ", ") { ts.into_iter().collect() }
         rule ds() -> Vec<&'input str> = towel() ++ "\n"
         rule towel() -> &'input str = $(['w' | 'u' | 'b' | 'r' | 'g']+)
     }

@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 eyre = "0.6.12"
+fxhash = "0.2.1"
 peg = "0.8.4"
 rayon = "1.10.0"
 
