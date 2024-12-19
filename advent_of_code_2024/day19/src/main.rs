@@ -29,18 +29,17 @@ impl Problem<'_> {
         }
         dp[d.len()]
     }
-    fn is_possible(&self, d: &str) -> bool {
-        self.word_break(d, false, true, |a, b| a | b)
-    }
     fn part1(&self) -> usize {
-        self.designs.iter().filter(|d| self.is_possible(d)).count()
-    }
-    // redo is_possible, but counting
-    fn count_possible(&self, d: &str) -> usize {
-        self.word_break(d, 0, 1, |a, b| a + b)
+        self.designs
+            .iter()
+            .filter(|d| self.word_break(d, false, true, |a, b| a | b))
+            .count()
     }
     fn part2(&self) -> usize {
-        self.designs.iter().map(|d| self.count_possible(d)).sum()
+        self.designs
+            .iter()
+            .map(|d| self.word_break(d, 0, 1, |a, b| a + b))
+            .sum()
     }
 }
 
