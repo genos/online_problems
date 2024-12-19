@@ -1,21 +1,21 @@
 use eyre::Result;
 use std::{collections::HashSet, fs};
 
-struct Problem {
-    available: HashSet<String>,
-    designs: Vec<String>,
+struct Problem<'a> {
+    available: HashSet<&'a str>,
+    designs: Vec<&'a str>,
 }
 
 peg::parser! {
     grammar parser() for str {
-        pub rule problem() -> Problem = available:av() "\n\n" designs:ds() { Problem { available, designs } }
-        rule av() -> HashSet<String> = ts:(towel() ++ ", ") { ts.into_iter().collect() }
-        rule ds() -> Vec<String> = towel() ++ "\n"
-        rule towel() -> String = t:$(['w' | 'u' | 'b' | 'r' | 'g']+) { t.to_string() }
+        pub rule problem() -> Problem<'input> = available:av() "\n\n" designs:ds() { Problem { available, designs } }
+        rule av() -> HashSet<&'input str> = ts:(towel() ++ ", ") { ts.into_iter().collect() }
+        rule ds() -> Vec<&'input str> = towel() ++ "\n"
+        rule towel() -> &'input str = $(['w' | 'u' | 'b' | 'r' | 'g']+)
     }
 }
 
-impl Problem {
+impl Problem<'_> {
     // generic dynamic programing word break
     fn word_break<T: Copy>(&self, d: &str, zero: T, one: T, f: impl Fn(T, T) -> T) -> T {
         let mut dp = vec![zero; d.len() + 1];
