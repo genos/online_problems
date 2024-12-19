@@ -1,54 +1,46 @@
-use eyre::Result;
-use rayon::prelude::*;
 use fxhash::FxHashSet;
+use rayon::prelude::*;
 use std::fs;
 
-struct Problem<'a> {
-    available: FxHashSet<&'a str>,
-    designs: Vec<&'a str>,
+fn parse(input: &str) -> (FxHashSet<&[u8]>, Vec<&[u8]>) {
+    let mut it = input.lines();
+    let av = it
+        .next()
+        .expect("bad input")
+        .split(", ")
+        .map(str::as_bytes)
+        .collect();
+    let ds = it.skip(1).map(str::as_bytes).collect();
+    (av, ds)
 }
 
-peg::parser! {
-    grammar parser() for str {
-        pub rule problem() -> Problem<'input> = available:av() "\n\n" designs:ds() { Problem { available, designs } }
-        rule av() -> FxHashSet<&'input str> = ts:(towel() ++ ", ") { ts.into_iter().collect() }
-        rule ds() -> Vec<&'input str> = towel() ++ "\n"
-        rule towel() -> &'input str = $(['w' | 'u' | 'b' | 'r' | 'g']+)
-    }
-}
-
-impl Problem<'_> {
-    // dynamic programing: word break count
-    fn wbc(&self, d: &str) -> u64 {
-        let mut dp = vec![0; d.len() + 1];
-        dp[0] = 1;
-        for i in 0..=d.len() {
-            for j in 0..i {
-                if self.available.contains(&d[j..i]) {
-                    dp[i] += dp[j];
-                }
+fn wbc(available: &FxHashSet<&[u8]>, d: &[u8]) -> u64 {
+    let mut dp = vec![0; d.len() + 1];
+    dp[0] = 1;
+    for i in 0..=d.len() {
+        for j in 0..i {
+            if available.contains(&d[j..i]) {
+                dp[i] += dp[j];
             }
         }
-        dp[d.len()]
     }
-    fn part1(&self) -> usize {
-        self.designs
-            .par_iter()
-            .filter(|d| self.wbc(d) > 0)
-            .count()
-    }
-    fn part2(&self) -> u64 {
-        self.designs
-            .par_iter()
-            .map(|d| self.wbc(d))
-            .sum()
-    }
+    dp[d.len()]
 }
 
-fn main() -> Result<()> {
-    let input = fs::read_to_string("input.txt")?;
-    let p = parser::problem(&input)?;
-    println!("{}", p.part1());
-    println!("{}", p.part2());
-    Ok(())
+fn solve(available: &FxHashSet<&[u8]>, designs: &[&[u8]]) -> (u64, u64) {
+    designs
+        .par_iter()
+        .map(|d| {
+            let n = wbc(available, d);
+            (u64::from(n > 0), n)
+        })
+        .reduce(|| (0, 0), |(a0, a1), (b0, b1)| (a0 + b0, a1 + b1))
+}
+
+fn main() {
+    let input = fs::read_to_string("input.txt").expect("Can't read file");
+    let (available, designs) = parse(&input);
+    let (p1, p2) = solve(&available, &designs);
+    println!("{p1}");
+    println!("{p2}");
 }
