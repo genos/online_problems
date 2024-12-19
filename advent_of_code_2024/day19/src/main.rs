@@ -10,8 +10,7 @@ fn parse(input: &str) -> (FxHashSet<&[u8]>, Vec<&[u8]>) {
         .split(", ")
         .map(str::as_bytes)
         .collect();
-    let ds = it.skip(1).map(str::as_bytes).collect();
-    (av, ds)
+    (av, it.skip(1).map(str::as_bytes).collect())
 }
 
 fn wbc(available: &FxHashSet<&[u8]>, d: &[u8]) -> u64 {
