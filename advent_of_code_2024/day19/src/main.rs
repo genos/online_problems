@@ -13,8 +13,8 @@ fn parse(input: &str) -> (FxHashSet<&[u8]>, Vec<&[u8]>) {
     (av, it.skip(1).map(str::as_bytes).collect())
 }
 
-// dynamic programming: word break, but counting
-fn wbc(available: &FxHashSet<&[u8]>, d: &[u8]) -> u64 {
+// dynamic programming: word break, and count
+fn wbc(available: &FxHashSet<&[u8]>, d: &[u8]) -> (u64, u64) {
     let mut dp = vec![0; d.len() + 1];
     dp[0] = 1;
     for i in 0..=d.len() {
@@ -24,16 +24,14 @@ fn wbc(available: &FxHashSet<&[u8]>, d: &[u8]) -> u64 {
             }
         }
     }
-    dp[d.len()]
+    let n = dp[d.len()];
+    (u64::from(n > 0), n)
 }
 
 fn solve(available: &FxHashSet<&[u8]>, designs: &[&[u8]]) -> (u64, u64) {
     designs
         .par_iter()
-        .map(|d| {
-            let n = wbc(available, d);
-            (u64::from(n > 0), n)
-        })
+        .map(|d| wbc(available, d))
         .reduce(|| (0, 0), |(a0, a1), (b0, b1)| (a0 + b0, a1 + b1))
 }
 
