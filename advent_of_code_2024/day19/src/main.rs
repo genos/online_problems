@@ -35,7 +35,7 @@ impl Problem<'_> {
             .filter(|d| self.word_break(d, false, true, |a, b| a | b))
             .count()
     }
-    fn part2(&self) -> usize {
+    fn part2(&self) -> u64 {
         self.designs
             .iter()
             .map(|d| self.word_break(d, 0, 1, |a, b| a + b))
