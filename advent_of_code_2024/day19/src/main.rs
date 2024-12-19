@@ -1,7 +1,6 @@
 use eyre::Result;
 use std::{collections::HashSet, fs};
 
-#[derive(Debug)]
 struct Problem {
     available: HashSet<String>,
     designs: Vec<String>,
@@ -18,10 +17,10 @@ peg::parser! {
 
 impl Problem {
     // dynamic programing word break
-    fn possible(&self, d: &str) -> bool {
+    fn is_possible(&self, d: &str) -> bool {
         let mut dp = vec![false; d.len() + 1];
         dp[0] = true;
-        for i in 0..d.len() + 1 {
+        for i in 0..=d.len() {
             for j in 0..i {
                 if dp[j] && self.available.contains(&d[j..i]) {
                     dp[i] = true;
@@ -32,13 +31,13 @@ impl Problem {
         dp[d.len()]
     }
     fn part1(&self) -> usize {
-        self.designs.iter().filter(|d| self.possible(d)).count()
+        self.designs.iter().filter(|d| self.is_possible(d)).count()
     }
-    // redo possible, but counting
-    fn all_possible(&self, d: &str) -> usize {
+    // redo is_possible, but counting
+    fn count_possible(&self, d: &str) -> usize {
         let mut dp = vec![0; d.len() + 1];
         dp[0] = 1;
-        for i in 0..d.len() + 1 {
+        for i in 0..=d.len() {
             for j in 0..i {
                 if self.available.contains(&d[j..i]) {
                     dp[i] += dp[j];
@@ -48,7 +47,7 @@ impl Problem {
         dp[d.len()]
     }
     fn part2(&self) -> usize {
-        self.designs.iter().map(|d| self.all_possible(d)).sum()
+        self.designs.iter().map(|d| self.count_possible(d)).sum()
     }
 }
 
