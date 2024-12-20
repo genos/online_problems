@@ -7,7 +7,7 @@ import Linear.V2 (V2 (..))
 
 type Coord = V2 Int
 type Map = M.Map Coord Char
-data Region = R {_plant :: Char, _plots :: S.Set Coord} deriving (Eq, Ord, Show)
+data Region = R {_plant :: Char, _plots :: S.Set Coord} deriving (Eq, Ord)
 type Garden = S.Set Region
 
 parse :: String -> Garden
