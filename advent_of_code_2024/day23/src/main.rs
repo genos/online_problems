@@ -17,15 +17,15 @@ fn parse(input: &str) -> HashMap<&str, HashSet<&str>> {
 fn part1(lan: &HashMap<&str, HashSet<&str>>) -> usize {
     let mut trios = HashSet::new();
     for (a, aa) in lan {
-        for b in lan.get(a).expect("a") {
-            let bb = lan.get(b).expect("b");
-            for c in bb.intersection(aa) {
-                if aa.contains(c)
-                    && (a.starts_with('t') || b.starts_with('t') || c.starts_with('t'))
-                {
-                    let mut z = [a, b, c];
-                    z.sort_unstable();
-                    trios.insert(z);
+        if a.starts_with('t') {
+            for b in lan.get(a).expect("a") {
+                let bb = lan.get(b).expect("b");
+                for c in bb.intersection(aa) {
+                    if aa.contains(c) {
+                        let mut z = [a, b, c];
+                        z.sort_unstable();
+                        trios.insert(z);
+                    }
                 }
             }
         }
