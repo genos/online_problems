@@ -2,33 +2,33 @@ use itertools::Itertools;
 use rayon::prelude::*;
 use std::{collections::HashMap, fs, iter::from_fn};
 
-fn secret_stream(s: i64) -> impl Iterator<Item = i64> {
+fn secret_stream(s: u32) -> impl Iterator<Item = u32> {
     let mut s = s;
     from_fn(move || {
         let out = s;
-        s = (s ^ (s << 6)) % 16_777_216;
-        s = (s ^ (s >> 5)) % 16_777_216;
-        s = (s ^ (s << 11)) % 16_777_216;
+        s = (s ^ (s << 6)) & ((1 << 24) - 1);
+        s = (s ^ (s >> 5)) & ((1 << 24) - 1);
+        s = (s ^ (s << 11)) & ((1 << 24) - 1);
         Some(out)
     })
 }
 
-fn part1(ss: &[i64]) -> i64 {
+fn part1(ss: &[u32]) -> u64 {
     ss.par_iter()
-        .map(|&s| secret_stream(s).nth(2000).unwrap_or_default())
+        .map(|&s| u64::from(secret_stream(s).nth(2000).unwrap_or_default()))
         .sum()
 }
 
-fn price_map(s: i64) -> HashMap<(i64, i64, i64, i64), i64> {
+fn price_map(s: u32) -> HashMap<(i8, i8, i8, i8), u32> {
     let mut out = HashMap::new();
-    for (a, b, c, d, e) in secret_stream(s).map(|t| t % 10).take(2000).tuple_windows() {
-        let k = (b - a, c - b, d - c, e - d);
-        out.entry(k).or_insert(e);
+    for (a, b, c, d, e) in secret_stream(s).map(|t| (t % 10) as i8).take(2000).tuple_windows() {
+        #[allow(clippy::cast_sign_loss)]
+        out.entry((b - a, c - b, d - c, e - d)).or_insert(e as u32);
     }
     out
 }
 
-fn part2(ss: &[i64]) -> i64 {
+fn part2(ss: &[u32]) -> u32 {
     ss.into_par_iter()
         .map(|&s| price_map(s))
         .reduce(HashMap::new, |a, b| {
@@ -48,7 +48,7 @@ fn main() {
     let ss = input
         .lines()
         .map(|l| l.parse().expect("Can't parse line"))
-        .collect::<Vec<i64>>();
+        .collect::<Vec<u32>>();
     println!("{}", part1(&ss));
     println!("{}", part2(&ss));
 }
