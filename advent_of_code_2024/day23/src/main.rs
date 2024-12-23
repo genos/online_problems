@@ -20,8 +20,8 @@ fn part1(lan: &HashMap<&str, HashSet<&str>>) -> usize {
         for b in lan.get(a).expect("a") {
             let bb = lan.get(b).expect("b");
             for c in bb.intersection(aa) {
-                if (a.starts_with('t') || b.starts_with('t') || c.starts_with('t'))
-                    && aa.contains(c)
+                if aa.contains(c)
+                    && (a.starts_with('t') || b.starts_with('t') || c.starts_with('t'))
                 {
                     let mut z = [a, b, c];
                     z.sort_unstable();
