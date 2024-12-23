@@ -1,22 +1,23 @@
-use itertools::Itertools;
 use std::{
     collections::{HashMap, HashSet},
     fs,
 };
 
-fn parse(input: &str) -> HashMap<(u8, u8), HashSet<(u8, u8)>> {
-    let mut h: HashMap<(u8, u8), HashSet<(u8, u8)>> = HashMap::new();
-    for (a0, a1, _, b0, b1, _) in input.bytes().tuples() {
-        h.entry((a0, a1)).or_default().insert((b0, b1));
-        h.entry((b0, b1)).or_default().insert((a0, a1));
+fn parse(input: &str) -> HashMap<&str, HashSet<&str>> {
+    let mut h: HashMap<&str, HashSet<&str>> = HashMap::new();
+    for line in input.lines() {
+        let u = &line[0..2];
+        let v = &line[3..5];
+        h.entry(u).or_default().insert(v);
+        h.entry(v).or_default().insert(u);
     }
     h
 }
 
-fn part1(lan: &HashMap<(u8, u8), HashSet<(u8, u8)>>) -> usize {
+fn part1(lan: &HashMap<&str, HashSet<&str>>) -> usize {
     let mut trios = HashSet::new();
     for (a, aa) in lan {
-        if a.0 == b't' {
+        if a.starts_with('t') {
             for b in lan.get(a).expect("a") {
                 let bb = lan.get(b).expect("b");
                 for c in bb.intersection(aa) {
@@ -30,10 +31,6 @@ fn part1(lan: &HashMap<(u8, u8), HashSet<(u8, u8)>>) -> usize {
         }
     }
     trios.len()
-}
-
-fn part2(lan: &HashMap<(u8, u8), HashSet<(u8, u8)>>) -> usize {
-    todo!()
 }
 
 fn main() {
