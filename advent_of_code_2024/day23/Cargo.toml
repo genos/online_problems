@@ -10,3 +10,6 @@ debug = 0
 lto = true
 codegen-units = 1
 panic = "abort"
+
+[dependencies]
+itertools = "0.13.0"
