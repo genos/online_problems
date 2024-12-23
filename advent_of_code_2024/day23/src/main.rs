@@ -1,4 +1,3 @@
-use itertools::iproduct;
 use std::{
     collections::{HashMap, HashSet},
     fs,
@@ -15,16 +14,20 @@ fn parse(input: &str) -> HashMap<&str, HashSet<&str>> {
     h
 }
 
-fn part1(network: &HashMap<&str, HashSet<&str>>) -> usize {
+fn part1(lan: &HashMap<&str, HashSet<&str>>) -> usize {
     let mut trios = HashSet::new();
-    for (a, b, c) in iproduct!(network.keys(), network.keys(), network.keys()) {
-        let (aa, bb) = (network.get(a).expect("a"), network.get(b).expect("b"));
-        if (aa.contains(b) && aa.contains(c) && bb.contains(c))
-            && (a.starts_with('t') || b.starts_with('t') || c.starts_with('t'))
-        {
-            let mut z = [a, b, c];
-            z.sort_unstable();
-            trios.insert(z);
+    for (a, aa) in lan {
+        for b in lan.get(a).expect("a") {
+            let bb = lan.get(b).expect("b");
+            for c in bb.intersection(aa) {
+                if (a.starts_with('t') || b.starts_with('t') || c.starts_with('t'))
+                    && aa.contains(c)
+                {
+                    let mut z = [a, b, c];
+                    z.sort_unstable();
+                    trios.insert(z);
+                }
+            }
         }
     }
     trios.len()
@@ -32,6 +35,6 @@ fn part1(network: &HashMap<&str, HashSet<&str>>) -> usize {
 
 fn main() {
     let input = fs::read_to_string("input.txt").expect("Can't read file");
-    let network = parse(&input);
-    println!("{}", part1(&network));
+    let lan = parse(&input);
+    println!("{}", part1(&lan));
 }
