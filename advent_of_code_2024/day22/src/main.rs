@@ -2,19 +2,13 @@ use itertools::Itertools;
 use rayon::prelude::*;
 use std::{collections::HashMap, fs, iter::from_fn};
 
-fn next_secret(s: i64) -> i64 {
-    let mut t = s;
-    t = (t ^ (t << 6)) % 16_777_216;
-    t = (t ^ (t >> 5)) % 16_777_216;
-    t = (t ^ (t << 11)) % 16_777_216;
-    t
-}
-
 fn secret_stream(s: i64) -> impl Iterator<Item = i64> {
     let mut s = s;
     from_fn(move || {
         let out = s;
-        s = next_secret(s);
+        s = (s ^ (s << 6)) % 16_777_216;
+        s = (s ^ (s >> 5)) % 16_777_216;
+        s = (s ^ (s << 11)) % 16_777_216;
         Some(out)
     })
 }
@@ -25,28 +19,11 @@ fn part1(ss: &[i64]) -> i64 {
         .sum()
 }
 
-fn price(s: i64) -> i64 {
-    s % 10
-}
-
 fn price_map(s: i64) -> HashMap<(i64, i64, i64, i64), i64> {
     let mut out = HashMap::new();
-    for (a, b, c, d, e) in secret_stream(s).map(price).take(2000).tuple_windows() {
+    for (a, b, c, d, e) in secret_stream(s).map(|t| t % 10).take(2000).tuple_windows() {
         let k = (b - a, c - b, d - c, e - d);
-        if !out.contains_key(&k) {
-            out.insert(k, e);
-        }
-    }
-    out
-}
-
-fn merge_maps(
-    a: HashMap<(i64, i64, i64, i64), i64>,
-    b: HashMap<(i64, i64, i64, i64), i64>,
-) -> HashMap<(i64, i64, i64, i64), i64> {
-    let mut out = a.clone();
-    for (k, v) in b {
-        *out.entry(k).or_default() += v;
+        out.entry(k).or_insert(e);
     }
     out
 }
@@ -54,7 +31,13 @@ fn merge_maps(
 fn part2(ss: &[i64]) -> i64 {
     ss.into_par_iter()
         .map(|&s| price_map(s))
-        .reduce(HashMap::new, merge_maps)
+        .reduce(HashMap::new, |a, b| {
+            let mut out = a.clone();
+            for (k, v) in b {
+                *out.entry(k).or_default() += v;
+            }
+            out
+        })
         .into_values()
         .max()
         .unwrap_or_default()
@@ -86,7 +69,10 @@ mod test {
     #[test]
     fn price_example() {
         assert_eq!(
-            secret_stream(123).take(10).map(price).collect::<Vec<_>>(),
+            secret_stream(123)
+                .take(10)
+                .map(|t| t % 10)
+                .collect::<Vec<_>>(),
             [3, 0, 6, 5, 4, 4, 6, 4, 4, 2]
         );
     }
