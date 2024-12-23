@@ -19,16 +19,20 @@ fn part1(ss: &[u32]) -> u64 {
         .sum()
 }
 
-fn price_map(s: u32) -> HashMap<(i8, i8, i8, i8), u32> {
+fn price_map(s: u32) -> HashMap<(i8, i8, i8, i8), u16> {
     let mut out = HashMap::new();
-    for (a, b, c, d, e) in secret_stream(s).map(|t| (t % 10) as i8).take(2000).tuple_windows() {
+    for (a, b, c, d, e) in secret_stream(s)
+        .map(|t| (t % 10) as i8)
+        .take(2000)
+        .tuple_windows()
+    {
         #[allow(clippy::cast_sign_loss)]
-        out.entry((b - a, c - b, d - c, e - d)).or_insert(e as u32);
+        out.entry((b - a, c - b, d - c, e - d)).or_insert(e as u16);
     }
     out
 }
 
-fn part2(ss: &[u32]) -> u32 {
+fn part2(ss: &[u32]) -> u16 {
     ss.into_par_iter()
         .map(|&s| price_map(s))
         .reduce(HashMap::new, |a, b| {
@@ -44,11 +48,11 @@ fn part2(ss: &[u32]) -> u32 {
 }
 
 fn main() {
-    let input = fs::read_to_string("input.txt").expect("Can't read file");
-    let ss = input
+    let ss = fs::read_to_string("input.txt")
+        .expect("Can't read file")
         .lines()
         .map(|l| l.parse().expect("Can't parse line"))
-        .collect::<Vec<u32>>();
+        .collect::<Vec<_>>();
     println!("{}", part1(&ss));
     println!("{}", part2(&ss));
 }
@@ -64,16 +68,6 @@ mod test {
                 123, 15_887_950, 16_495_136, 527_345, 704_524, 1_553_684, 12_683_156, 11_100_544,
                 12_249_484, 7_753_432, 5_908_254
             ]
-        );
-    }
-    #[test]
-    fn price_example() {
-        assert_eq!(
-            secret_stream(123)
-                .take(10)
-                .map(|t| t % 10)
-                .collect::<Vec<_>>(),
-            [3, 0, 6, 5, 4, 4, 6, 4, 4, 2]
         );
     }
 }
