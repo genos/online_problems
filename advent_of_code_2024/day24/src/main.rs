@@ -46,22 +46,19 @@ peg::parser! {
     }
 }
 
-fn parse_wires(input: &str) -> Result<BTreeMap<&str, u64>> {
-    let (mut b, mut cs) = parser::parse(input)?;
+fn part1(inputs: &BTreeMap<&str, u64>, connections: &[(&str, Op, &str, &str)]) -> u64 {
+    let mut wires = inputs.clone();
+    let mut cs = connections.to_vec();
     while !cs.is_empty() {
         cs.retain(|(x, op, y, z)| {
-            if let (Some(&u), Some(&v)) = (b.get(x), b.get(y)) {
-                b.insert(z, op.app(u, v));
+            if let (Some(&u), Some(&v)) = (wires.get(x), wires.get(y)) {
+                wires.insert(z, op.app(u, v));
                 false
             } else {
                 true
             }
         });
     }
-    Ok(b)
-}
-
-fn part1(wires: &BTreeMap<&str, u64>) -> u64 {
     wires
         .iter()
         .filter(|(k, _)| k.starts_with('z'))
@@ -71,6 +68,7 @@ fn part1(wires: &BTreeMap<&str, u64>) -> u64 {
 
 fn main() -> Result<()> {
     let input = fs::read_to_string("input.txt").expect("Can't read file");
-    println!("{}", part1(&parse_wires(&input)?));
+    let (inputs, connections) = parser::parse(&input)?;
+    println!("{}", part1(&inputs, &connections));
     Ok(())
 }
