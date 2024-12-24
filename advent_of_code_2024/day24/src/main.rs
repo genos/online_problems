@@ -32,27 +32,26 @@ impl Op {
 
 peg::parser! {
     grammar parser() for str {
-        pub rule ic() -> (BTreeMap<&'input str, u64>, Vec<(&'input str, Op, &'input str, &'input str)>) =
+        pub rule parse() -> (BTreeMap<&'input str, u64>, Vec<(&'input str, Op, &'input str, &'input str)>) =
             i:initial() "\n\n" c:conns() "\n"? { (i, c) }
-        rule initial() -> BTreeMap<&'input str, u64> =
-            i:(nb() ++ "\n") { i.into_iter().collect() }
-        rule conns() -> Vec<(&'input str, Op, &'input str, &'input str)> =
-            c:(conn() ++ "\n")
-        rule nb() -> (&'input str, u64) = n:name() ": " b:bit() { (n, b) }
+        rule initial() -> BTreeMap<&'input str, u64> = is:(ib() ++ "\n") { is.into_iter().collect() }
+        rule conns() -> Vec<(&'input str, Op, &'input str, &'input str)> = c:(conn() ++ "\n")
+        rule ib() -> (&'input str, u64) = i:input() ": " b:bit() { (i, b) }
         rule conn() -> (&'input str, Op, &'input str, &'input str) =
             x:name() " " o:op() " " y:name() " -> " z:name() { (x, o, y, z) }
         rule op() -> Op = o:$("AND" / "OR" / "XOR") {? o.parse().or(Err("op")) }
-        rule name() -> &'input str = n:$(['a'..='z'|'0'..='9']*<3>) { n }
-        rule bit() -> u64 = n:$(['0'|'1']+) {? n.parse().or(Err("num")) }
+        rule input() -> &'input str = $(['x'|'y']['a'..='z'|'0'..='9']*<2>)
+        rule name() -> &'input str = $(['a'..='z'|'0'..='9']*<3>)
+        rule bit() -> u64 = n:$(['0'|'1']) {? n.parse().or(Err("num")) }
     }
 }
 
 fn parse_wires(input: &str) -> Result<BTreeMap<&str, u64>> {
-    let (mut b, mut cs) = parser::ic(input)?;
+    let (mut b, mut cs) = parser::parse(input)?;
     while !cs.is_empty() {
         cs.retain(|(x, op, y, z)| {
-            if b.contains_key(x) && b.contains_key(y) {
-                b.insert(z, op.app(b[x], b[y]));
+            if let (Some(&u), Some(&v)) = (b.get(x), b.get(y)) {
+                b.insert(z, op.app(u, v));
                 false
             } else {
                 true
