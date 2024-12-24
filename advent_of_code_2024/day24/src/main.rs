@@ -46,6 +46,10 @@ peg::parser! {
     }
 }
 
+fn to_val(bits: impl DoubleEndedIterator<Item = u64>) -> u64 {
+    bits.rev().fold(0, |x, y| (x << 1) | y)
+}
+
 fn part1(inputs: &BTreeMap<&str, u64>, connections: &[(&str, Op, &str, &str)]) -> u64 {
     let mut wires = inputs.clone();
     let mut cs = connections.to_vec();
@@ -59,11 +63,11 @@ fn part1(inputs: &BTreeMap<&str, u64>, connections: &[(&str, Op, &str, &str)]) -
             }
         });
     }
-    wires
-        .iter()
-        .filter(|(k, _)| k.starts_with('z'))
-        .rev()
-        .fold(0, |x, (_, y)| (x << 1) | y)
+    to_val(
+        wires
+            .iter()
+            .filter_map(|(k, &v)| k.starts_with('z').then_some(v)),
+    )
 }
 
 fn main() -> Result<()> {
