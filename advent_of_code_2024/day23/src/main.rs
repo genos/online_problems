@@ -1,3 +1,4 @@
+use itertools::Itertools;
 use std::{
     collections::{HashMap, HashSet},
     fs,
@@ -33,8 +34,30 @@ fn part1(lan: &HashMap<&str, HashSet<&str>>) -> usize {
     trios.len()
 }
 
+fn part2(lan: &HashMap<&str, HashSet<&str>>) -> String {
+    let mut cliques = lan
+        .keys()
+        .map(|&k| HashSet::from_iter([k]))
+        .collect::<Vec<HashSet<&str>>>();
+    for c in cliques.iter_mut() {
+        for a in lan.keys() {
+            if c.iter().all(|b| lan[a].contains(b)) {
+                c.insert(a);
+            }
+        }
+    }
+    cliques
+        .iter()
+        .max_by_key(|c| c.len())
+        .expect("nonempty")
+        .iter()
+        .sorted()
+        .join(",")
+}
+
 fn main() {
-    let input = fs::read_to_string("input.txt").expect("Can't read file");
+    let input = fs::read_to_string("test2.txt").expect("Can't read file");
     let lan = parse(&input);
     println!("{}", part1(&lan));
+    println!("{}", part2(&lan));
 }
