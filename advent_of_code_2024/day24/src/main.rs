@@ -1,7 +1,7 @@
 use eyre::Result;
 use std::{collections::BTreeMap, fs, str::FromStr};
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(Clone, Copy)]
 enum Op {
     And,
     Or,
