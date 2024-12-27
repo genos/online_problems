@@ -12,7 +12,7 @@ peg::parser! {
     grammar parser() for str {
         pub rule coords(n: usize) -> Vec<Coord> = cs:(coord() ** "\n") { cs.into_iter().take(n).collect() }
         rule coord() -> Coord = u:num() "," v:num() { (u, v) }
-        rule num() -> u8 = n:$(['0'..='9']['0'..='9']*) {? n.parse().or(Err("num")) }
+        rule num() -> u8 = n:$(['0'..='9']+) {? n.parse().or(Err("num")) }
     }
 }
 
