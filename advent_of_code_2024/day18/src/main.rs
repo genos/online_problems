@@ -55,9 +55,7 @@ fn main() -> Result<()> {
     let input = fs::read_to_string("input.txt")?;
     let coords = parse(&input)?;
     println!("{}", part1(&coords).ok_or_eyre("part 1")?);
-    println!(
-        "{}",
-        part2(&coords, input.lines().count()).ok_or_eyre("part 2")?
-    );
+    let n = input.lines().count();
+    println!("{}", part2(&coords, n).ok_or_eyre("part 2")?);
     Ok(())
 }
