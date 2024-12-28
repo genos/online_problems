@@ -1,66 +1,63 @@
 use eyre::{OptionExt, Result};
 use pathfinding::prelude::astar;
+use rayon::prelude::*;
 use std::{collections::BTreeSet, fs};
 
 const LO: u8 = 0;
 const HI: u8 = 70;
 type Coord = (u8, u8);
 
-struct MemorySpace(BTreeSet<Coord>);
-
-peg::parser! {
-    grammar parser() for str {
-        pub rule coords(n: usize) -> Vec<Coord> = cs:(coord() ** "\n") { cs.into_iter().take(n).collect() }
-        rule coord() -> Coord = u:num() "," v:num() { (u, v) }
-        rule num() -> u8 = n:$(['0'..='9']+) {? n.parse().or(Err("num")) }
-    }
-}
-
-impl MemorySpace {
-    fn successors(&self, c: Coord) -> Vec<(Coord, u16)> {
-        let (x, y) = c;
-        [
-            (x.saturating_sub(1), y),
-            (x.saturating_add(1).min(HI), y),
-            (x, y.saturating_sub(1)),
-            (x, y.saturating_add(1).min(HI)),
-        ]
-        .into_iter()
-        .filter_map(|p| (!self.0.contains(&p)).then_some((p, 1)))
+fn parse(input: &str) -> Result<Vec<Coord>> {
+    input
+        .lines()
+        .map(|l| {
+            l.split_once(',')
+                .ok_or_eyre("split")
+                .and_then(|(x, y)| Ok((x.parse()?, y.parse()?)))
+        })
         .collect()
-    }
-    fn search(&self) -> Option<(Vec<Coord>, u16)> {
-        astar(
-            &(LO, LO),
-            |&c| self.successors(c),
-            |&c| u16::from(c.0.abs_diff(HI)) + u16::from(c.1.abs_diff(HI)),
-            |&c| c == (HI, HI),
-        )
-    }
 }
 
-fn part1(input: &str) -> Option<u16> {
-    MemorySpace(parser::coords(input, 1024).ok()?.into_iter().collect())
-        .search()
-        .map(|(_path, cost)| cost)
+fn search(coords: &BTreeSet<&Coord>) -> Option<(Vec<Coord>, u16)> {
+    astar(
+        &(LO, LO),
+        |&(x, y): &Coord| {
+            [
+                (x.saturating_sub(1), y),
+                (x.saturating_add(1).min(HI), y),
+                (x, y.saturating_sub(1)),
+                (x, y.saturating_add(1).min(HI)),
+            ]
+            .into_iter()
+            .filter_map(|p| (!coords.contains(&p)).then_some((p, 1)))
+        },
+        |&(x, y)| u16::from(x.abs_diff(HI)) + u16::from(y.abs_diff(HI)),
+        |&(x, y)| x == HI && y == HI,
+    )
 }
 
-fn part2(input: &str) -> Option<String> {
-    let n = input.chars().filter(|c| *c == '\n').count();
-    (0..n).find_map(|i| {
-        let cs = parser::coords(input, i).ok()?;
-        if MemorySpace(cs.iter().copied().collect()).search().is_none() {
-            let &(x, y) = cs.last()?;
-            Some(format!("{x},{y}"))
-        } else {
-            None
-        }
-    })
+fn part1(coords: &[Coord]) -> Option<u16> {
+    search(&coords.iter().take(1024).collect()).map(|(_path, cost)| cost)
+}
+
+fn part2(coords: &[Coord], n: usize) -> Option<String> {
+    (0..n)
+        .collect::<Vec<_>>()
+        .into_par_iter()
+        .find_first(|&i| search(&coords.iter().take(i).collect()).is_none())
+        .map(|i| {
+            let (x, y) = coords[i - 1];
+            format!("{x},{y}")
+        })
 }
 
 fn main() -> Result<()> {
     let input = fs::read_to_string("input.txt")?;
-    println!("{}", part1(&input).ok_or_eyre("part 1 failed")?);
-    println!("{}", part2(&input).ok_or_eyre("part 2 failed")?);
+    let coords = parse(&input)?;
+    println!("{}", part1(&coords).ok_or_eyre("part 1")?);
+    println!(
+        "{}",
+        part2(&coords, input.lines().count()).ok_or_eyre("part 2")?
+    );
     Ok(())
 }

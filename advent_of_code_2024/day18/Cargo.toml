@@ -6,7 +6,7 @@ edition = "2021"
 [dependencies]
 eyre = "0.6.12"
 pathfinding = "4.12.0"
-peg = "0.8.4"
+rayon = "1.10.0"
 
 [profile.dev]
 debug = 0
