@@ -1,3 +1,4 @@
+#!/usr/bin/env k
 / ngn/k FTW
 i:+.'0:"input.txt"
 +/{x|-x}'-/{x@<x}'i /part1
