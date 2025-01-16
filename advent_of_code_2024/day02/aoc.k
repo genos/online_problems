@@ -1,3 +1,4 @@
+#!/usr/bin/env k
 i:.'0:"input.txt"
 ok:~0N~&/(1 2 3?)2-/':
 p:{|/ok'(|x;x)}
