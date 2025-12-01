@@ -1,8 +1,7 @@
-module Main (main) where
+module Main where
 
 import Control.Applicative ((<|>))
 import Data.Attoparsec.Text
-import Data.Bool (bool)
 import Data.Foldable (traverse_)
 import Data.Functor (($>))
 import Data.Text (Text)
@@ -14,26 +13,20 @@ parse_ = either (error "Bad parse") id . parseOnly (line `sepBy1'` char '\n')
     line = ((char 'L' $> negate) <|> (char 'R' $> id)) <*> decimal
 
 part1 :: [Int] -> Int
-part1 = fst . foldl' f (0, 50)
-  where
-    f (n, s) i = let r = (s + i) `mod` 100 in (n + bool 0 1 (r == 0), r)
+part1 = length . filter (== 0) . scanl (\a b -> (a + b) `mod` 100) 50
 
 part2 :: [Int] -> Int
-part2 = fst . foldl' f_ (0, 50)
-
-f_ :: (Int, Int) -> Int -> (Int, Int)
-f_ (n, s) = step (n, s)
+part2 = fst . foldl' f (0, 50)
   where
-    step (a, b) c
-        | c == 0 = (a, b)
+    f (n, p) i
+        | i == 0 = (n, p)
         | otherwise =
             let
-                a' = a + bool 0 1 (b' == 0)
-                b' = (b + g) `mod` 100
-                c' = c - g
-                g = signum c
+                n' = n + if p' == 0 then 1 else 0
+                p' = (p + s) `mod` 100
+                s = signum i
              in
-                step (a', b') c'
+                f (n', p') (i - s)
 
 main :: IO ()
 main = do

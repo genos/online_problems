@@ -7,7 +7,7 @@ build-type: Simple
 executable day01
   default-language: GHC2024
   ghc-options: -Wall
-  main-is: day01.hs
+  main-is: Main.hs
   build-depends:
     attoparsec ^>=0.14.4,
     base ^>=4.21.0.0,
