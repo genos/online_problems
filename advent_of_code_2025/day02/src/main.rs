@@ -1,15 +1,13 @@
 use std::fs;
 
 fn read(s: &str) -> Vec<(u64, u64)> {
-    parser::id_ranges(s).expect("Parse IDRanges")
-}
-
-peg::parser! {
-    grammar parser() for str {
-        #[no_eof] pub rule id_ranges() -> Vec<(u64, u64)> = r:id_range() ++ "," { r }
-        rule id_range() -> (u64, u64) = lo:(num()) "-" hi:(num()) { (lo, hi) }
-        rule num() -> u64 = n:$(['0'..='9']+) { n.parse().expect("Read u64") }
-    }
+    s.trim()
+        .split(',')
+        .map(|x| {
+            let (y, z) = x.split_once('-').expect("sep by minus");
+            (y.parse().expect("u64"), z.parse().expect("u64"))
+        })
+        .collect()
 }
 
 fn digits(n: u64) -> Vec<u8> {
@@ -23,51 +21,30 @@ fn digits(n: u64) -> Vec<u8> {
     ds
 }
 
-fn repeats<T: PartialEq>(xs: &[T]) -> bool {
-    if xs.is_empty() {
-        true
-    } else {
-        let n = xs.len() / 2;
-        let ys = &xs[..n];
-        let zs = &xs[n..];
-        ys == zs
-    }
+fn solve(xs: &[(u64, u64)], pred: impl Fn(&[u8]) -> bool) -> u64 {
+    xs.iter()
+        .map(|(lo, hi)| (*lo..=*hi).filter(|n| pred(&digits(*n))).sum::<u64>())
+        .sum()
 }
 
-fn part1_invalid(lo: u64, hi: u64) -> u64 {
-    (lo..=hi).filter(|n| repeats(&digits(*n))).sum()
+fn part_1(xs: &[u8]) -> bool {
+    let n = xs.len() / 2;
+    xs[..n] == xs[n..]
+}
+
+fn part_2(xs: &[u8]) -> bool {
+    for i in 1..=xs.len() / 2 {
+        if xs.len() % i == 0
+            && (0..xs.len() / i - 1).all(|j| xs[j * i..(j + 1) * i] == xs[(j + 1) * i..(j + 2) * i])
+        {
+            return true;
+        }
+    }
+    false
 }
 
 fn main() {
-    println!(
-        "{}",
-        read(&fs::read_to_string("input.txt").expect("Read the file"))
-            .into_iter()
-            .map(|(lo, hi)| part1_invalid(lo, hi))
-            .sum::<u64>()
-    );
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn digits_ok() {
-        assert_eq!(digits(1234), vec![1, 2, 3, 4]);
-        assert_eq!(digits(1), vec![1]);
-        assert_eq!(digits(0), vec![]);
-    }
-
-    #[test]
-    fn repeats_ok() {
-        assert!(repeats(&digits(55)));
-        assert!(repeats(&digits(12341234)));
-    }
-
-    #[test]
-    fn part1_ok() {
-        assert_eq!(part1_invalid(11, 22), 33);
-        assert_eq!(part1_invalid(38593856, 38593862), 38593859);
-    }
+    let input = read(&fs::read_to_string("input.txt").expect("File to read"));
+    println!("{}", solve(&input, part_1));
+    println!("{}", solve(&input, part_2));
 }
