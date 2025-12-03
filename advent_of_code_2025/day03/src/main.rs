@@ -10,38 +10,34 @@ fn digits(s: &str) -> Vec<Vec<u64>> {
 }
 
 fn argmax(bank: &[u64]) -> (usize, u64) {
-    let mut i = 0;
-    let mut m = bank[i];
-    for (j, b) in bank.iter().enumerate() {
-        if m < *b {
-            m = *b;
+    let (mut i, mut m) = (0, bank[0]);
+    for (j, x) in bank.iter().enumerate().skip(1) {
+        if m < *x {
+            m = *x;
             i = j;
         }
     }
     (i, m)
 }
 
-fn solve_one(n: usize, bank: &[u64]) -> u64 {
-    let mut b = 0;
-    let mut i = 0;
-    let mut len = 0;
-    let mut j = bank.len() - n + 1;
-    while len < n {
-        len += 1;
-        let (k, m) = argmax(&bank[i..j]);
-        b = 10 * b + m;
+// help from https://www.reddit.com/r/adventofcode/comments/1pd0cp6/2025_day_03_cli_visualization/
+fn max_joltage(n: usize, bank: &[u64]) -> u64 {
+    let (mut joltage, mut i, mut j) = (0, 0, bank.len() - n + 1);
+    for _ in 0..n {
+        let (k, max) = argmax(&bank[i..j]);
+        joltage = 10 * joltage + max;
         i += k + 1;
         j += 1;
     }
-    b
+    joltage
 }
 
 fn part_1(banks: &[Vec<u64>]) -> u64 {
-    banks.iter().map(|b| solve_one(2, b)).sum()
+    banks.iter().map(|b| max_joltage(2, b)).sum()
 }
 
 fn part_2(banks: &[Vec<u64>]) -> u64 {
-    banks.iter().map(|b| solve_one(12, b)).sum()
+    banks.iter().map(|b| max_joltage(12, b)).sum()
 }
 
 fn main() {
