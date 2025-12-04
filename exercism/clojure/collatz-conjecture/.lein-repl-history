@@ -1,8 +1,0 @@
-(set *warn-on-reflection* true)
-(set! *warn-on-reflection* true)
-(require 'collatz-conjecture :as cc :reload)
-(require '[collatz-conjecture :as cc] :reload)
-(cc/collatz 10)
-(cc/collatz 100)
-(cc/collatz 10)
-(cc/collatz "ASDF")
