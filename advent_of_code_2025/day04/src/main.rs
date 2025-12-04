@@ -1,41 +1,22 @@
-use std::{collections::BTreeMap, fs};
-
-#[derive(PartialEq, Clone)]
-enum Tile {
-    Open,
-    Paper,
-}
-
-impl From<char> for Tile {
-    fn from(c: char) -> Self {
-        match c {
-            '.' => Self::Open,
-            '@' => Self::Paper,
-            _ => panic!("Bad char: {c}"),
-        }
-    }
-}
-
-type Grid = BTreeMap<(usize, usize), Tile>;
+type Grid = Vec<Vec<bool>>; // true == paper
 
 fn parse(s: &str) -> Grid {
     s.trim()
         .lines()
-        .enumerate()
-        .flat_map(|(i, line)| {
-            line.trim()
-                .chars()
-                .enumerate()
-                .map(move |(j, c)| ((i, j), Tile::from(c)))
-        })
+        .map(|line| line.trim().chars().map(|c| c == '@').collect())
         .collect()
 }
 
-fn removable(i: usize, j: usize, g: &Grid) -> bool {
+#[allow(clippy::inline_always)]
+#[inline(always)]
+fn is_removable(i: usize, j: usize, g: &Grid) -> bool {
     let mut paper = 0u8;
-    for x in i.saturating_sub(1)..=i + 1 {
-        for y in j.saturating_sub(1)..=j + 1 {
-            if (x, y) != (i, j) && g.get(&(x, y)) == Some(&Tile::Paper) {
+    for x in i.saturating_sub(1)..=i.saturating_add(1).min(g.len().saturating_sub(1)) {
+        for y in j.saturating_sub(1)
+            ..=j.saturating_add(1)
+                .min(unsafe { g.get_unchecked(i) }.len().saturating_sub(1))
+        {
+            if (x, y) != (i, j) && unsafe { *g.get_unchecked(x).get_unchecked(y) } {
                 paper += 1;
             }
         }
@@ -43,33 +24,56 @@ fn removable(i: usize, j: usize, g: &Grid) -> bool {
     paper < 4
 }
 
-fn part_1(g: &Grid) -> usize {
+#[allow(dead_code)] // See, we _can_ use safe Rust.
+fn part_1_nice(g: &Grid) -> usize {
     g.iter()
-        .filter(|&(&(i, j), t)| t == &Tile::Paper && removable(i, j, g))
-        .count()
+        .enumerate()
+        .map(|(i, row)| {
+            row.iter()
+                .enumerate()
+                .filter(|&(j, &t)| t && is_removable(i, j, g))
+                .count()
+        })
+        .sum()
 }
 
-fn part_2(g: &Grid) -> usize {
-    let (mut lookup, mut mutate, mut cleared) = (g.clone(), g.clone(), 0);
-    loop {
-        let mut count = 0;
-        for (&(i, j), t) in &mut mutate {
-            if t == &Tile::Paper && removable(i, j, &lookup) {
-                *t = Tile::Open;
+fn part_1(g: &Grid) -> usize {
+    let mut count = 0;
+    for i in 0..g.len() {
+        for j in 0..unsafe { g.get_unchecked(i) }.len() {
+            if unsafe { *g.get_unchecked(i).get_unchecked(j) } && is_removable(i, j, g) {
                 count += 1;
             }
         }
-        cleared += count;
-        lookup = mutate.clone();
-        if count == 0 {
+    }
+    count
+}
+
+fn part_2(mut g: Grid) -> usize {
+    let (mut removed, mut to_remove) = (0, Vec::with_capacity(g.len() * g.len()));
+    loop {
+        for i in 0..g.len() {
+            for j in 0..unsafe { g.get_unchecked(i) }.len() {
+                if unsafe { *g.get_unchecked(i).get_unchecked(j) } && is_removable(i, j, &g) {
+                    to_remove.push((i, j));
+                }
+            }
+        }
+        if to_remove.is_empty() {
             break;
         }
+        while let Some((i, j)) = to_remove.pop() {
+            unsafe {
+                *g.get_unchecked_mut(i).get_unchecked_mut(j) = false;
+            }
+            removed += 1;
+        }
     }
-    cleared
+    removed
 }
 
 fn main() {
-    let input = parse(&fs::read_to_string("input.txt").expect("file"));
+    let input = parse(&std::fs::read_to_string("input.txt").expect("file"));
     println!("{}", part_1(&input));
-    println!("{}", part_2(&input));
+    println!("{}", part_2(input));
 }
