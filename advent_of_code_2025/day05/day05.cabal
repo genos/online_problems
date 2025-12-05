@@ -1,0 +1,15 @@
+cabal-version: 3.8
+name: day05
+version: 0.1.0.0
+license: MIT
+build-type: Simple
+
+executable day05
+  ghc-options: -Wall
+  main-is: Main.hs
+  build-depends: base ^>=4.21.0.0
+  default-language: GHC2024
+  build-depends:
+    attoparsec ^>=0.14.4,
+    base ^>=4.21.0.0,
+    text ^>=2.1.3,
