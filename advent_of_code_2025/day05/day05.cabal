@@ -11,4 +11,5 @@ executable day05
   build-depends:
     attoparsec ^>=0.14.4,
     base ^>=4.21.0.0,
+    containers ^>=0.7,
     text ^>=2.1.3,
