@@ -1,4 +1,3 @@
-use rayon::prelude::*;
 use std::collections::BTreeSet;
 
 fn parse(s: &str) -> (Vec<(u64, u64)>, Vec<u64>) {
@@ -26,26 +25,18 @@ fn part1(ranges: &[(u64, u64)], ingredients: &[u64]) -> usize {
         .count()
 }
 
-fn part2(ranges: &[(u64, u64)]) -> usize {
-    ranges
-        .into_par_iter()
-        .fold_chunks(5, BTreeSet::new, |mut acc, &(a, b)| {
-            for n in a..=b {
-                acc.insert(n);
-            }
-            acc
-        })
-        .fold(BTreeSet::new, |mut acc, xs| {
-            for n in xs {
-                acc.insert(n);
-            }
-            acc
-        })
-        .count()
+fn part2_(ranges: &[(u64, u64)]) -> u64 {
+    let mut xs = BTreeSet::new();
+    for &r in ranges {
+        let overlaps = xs.extract_if(.., |&(a, b)| !(a > r.1 || b < r.0));
+        let s = overlaps.fold(r, |(a, b), (x, y)| (a.min(x), b.max(y)));
+        xs.insert(s);
+    }
+    xs.iter().map(|&(a, b)| b - a + 1).sum()
 }
 
 fn main() {
     let (ranges, ingredients) = parse(&std::fs::read_to_string("input.txt").expect("file"));
     println!("{}", part1(&ranges, &ingredients));
-    //println!("{}", part2(&ranges));
+    println!("{}", part2_(&ranges));
 }
