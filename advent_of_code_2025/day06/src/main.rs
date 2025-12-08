@@ -3,12 +3,12 @@ enum Op {
     Add,
 }
 
-struct WS {
+struct Worksheet {
     ops: Vec<Op>,
     nums: Vec<Vec<Vec<Option<u64>>>>,
 }
 
-impl From<String> for WS {
+impl From<String> for Worksheet {
     fn from(s: String) -> Self {
         let mut lines = s.lines();
         let ops_line = lines.next_back().expect("ops line");
@@ -37,23 +37,35 @@ impl From<String> for WS {
         let mut nums = vec![vec![Vec::new(); nums_t.len()]; nums_t[0].len()];
         for i in 0..nums_t.len() {
             for (j, n) in nums_t[i].iter().enumerate() {
-                nums[j][i] = n.to_vec();
+                nums[j][i].clone_from(n);
             }
         }
         Self { ops, nums }
     }
 }
 
-impl WS {
-    fn part_1(&self) -> u64 {
+fn sorta_horner(ds: &[Option<u64>]) -> u64 {
+    ds.iter().fold(0, |n, m| m.map(|d| 10 * n + d).unwrap_or(n))
+}
+
+fn part_1_nums(digits: &[Vec<Option<u64>>]) -> Vec<u64> {
+    digits.iter().map(|ds| sorta_horner(ds)).collect()
+}
+
+fn part_2_nums(digits: &[Vec<Option<u64>>]) -> Vec<u64> {
+    (0..digits[0].len())
+        .rev()
+        .map(|i| sorta_horner(&digits.iter().map(|ds| ds[i]).collect::<Vec<Option<_>>>()))
+        .collect()
+}
+
+impl Worksheet {
+    fn solve(&self, to_nums: impl Fn(&[Vec<Option<u64>>]) -> Vec<u64>) -> u64 {
         self.ops
             .iter()
             .zip(self.nums.iter())
             .map(|(op, digits)| {
-                let xs = digits.iter().map(|ds| {
-                    ds.iter()
-                        .fold(0, |acc, m| m.map(|d| 10 * acc + d).unwrap_or(acc))
-                });
+                let xs = to_nums(digits).into_iter();
                 match op {
                     Op::Mul => xs.product::<u64>(),
                     Op::Add => xs.sum(),
@@ -64,6 +76,7 @@ impl WS {
 }
 
 fn main() {
-    let input = WS::from(std::fs::read_to_string("input.txt").expect("file"));
-    println!("{}", input.part_1());
+    let input = Worksheet::from(std::fs::read_to_string("input.txt").expect("file"));
+    println!("{}", input.solve(part_1_nums));
+    println!("{}", input.solve(part_2_nums));
 }
