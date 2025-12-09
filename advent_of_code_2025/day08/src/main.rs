@@ -1,6 +1,6 @@
 use itertools::Itertools;
 use ordered_float::OrderedFloat;
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 
 type JunctionBox = (u32, u32, u32);
 
@@ -73,13 +73,13 @@ impl Circuits {
     }
 }
 
-fn part_1(boxes: &[JunctionBox]) -> usize {
+fn part_1(boxes: &[JunctionBox], n: usize) -> usize {
     let mut circuits = Circuits::from(boxes);
     boxes
         .iter()
         .tuple_combinations()
         .sorted_unstable_by_key(|(a, b)| sqr_euc(a, b))
-        .take(1_000)
+        .take(n)
         .for_each(|(a, b)| circuits.union(a, b));
     circuits
         .parent
@@ -92,8 +92,29 @@ fn part_1(boxes: &[JunctionBox]) -> usize {
         .product()
 }
 
+fn part_2(boxes: &[JunctionBox]) -> u64 {
+    let mut circuits = Circuits::from(boxes);
+    let mut ps = BTreeSet::new();
+    for (a, b) in boxes
+        .iter()
+        .tuple_combinations()
+        .sorted_unstable_by_key(|(a, b)| sqr_euc(a, b))
+    {
+        circuits.union(a, b);
+        ps.clear();
+        for x in boxes {
+            ps.insert(circuits.find(x));
+        }
+        if ps.len() == 1 {
+            return u64::from(a.0) * u64::from(b.0);
+        }
+    }
+    unreachable!("Never connected them all");
+}
+
 fn main() {
     let input = std::fs::read_to_string("input.txt").expect("input");
     let boxes = parse(&input);
-    println!("{}", part_1(&boxes));
+    println!("{}", part_1(&boxes, 1_000));
+    println!("{}", part_2(&boxes));
 }
