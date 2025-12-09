@@ -2,12 +2,13 @@ use itertools::Itertools;
 use ordered_float::OrderedFloat;
 use std::collections::{BTreeMap, BTreeSet};
 
-type JunctionBox = (u32, u32, u32);
+type JunctionBox = (u64, u64, u64);
 
-fn sqr_euc(a: &JunctionBox, b: &JunctionBox) -> OrderedFloat<f64> {
-    let dx = f64::from(a.0) - f64::from(b.0);
-    let dy = f64::from(a.1) - f64::from(b.1);
-    let dz = f64::from(a.2) - f64::from(b.2);
+#[allow(clippy::cast_precision_loss)]
+fn sqr_euc(a: &JunctionBox, b: &JunctionBox) -> OrderedFloat<f32> {
+    let dx = (a.0 as f32) - (b.0 as f32);
+    let dy = (a.1 as f32) - (b.1 as f32);
+    let dz = (a.2 as f32) - (b.2 as f32);
     OrderedFloat::from(dx * dx + dy * dy + dz * dz)
 }
 
@@ -15,20 +16,18 @@ fn parse(s: &str) -> Vec<JunctionBox> {
     s.trim()
         .lines()
         .filter_map(|line| {
-            line.split_once(',').and_then(|(x, yz)| {
-                yz.split_once(',').map(|(y, z)| {
-                    (
-                        x.parse().expect("x"),
-                        y.parse().expect("y"),
-                        z.parse().expect("z"),
-                    )
-                })
+            line.splitn(3, ',').collect_tuple().map(|(x, y, z)| {
+                (
+                    x.parse().expect("x"),
+                    y.parse().expect("y"),
+                    z.parse().expect("z"),
+                )
             })
         })
         .collect()
 }
 
-// Union-Find data structure of junction boxes.
+// Union-Find of junction boxes
 struct Circuits {
     elts: BTreeMap<JunctionBox, usize>,
     parent: Vec<usize>,
@@ -106,10 +105,10 @@ fn part_2(boxes: &[JunctionBox]) -> u64 {
             ps.insert(circuits.find(x));
         }
         if ps.len() == 1 {
-            return u64::from(a.0) * u64::from(b.0);
+            return a.0 * b.0;
         }
     }
-    unreachable!("Never connected them all");
+    unreachable!("Unconnected");
 }
 
 fn main() {
