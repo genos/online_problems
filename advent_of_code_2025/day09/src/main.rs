@@ -11,7 +11,7 @@ fn parse(s: &str) -> Vec<(usize, usize)> {
 }
 
 fn area((x1, y1): (usize, usize), (x2, y2): (usize, usize)) -> usize {
-    (1 + x1.abs_diff(x2)) * (1 + y1.abs_diff(y2))
+    (x1.abs_diff(x2) + 1) * (y1.abs_diff(y2) + 1)
 }
 
 fn part_1(coords: &[(usize, usize)]) -> usize {
@@ -24,6 +24,6 @@ fn part_1(coords: &[(usize, usize)]) -> usize {
 }
 
 fn main() {
-    let input = std::fs::read_to_string("input.txt").expect("file");
-    println!("{:?}", part_1(&parse(&input)));
+    let input = parse(&std::fs::read_to_string("input.txt").expect("file"));
+    println!("{}", part_1(&input));
 }
