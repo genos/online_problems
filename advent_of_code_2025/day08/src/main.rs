@@ -1,45 +1,14 @@
 use itertools::Itertools;
 use ordered_float::OrderedFloat;
-use std::{
-    cmp::{Ordering, Reverse},
-    collections::{BTreeMap, BinaryHeap},
-};
+use std::collections::BTreeMap;
 
 type JunctionBox = (u32, u32, u32);
 
-#[derive(PartialEq, Eq)]
-struct Pair {
-    first: JunctionBox,
-    second: JunctionBox,
-    dist: OrderedFloat<f64>,
-}
-
-impl From<(JunctionBox, JunctionBox)> for Pair {
-    fn from((first, second): (JunctionBox, JunctionBox)) -> Self {
-        let dx = f64::from(first.0) - f64::from(second.0);
-        let dy = f64::from(first.1) - f64::from(second.1);
-        let dz = f64::from(first.2) - f64::from(second.2);
-        let dist = OrderedFloat::from(dx * dx + dy * dy + dz * dz);
-        Self {
-            first,
-            second,
-            dist,
-        }
-    }
-}
-
-impl Ord for Pair {
-    fn cmp(&self, other: &Self) -> Ordering {
-        self.dist
-            .cmp(&other.dist)
-            .then((self.first, self.second).cmp(&(other.first, other.second)))
-    }
-}
-
-impl PartialOrd for Pair {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other))
-    }
+fn sqr_euc(a: &JunctionBox, b: &JunctionBox) -> OrderedFloat<f64> {
+    let dx = f64::from(a.0) - f64::from(b.0);
+    let dy = f64::from(a.1) - f64::from(b.1);
+    let dz = f64::from(a.2) - f64::from(b.2);
+    OrderedFloat::from(dx * dx + dy * dy + dz * dz)
 }
 
 fn parse(s: &str) -> Vec<JunctionBox> {
@@ -61,40 +30,26 @@ fn parse(s: &str) -> Vec<JunctionBox> {
 
 // Union-Find data structure of junction boxes.
 struct Circuits {
-    elts_to_ix: BTreeMap<JunctionBox, usize>,
-    ix_to_elts: Vec<JunctionBox>,
+    elts: BTreeMap<JunctionBox, usize>,
     parent: Vec<usize>,
     size: Vec<usize>,
 }
 
 impl From<&[JunctionBox]> for Circuits {
+    // make_set
     fn from(boxes: &[JunctionBox]) -> Self {
-        let mut c = Self {
-            elts_to_ix: BTreeMap::new(),
-            ix_to_elts: Vec::new(),
-            parent: Vec::new(),
-            size: Vec::new(),
-        };
-        for j in boxes {
-            let _ = c.make_set(j);
-        }
-        c
+        let size = vec![1; boxes.len()];
+        let (parent, elts) = boxes.iter().enumerate().map(|(i, x)| (i, (*x, i))).unzip();
+        Self { elts, parent, size }
     }
 }
 
 impl Circuits {
-    fn make_set(&mut self, x: &JunctionBox) -> usize {
-        self.elts_to_ix.get(x).copied().unwrap_or_else(|| {
-            let n = self.parent.len();
-            self.elts_to_ix.insert(*x, n);
-            self.ix_to_elts.push(*x);
-            self.parent.push(n);
-            self.size.push(1);
-            n
-        })
-    }
     fn find(&mut self, x: &JunctionBox) -> usize {
-        let mut i = *self.elts_to_ix.get(x).unwrap_or_else(|| panic!("Not inserted: {x:?}"));
+        let mut i = *self
+            .elts
+            .get(x)
+            .unwrap_or_else(|| panic!("Not inserted: {x:?}"));
         // path halving
         let mut p = self.parent[i];
         while p != i {
@@ -120,20 +75,17 @@ impl Circuits {
 
 fn part_1(boxes: &[JunctionBox]) -> usize {
     let mut circuits = Circuits::from(boxes);
-    let mut pairs = boxes
-        .iter()
-        .tuple_combinations()
-        .map(|(&a, &b)| Reverse(Pair::from((a, b))))
-        .collect::<BinaryHeap<Reverse<Pair>>>();
-    for i in 0..1_000 {
-        let Reverse(p) = pairs.pop().unwrap_or_else(|| panic!("pair {i}"));
-        circuits.union(&p.first, &p.second);
-    }
     boxes
         .iter()
-        .map(|x| circuits.parent[*circuits.elts_to_ix.get(x).expect("inserted")])
+        .tuple_combinations()
+        .sorted_unstable_by_key(|(a, b)| sqr_euc(a, b))
+        .take(1_000)
+        .for_each(|(a, b)| circuits.union(a, b));
+    circuits
+        .parent
+        .iter()
         .unique()
-        .map(|i| circuits.size[i])
+        .map(|&i| circuits.size[i])
         .sorted()
         .rev()
         .take(3)
