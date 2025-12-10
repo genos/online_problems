@@ -1,4 +1,4 @@
-use good_lp::{Expression, ProblemVariables, Solution, SolverModel, constraint, highs, variable};
+use good_lp::{Expression, Solution, SolverModel, constraint, highs, variables};
 use std::collections::{HashSet, VecDeque};
 
 struct Machine {
@@ -26,25 +26,18 @@ fn parse(s: &str) -> Vec<Machine> {
 
 impl Machine {
     fn part_1(&self) -> u64 {
-        let mut seen = HashSet::new();
-        let mut todo = VecDeque::from([(
-            self.lights
-                .iter()
-                .enumerate()
-                .map(|(i, &b)| u16::from(b) * (1 << i))
-                .fold(0, |x, y| x | y),
-            0,
-        )]);
+        let (mut seen, mut todo) = (HashSet::new(), VecDeque::from([(self.lights.clone(), 0)]));
         while let Some((lights, steps)) = todo.pop_front() {
-            if seen.contains(&lights) {
-                continue;
-            }
-            if lights == 0 {
+            if !lights.iter().any(|&l| l) {
                 return steps;
-            }
-            seen.insert(lights);
-            for wires in &self.wiring {
-                todo.push_back((wires.iter().fold(lights, |ls, w| ls ^ (1 << w)), steps + 1));
+            } else if seen.insert(lights.clone()) {
+                for wires in &self.wiring {
+                    let mut ls = lights.clone();
+                    for w in wires {
+                        ls[*w as usize] ^= true;
+                    }
+                    todo.push_back((ls, steps + 1));
+                }
             }
         }
         unreachable!("part_1")
@@ -59,27 +52,26 @@ fn part_1(ms: &[Machine]) -> u64 {
 #[allow(clippy::cast_sign_loss)]
 impl Machine {
     // With help from https://www.reddit.com/r/adventofcode/comments/1pity70/comment/nta6jn9
-    fn part_2(&self) -> u64 {
-        let mut vars = ProblemVariables::new();
-        let presses = vars.add_vector(variable().integer().min(0), self.wiring.len());
+    fn part_2(&self) -> u16 {
+        variables! {problem: 0 <= presses[self.wiring.len()] (integer)};
         let mut counts = vec![Expression::with_capacity(self.wiring.len()); self.joltage.len()];
-        for (i, wires) in self.wiring.iter().enumerate() {
+        for (wires, &p) in self.wiring.iter().zip(presses.iter()) {
             for &w in wires {
-                counts[w as usize] += presses[i];
+                counts[w as usize] += p;
             }
         }
-        let mut model = vars
+        let mut model = problem
             .minimise(presses.iter().sum::<Expression>())
             .using(highs);
         for (c, &j) in counts.into_iter().zip(self.joltage.iter()) {
-            model.add_constraint(constraint!(c == j));
+            model = model.with(constraint!(c == j));
         }
         let solution = model.solve().expect("part_2");
-        presses.iter().map(|&p| solution.value(p)).sum::<f64>() as u64
+        presses.iter().map(|&p| solution.value(p)).sum::<f64>() as u16
     }
 }
 
-fn part_2(ms: &[Machine]) -> u64 {
+fn part_2(ms: &[Machine]) -> u16 {
     ms.iter().map(Machine::part_2).sum()
 }
 
