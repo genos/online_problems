@@ -7,25 +7,28 @@ struct Machine {
     joltage: Vec<u16>,
 }
 
+fn press_1(lights: &[bool], wiring: &[Vec<u16>]) -> Vec<(Vec<bool>, u16)> {
+    wiring
+        .iter()
+        .map(|wires| {
+            let mut ls = lights.to_vec();
+            for w in wires {
+                ls[*w as usize] = !ls[*w as usize];
+            }
+            (ls, 1)
+        })
+        .collect()
+}
+
 impl Machine {
-    fn press(&self, button: usize) -> Self {
-        let mut m = self.clone();
-        for w in &self.wiring[button] {
-            m.lights[*w as usize] = !m.lights[*w as usize]
-        }
-        m
-    }
-    fn part_1(&self) -> usize {
-        let result = dijkstra(
-            self,
-            |m| {
-                (0..m.wiring.len())
-                    .map(|b| (m.press(b), 1))
-                    .collect::<Vec<_>>()
-            },
-            |m| !m.lights.iter().any(|&l| l),
-        );
-        result.expect("astar").1
+    fn part_1(&self) -> u16 {
+        dijkstra(
+            &self.lights,
+            |ls| press_1(ls, &self.wiring),
+            |ls| !ls.iter().any(|&l| l),
+        )
+        .expect("part_1")
+        .1
     }
 }
 
@@ -46,8 +49,8 @@ fn parse(s: &str) -> Vec<Machine> {
     machine_parser::machines(s).expect("parse")
 }
 
-fn part_1(ms: &[Machine]) -> usize {
-    ms.iter().map(|m| m.part_1()).sum()
+fn part_1(ms: &[Machine]) -> u16 {
+    ms.iter().map(Machine::part_1).sum()
 }
 
 fn main() {
