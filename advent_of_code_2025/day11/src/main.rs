@@ -60,6 +60,9 @@ fn main() {
 }
 */
 
+// Some help from https://github.com/Fadi88/AoC/blob/master/2025/days/day11/src/lib.rs
+// petgraph does _too_ much! We need simplicity.
+
 use std::collections::HashMap;
 
 fn parse(s: &str) -> HashMap<&str, Vec<&str>> {
@@ -72,7 +75,7 @@ fn parse(s: &str) -> HashMap<&str, Vec<&str>> {
         .collect()
 }
 
-fn count_paths<'a>(
+fn num_paths<'a>(
     u: &'a str,
     v: &'a str,
     servers: &'a HashMap<&'a str, Vec<&'a str>>,
@@ -85,11 +88,7 @@ fn count_paths<'a>(
     } else {
         let n = servers
             .get(u)
-            .map(|ws| {
-                ws.iter()
-                    .map(|w| count_paths(w, v, servers, cache))
-                    .sum::<u64>()
-            })
+            .map(|ws| ws.iter().map(|w| num_paths(w, v, servers, cache)).sum())
             .unwrap_or_default();
         cache.insert((u, v), n);
         n
@@ -97,12 +96,22 @@ fn count_paths<'a>(
 }
 
 fn part_1(servers: &HashMap<&str, Vec<&str>>) -> u64 {
-    count_paths("you", "out", servers, &mut HashMap::new())
+    num_paths("you", "out", servers, &mut HashMap::new())
+}
+
+fn part_2(servers: &HashMap<&str, Vec<&str>>) -> u64 {
+    let svr_dac = num_paths("svr", "dac", servers, &mut HashMap::new());
+    let dac_fft = num_paths("dac", "fft", servers, &mut HashMap::new());
+    let fft_out = num_paths("fft", "out", servers, &mut HashMap::new());
+    let svr_fft = num_paths("svr", "fft", servers, &mut HashMap::new());
+    let fft_dac = num_paths("fft", "dac", servers, &mut HashMap::new());
+    let dac_out = num_paths("dac", "out", servers, &mut HashMap::new());
+    svr_dac * dac_fft * fft_out + svr_fft * fft_dac * dac_out
 }
 
 fn main() {
     let input = std::fs::read_to_string("input.txt").expect("file");
     let servers = parse(&input);
     println!("{}", part_1(&servers));
-    // println!("{}", part_2(&servers));
+    println!("{}", part_2(&servers));
 }
