@@ -1,11 +1,11 @@
 use petgraph::{algo::all_simple_paths, prelude::*};
-use std::collections::{HashMap, HashSet};
+use std::collections::{HashMap, HashSet, hash_map::RandomState};
 
 fn parse(s: &str) -> (DiGraph<String, ()>, HashMap<String, NodeIndex>) {
     let mut servers = DiGraph::new();
     let nodes = s
         .replace(": ", " ")
-        .replace("\n", " ")
+        .replace('\n', " ")
         .trim()
         .split_ascii_whitespace()
         .collect::<HashSet<_>>()
@@ -26,13 +26,10 @@ fn parse(s: &str) -> (DiGraph<String, ()>, HashMap<String, NodeIndex>) {
 }
 
 fn part_1(servers: &DiGraph<String, ()>, nodes: &HashMap<String, NodeIndex>) -> usize {
-
-    0
+    all_simple_paths::<Vec<_>, _, RandomState>(servers, nodes["you"], nodes["out"], 0, None).count()
 }
 
 fn main() {
-    let (servers, nodes) = parse(&std::fs::read_to_string("test.txt").expect("file"));
-    println!("{servers:?}");
-    println!("{nodes:?}");
+    let (servers, nodes) = parse(&std::fs::read_to_string("input.txt").expect("file"));
     println!("{}", part_1(&servers, &nodes));
 }
