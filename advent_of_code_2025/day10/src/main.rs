@@ -8,9 +8,9 @@ struct Machine {
 }
 
 peg::parser! {
-    grammar machine_parser() for str {
-        pub rule machines() -> Vec<Machine> = machine() ** "\n"
-        rule machine() -> Machine = lights:l() _ wiring:ws() _ joltage:j() { Machine { lights, wiring, joltage } }
+    grammar parse() for str {
+        pub rule it() -> Vec<Machine> = m() ** "\n"
+        rule m() -> Machine = lights:l() _ wiring:ws() _ joltage:j() { Machine { lights, wiring, joltage } }
         rule _() = quiet!{[' '|'\t']*}
         rule l() -> Vec<bool> = "[" l:$(['.'|'#']*) "]" { l.chars().map(|c| c == '#').collect() }
         rule ws() -> Vec<Vec<u16>> = w() ** " "
@@ -20,12 +20,8 @@ peg::parser! {
     }
 }
 
-fn parse(s: &str) -> Vec<Machine> {
-    machine_parser::machines(s).expect("parse")
-}
-
 impl Machine {
-    fn part_1(&self) -> u64 {
+    fn part_1(&self) -> u16 {
         let (mut seen, mut todo) = (HashSet::new(), VecDeque::from([(self.lights.clone(), 0)]));
         while let Some((lights, steps)) = todo.pop_front() {
             if !lights.iter().any(|&l| l) {
@@ -44,7 +40,7 @@ impl Machine {
     }
 }
 
-fn part_1(ms: &[Machine]) -> u64 {
+fn part_1(ms: &[Machine]) -> u16 {
     ms.iter().map(Machine::part_1).sum()
 }
 
@@ -53,7 +49,7 @@ fn part_1(ms: &[Machine]) -> u64 {
 impl Machine {
     // With help from https://www.reddit.com/r/adventofcode/comments/1pity70/comment/nta6jn9
     fn part_2(&self) -> u16 {
-        variables! {problem: 0 <= presses[self.wiring.len()] (integer)};
+        variables!(problem: 0 <= presses[self.wiring.len()] (integer));
         let mut counts = vec![Expression::with_capacity(self.wiring.len()); self.joltage.len()];
         for (wires, &p) in self.wiring.iter().zip(presses.iter()) {
             for &w in wires {
@@ -64,7 +60,7 @@ impl Machine {
             .minimise(presses.iter().sum::<Expression>())
             .using(highs);
         for (c, &j) in counts.into_iter().zip(self.joltage.iter()) {
-            model = model.with(constraint!(c == j));
+            model.add_constraint(constraint!(c == j));
         }
         let solution = model.solve().expect("part_2");
         presses.iter().map(|&p| solution.value(p)).sum::<f64>() as u16
@@ -76,7 +72,7 @@ fn part_2(ms: &[Machine]) -> u16 {
 }
 
 fn main() {
-    let input = parse(&std::fs::read_to_string("input.txt").expect("file"));
+    let input = parse::it(&std::fs::read_to_string("input.txt").expect("file")).expect("parse");
     println!("{}", part_1(&input));
     println!("{}", part_2(&input));
 }
