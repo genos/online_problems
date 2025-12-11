@@ -34,7 +34,7 @@ fn paths(source: &str, target: &str, servers: &HashMap<&str, Vec<&str>>) -> u64 
             n
         }
     }
-    go(source, target, servers, &mut HashMap::new())
+    go(source, target, servers, &mut HashMap::with_capacity(servers.len()))
 }
 
 fn part_1(servers: &HashMap<&str, Vec<&str>>) -> u64 {
