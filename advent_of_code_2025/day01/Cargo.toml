@@ -1,5 +1,5 @@
 [package]
-name = "day09"
+name = "day01"
 version = "0.1.0"
 edition = "2024"
 
@@ -11,6 +11,3 @@ strip = true
 lto = true
 codegen-units = 1
 panic = "abort"
-
-[dependencies]
-itertools = "0.14.0"

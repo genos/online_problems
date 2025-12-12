@@ -3,6 +3,14 @@ name = "day10"
 version = "0.1.0"
 edition = "2024"
 
+[profile.dev]
+debug = 0
+
+[profile.release]
+strip = true
+lto = true
+codegen-units = 1
+ 
 [dependencies]
 good_lp = { version = "1.14.2", default-features = false, features = ["highs"] }
 itertools = "0.14.0"
