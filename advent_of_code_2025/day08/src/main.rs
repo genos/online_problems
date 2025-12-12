@@ -108,8 +108,7 @@ fn part_2(boxes: &[JunctionBox]) -> u64 {
 }
 
 fn main() {
-    let input = std::fs::read_to_string("input.txt").expect("input");
-    let boxes = parse(&input);
-    println!("{}", part_1(&boxes));
-    println!("{}", part_2(&boxes));
+    let input = parse(include_str!("../input.txt"));
+    println!("{}", part_1(&input));
+    println!("{}", part_2(&input));
 }

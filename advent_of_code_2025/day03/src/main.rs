@@ -41,7 +41,7 @@ fn part_2(banks: &[Vec<u64>]) -> u64 {
 }
 
 fn main() {
-    let input = digits(&std::fs::read_to_string("input.txt").expect("file"));
+    let input = digits(include_str!("../input.txt"));
     println!("{}", part_1(&input));
     println!("{}", part_2(&input));
 }

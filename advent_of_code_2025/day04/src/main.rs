@@ -73,7 +73,7 @@ fn part_2(mut g: Grid) -> usize {
 }
 
 fn main() {
-    let input = parse(&std::fs::read_to_string("input.txt").expect("file"));
+    let input = parse(include_str!("../input.txt"));
     println!("{}", part_1(&input));
     println!("{}", part_2(input));
 }

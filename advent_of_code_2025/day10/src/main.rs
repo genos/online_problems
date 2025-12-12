@@ -72,7 +72,7 @@ fn part_2(ms: &[Machine]) -> u16 {
 }
 
 fn main() {
-    let input = parse::it(&std::fs::read_to_string("input.txt").expect("file")).expect("parse");
+    let input = parse::it(include_str!("../input.txt")).expect("parse");
     println!("{}", part_1(&input));
     println!("{}", part_2(&input));
 }

@@ -1,5 +1,3 @@
-use std::fs;
-
 fn read(s: &str) -> Vec<(u64, u64)> {
     s.trim()
         .split(',')
@@ -38,7 +36,7 @@ fn part_2(xs: &[u8]) -> bool {
 }
 
 fn main() {
-    let input = read(&fs::read_to_string("input.txt").expect("File to read"));
+    let input = read(include_str!("../input.txt"));
     for p in [part_1, part_2] {
         println!("{}", solve(&input, p));
     }

@@ -8,8 +8,8 @@ struct Worksheet {
     nums: Vec<Vec<Vec<Option<u64>>>>,
 }
 
-impl From<String> for Worksheet {
-    fn from(s: String) -> Self {
+impl From<&str> for Worksheet {
+    fn from(s: &str) -> Self {
         let mut lines = s.lines();
         let ops_line = lines.next_back().expect("ops line");
         let (mut ix, ops): (Vec<usize>, Vec<Op>) = ops_line
@@ -76,7 +76,7 @@ impl Worksheet {
 }
 
 fn main() {
-    let input = Worksheet::from(std::fs::read_to_string("input.txt").expect("file"));
+    let input = Worksheet::from(include_str!("../input.txt"));
     println!("{}", input.solve(part_1_nums));
     println!("{}", input.solve(part_2_nums));
 }

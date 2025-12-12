@@ -49,8 +49,7 @@ fn part_2(servers: &HashMap<&str, Vec<&str>>) -> u64 {
 }
 
 fn main() {
-    let input = std::fs::read_to_string("input.txt").expect("file");
-    let servers = parse(&input);
-    println!("{}", part_1(&servers));
-    println!("{}", part_2(&servers));
+    let input = parse(include_str!("../input.txt"));
+    println!("{}", part_1(&input));
+    println!("{}", part_2(&input));
 }
