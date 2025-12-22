@@ -8,7 +8,7 @@ type JunctionBox = [u64; 3];
 fn l2sq(a: &JunctionBox, b: &JunctionBox) -> OrderedFloat<f32> {
     OrderedFloat::from(
         a.iter()
-            .zip(b.iter())
+            .zip(b)
             .map(|(&a_, &b_)| (a_ as f32 - b_ as f32).powi(2))
             .sum::<f32>(),
     )
@@ -35,7 +35,7 @@ struct Circuits {
 impl From<&[JunctionBox]> for Circuits {
     fn from(boxes: &[JunctionBox]) -> Self {
         // map(make_set, boxes), in Wikipedia's parlance, over the (unique!) input boxes
-        let (parent, elts) = boxes.iter().enumerate().map(|(i, x)| (i, (*x, i))).unzip();
+        let (parent, elts) = boxes.iter().enumerate().map(|(i, &x)| (i, (x, i))).unzip();
         let size = vec![1; boxes.len()];
         Self { elts, parent, size }
     }
@@ -50,10 +50,8 @@ impl Circuits {
         // path halving
         let mut p = self.parent[i];
         while p != i {
-            let g = self.parent[p];
-            self.parent[i] = g;
-            i = p;
-            p = g;
+            self.parent[i] = self.parent[p];
+            (i, p) = (p, self.parent[p]);
         }
         i
     }
@@ -108,7 +106,9 @@ fn part_2(boxes: &[JunctionBox]) -> u64 {
 }
 
 fn main() {
-    let input = parse(include_str!("../input.txt"));
+    let input = parse(
+        &std::fs::read_to_string(concat!(env!("CARGO_MANIFEST_DIR"), "/input.txt")).expect("file"),
+    );
     println!("{}", part_1(&input));
     println!("{}", part_2(&input));
 }

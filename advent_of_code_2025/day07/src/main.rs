@@ -16,6 +16,8 @@ fn solve(s: &str) -> (u64, u64) {
 }
 
 fn main() {
-    let (part_1, part_2) = solve(include_str!("../input.txt"));
+    let (part_1, part_2) = solve(
+        &std::fs::read_to_string(concat!(env!("CARGO_MANIFEST_DIR"), "/input.txt")).expect("file"),
+    );
     println!("{part_1}\n{part_2}");
 }

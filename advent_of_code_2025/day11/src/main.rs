@@ -34,7 +34,12 @@ fn paths(source: &str, target: &str, servers: &HashMap<&str, Vec<&str>>) -> u64 
             n
         }
     }
-    go(source, target, servers, &mut HashMap::with_capacity(servers.len()))
+    go(
+        source,
+        target,
+        servers,
+        &mut HashMap::with_capacity(servers.len()),
+    )
 }
 
 fn part_1(servers: &HashMap<&str, Vec<&str>>) -> u64 {
@@ -49,7 +54,9 @@ fn part_2(servers: &HashMap<&str, Vec<&str>>) -> u64 {
 }
 
 fn main() {
-    let input = parse(include_str!("../input.txt"));
-    println!("{}", part_1(&input));
-    println!("{}", part_2(&input));
+    let input =
+        std::fs::read_to_string(concat!(env!("CARGO_MANIFEST_DIR"), "/input.txt")).expect("file");
+    let servers = parse(&input);
+    println!("{}", part_1(&servers));
+    println!("{}", part_2(&servers));
 }

@@ -59,7 +59,9 @@ fn part_2(tiles: &[(usize, usize)]) -> Area {
 }
 
 fn main() {
-    let input = parse(include_str!("../input.txt"));
+    let input = parse(
+        &std::fs::read_to_string(concat!(env!("CARGO_MANIFEST_DIR"), "/input.txt")).expect("file"),
+    );
     println!("{}", part_1(&input));
     println!("{}", part_2(&input));
 }

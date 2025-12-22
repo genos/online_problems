@@ -14,7 +14,7 @@ fn parse(s: &str) -> (Vec<(u64, u64)>, Vec<u64>) {
 fn part_1(ranges: &[(u64, u64)], ingredients: &[u64]) -> usize {
     ingredients
         .iter()
-        .filter(|&&i| ranges.iter().any(|&(a, b)| a <= i && i <= b))
+        .filter(|&i| ranges.iter().any(|(a, b)| a <= i && i <= b))
         .count()
 }
 
@@ -22,7 +22,7 @@ fn part_2(ranges: &[(u64, u64)]) -> u64 {
     let mut merged = Vec::with_capacity(ranges.len());
     for &r in ranges {
         let s = merged
-            .extract_if(.., |&mut (a, b)| !(a > r.1 || b < r.0))
+            .extract_if(.., |(a, b)| !(*a > r.1 || *b < r.0))
             .fold(r, |(a, b), (x, y)| (a.min(x), b.max(y)));
         merged.push(s);
     }
@@ -30,7 +30,9 @@ fn part_2(ranges: &[(u64, u64)]) -> u64 {
 }
 
 fn main() {
-    let (ranges, ingredients) = parse(include_str!("../input.txt"));
+    let (ranges, ingredients) = parse(
+        &std::fs::read_to_string(concat!(env!("CARGO_MANIFEST_DIR"), "/input.txt")).expect("file"),
+    );
     println!("{}", part_1(&ranges, &ingredients));
     println!("{}", part_2(&ranges));
 }

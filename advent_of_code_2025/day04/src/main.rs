@@ -7,8 +7,6 @@ fn parse(s: &str) -> Grid {
         .collect()
 }
 
-#[allow(clippy::inline_always)]
-#[inline(always)]
 fn is_removable(i: usize, j: usize, g: &Grid) -> bool {
     let mut paper = 0u8;
     for x in i.saturating_sub(1)..=i.saturating_add(1).min(g.len().saturating_sub(1)) {
@@ -24,7 +22,7 @@ fn is_removable(i: usize, j: usize, g: &Grid) -> bool {
     paper < 4
 }
 
-#[allow(dead_code)] // See, we _can_ use safe Rust.
+// See, we _can_ use safe Rust.
 fn part_1_nice(g: &Grid) -> usize {
     g.iter()
         .enumerate()
@@ -49,7 +47,8 @@ fn part_1(g: &Grid) -> usize {
     count
 }
 
-fn part_2(mut g: Grid) -> usize {
+fn part_2(g: &Grid) -> usize {
+    let mut g = g.clone();
     let (mut removed, mut to_remove) = (0, Vec::with_capacity(g.len() * g.len()));
     loop {
         for i in 0..g.len() {
@@ -73,7 +72,10 @@ fn part_2(mut g: Grid) -> usize {
 }
 
 fn main() {
-    let input = parse(include_str!("../input.txt"));
+    let input = parse(
+        &std::fs::read_to_string(concat!(env!("CARGO_MANIFEST_DIR"), "/input.txt")).expect("file"),
+    );
     println!("{}", part_1(&input));
-    println!("{}", part_2(input));
+    println!("{}", part_1_nice(&input));
+    println!("{}", part_2(&input));
 }

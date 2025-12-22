@@ -2,7 +2,8 @@
 fn main() {
     println!(
         "{}",
-        include_str!("../input.txt")
+        &std::fs::read_to_string(concat!(env!("CARGO_MANIFEST_DIR"), "/input.txt"))
+            .expect("file")
             .trim()
             .lines()
             .filter(|line| {

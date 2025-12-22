@@ -1,4 +1,4 @@
-fn digits(s: &str) -> Vec<Vec<u64>> {
+fn parse(s: &str) -> Vec<Vec<u64>> {
     s.trim()
         .lines()
         .map(|l| {
@@ -9,22 +9,16 @@ fn digits(s: &str) -> Vec<Vec<u64>> {
         .collect()
 }
 
-fn argmax(bank: &[u64]) -> (usize, u64) {
-    let (mut i, mut m) = (0, bank[0]);
-    for (j, x) in bank.iter().enumerate().skip(1) {
-        if m < *x {
-            m = *x;
-            i = j;
-        }
-    }
-    (i, m)
-}
-
 // help from https://www.reddit.com/r/adventofcode/comments/1pd0cp6/2025_day_03_cli_visualization/
 fn max_joltage(n: usize, bank: &[u64]) -> u64 {
     let (mut joltage, mut i, mut j) = (0, 0, bank.len() - n + 1);
     for _ in 0..n {
-        let (k, max) = argmax(&bank[i..j]);
+        let (k, &max) = bank[i..j]
+            .iter()
+            .enumerate()
+            .rev()
+            .max_by_key(|(_k, b)| *b)
+            .expect("argmax");
         joltage = 10 * joltage + max;
         i += k + 1;
         j += 1;
@@ -41,7 +35,9 @@ fn part_2(banks: &[Vec<u64>]) -> u64 {
 }
 
 fn main() {
-    let input = digits(include_str!("../input.txt"));
+    let input = parse(
+        &std::fs::read_to_string(concat!(env!("CARGO_MANIFEST_DIR"), "/input.txt")).expect("file"),
+    );
     println!("{}", part_1(&input));
     println!("{}", part_2(&input));
 }

@@ -44,11 +44,9 @@ fn part_1(ms: &[Machine]) -> u16 {
     ms.iter().map(Machine::part_1).sum()
 }
 
-#[allow(clippy::cast_possible_truncation)]
-#[allow(clippy::cast_sign_loss)]
 impl Machine {
     // With help from https://www.reddit.com/r/adventofcode/comments/1pity70/comment/nta6jn9
-    fn part_2(&self) -> u16 {
+    fn part_2(&self) -> f64 {
         variables!(problem: 0 <= presses[self.wiring.len()] (integer));
         let mut counts = vec![Expression::with_capacity(self.wiring.len()); self.joltage.len()];
         for (wires, &p) in self.wiring.iter().zip(presses.iter()) {
@@ -63,16 +61,19 @@ impl Machine {
             model.add_constraint(constraint!(c == j));
         }
         let solution = model.solve().expect("part_2");
-        presses.iter().map(|&p| solution.value(p)).sum::<f64>() as u16
+        presses.iter().map(|&p| solution.value(p)).sum::<f64>()
     }
 }
 
-fn part_2(ms: &[Machine]) -> u16 {
+fn part_2(ms: &[Machine]) -> f64 {
     ms.iter().map(Machine::part_2).sum()
 }
 
 fn main() {
-    let input = parse::it(include_str!("../input.txt")).expect("parse");
+    let input = parse::it(
+        &std::fs::read_to_string(concat!(env!("CARGO_MANIFEST_DIR"), "/input.txt")).expect("file"),
+    )
+    .expect("parse");
     println!("{}", part_1(&input));
     println!("{}", part_2(&input));
 }

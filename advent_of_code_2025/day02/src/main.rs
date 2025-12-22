@@ -1,4 +1,4 @@
-fn read(s: &str) -> Vec<(u64, u64)> {
+fn parse(s: &str) -> Vec<(u64, u64)> {
     s.trim()
         .split(',')
         .map(|x| {
@@ -36,7 +36,9 @@ fn part_2(xs: &[u8]) -> bool {
 }
 
 fn main() {
-    let input = read(include_str!("../input.txt"));
+    let input = parse(
+        &std::fs::read_to_string(concat!(env!("CARGO_MANIFEST_DIR"), "/input.txt")).expect("file"),
+    );
     for p in [part_1, part_2] {
         println!("{}", solve(&input, p));
     }
